@@ -1,0 +1,8 @@
+ui/dist
+ui/node_modules
+ui/ui_gen.go
+bin
+testresults
+WORKLOG.md
+bak.tar
+.DS_Store
