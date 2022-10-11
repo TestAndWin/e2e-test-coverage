@@ -48,12 +48,12 @@
         <hr />
       </div>
 
-      <div class="input-group mb-3">
+      <div v-if="products.length > 0" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Area Name" aria-label="Area Name" aria-describedby="button-add-area" v-model="newArea" />
         <button class="btn btn-outline-secondary bi bi-plus-lg" type="button" id="button-add-area" @click="addArea()"></button>
       </div>
 
-      <div v-if="areas.length == 0" class="input-group mb-3">
+      <div v-if="products.length == 0" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
         <button class="btn btn-outline-secondary bi bi-plus-lg" type="button" id="button-add-product" @click="addProduct()"></button>
       </div>
@@ -131,6 +131,7 @@ export default defineComponent({
     return {
       loading: true,
       areas: [],
+      products: [],
       areaToggle: [false],
       newArea: "",
       newProduct: "",
@@ -143,6 +144,17 @@ export default defineComponent({
     };
   },
   methods: {
+    async getProducts() {
+      this.loading = true;
+      await fetchData(`${process.env.VUE_APP_API_URL}/products`)
+        .then((data) => {
+          this.products = data;
+        })
+        .catch((err) => {
+          this.error = err;
+        });
+      this.loading = false;
+    },
     async getAreas() {
       this.loading = true;
       await fetchData(`${process.env.VUE_APP_API_URL}/products/${this.productId}/areas`)
@@ -176,7 +188,7 @@ export default defineComponent({
         this.error = err;
       });
       this.newProduct = "";
-      this.getAreas();
+      this.getProducts();
     },
     async addArea() {
       await fetchData(`${process.env.VUE_APP_API_URL}/areas`, {
@@ -260,6 +272,7 @@ export default defineComponent({
     },
   },
   mounted() {
+    this.getProducts();
     this.getAreas();
   },
   components: {},
