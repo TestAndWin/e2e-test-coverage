@@ -45,7 +45,7 @@ Besides displaying the test coverage, **e2e test coverage** also allows collecti
 * Start logging exploratory tests by clicking on _Log new_
 
 # Development
-Please bear with me, this is my first Golang & Vue3 project.
+Please bear with me, this is my first Golang & Vue 3 project.
 
 Project developed with 
 * Golang 1.19
@@ -58,7 +58,7 @@ Project developed with
 * ```pkg/controller``` Implementation of API endpoints
 * ```pkg/model``` Model of different structures
 * ```pkg/reporter``` Files to import tests, currently only Mocha is implemented
-* ```pkg/reposiutory``` DB access
+* ```pkg/repository``` DB access
 * ```pkg/router``` Route to the different endpoints
 * ```ui``` Vue 3 application
 
