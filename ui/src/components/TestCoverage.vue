@@ -5,25 +5,20 @@
 
   <div v-for="(test, index) in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
     <div :id="`test-${index}`" class="row">
-      <div class="col-4">
+      <div class="col-5">
         <h6 @click="showTestRuns(test['suite'], test['file-name'])">
           {{ test["suite"] }}
         </h6>
       </div>
-      <div class="col-1">
+      <div class="col-5">
         <span class="result total">{{ test["total"] }}</span> &nbsp;
-      </div>
-      <div class="col-1">
         <span class="result passes">{{ test["passes"] }}</span> &nbsp;
-      </div>
-      <div class="col-1">
         <span class="result failures">{{ test["failures"] }}</span> &nbsp;
-      </div>
-      <div class="col-1">
         <span class="result pending">{{ test["pending"] }}</span> &nbsp;
-      </div>
-      <div class="col-1">
         <span class="result skipped">{{ test["skipped"] }}</span>
+      </div>
+      <div class="col">
+        &nbsp;
       </div>
     </div>
     <div class="row">

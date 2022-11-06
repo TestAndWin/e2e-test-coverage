@@ -11,56 +11,40 @@
 
     <div v-for="area in areas" :key="area['id']" :id="`area-${area['id']}`" class="area shadow p-2 mb-2 rounded">
       <div class="row">
-        <div @click="showFeatures(area['id'])" class="col-4">
+        <div @click="showFeatures(area['id'])" class="col-5">
           <h4>{{ area["name"] }}</h4>
         </div>
-        <div class="col-1">
+        <div class="col-5">
           <span v-if="area['total'] < 1" class="result failures">
-            {{ area["total"] }}<br />
-            <div class="d-none d-lg-block">total</div>
+            {{ area["total"] }}
           </span>
           <span v-if="area['total'] > 0" class="result total">
-            {{ area["total"] }}<br />
-            <div class="d-none d-lg-block">total</div>
+            {{ area["total"] }}
           </span>
           &nbsp;
-        </div>
-        <div class="col-1">
           <span class="result passes">
-            {{ area["passes"] }}<br />
-            <div class="d-none d-lg-block">passes</div>
+            {{ area["passes"] }}
           </span>
           &nbsp;
-        </div>
-        <div class="col-1">
           <span class="result failures">
-            {{ area["failures"] }}<br />
-            <div class="d-none d-lg-block">failures</div>
+            {{ area["failures"] }}
           </span>
           &nbsp;
-        </div>
-        <div class="col-1">
           <span class="result pending">
-            {{ area["pending"] }}<br />
-            <div class="d-none d-lg-block">pending</div>
+            {{ area["pending"] }}
           </span>
           &nbsp;
-        </div>
-        <div class="col-1">
           <span class="result skipped">
-            {{ area["skipped"] }}<br />
-            <div class="d-none d-lg-block">skipped</div>
+            {{ area["skipped"] }}
           </span>
         </div>
         <div class="col">
           <span class="result expl-test" @click="showExplTests(area['id'])">
-            {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }})<br />
-            <div class="d-none d-lg-block">Expl. Test</div>
+            {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }})
           </span>
           &nbsp;
           <span class="result expl-test" @click="logExplTest(area['id'])">
-            Log<br />
-            <div class="d-none d-lg-block">new</div>
+            New
           </span>
         </div>
       </div>
