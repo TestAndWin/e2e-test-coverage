@@ -88,6 +88,7 @@ func HandleRequest() {
 		v1.GET("/coverage/:id/areas", controller.GetAreaCoverage)
 		v1.GET("/coverage/areas/:id/features", controller.GetFeatureCoverage)
 		v1.GET("/coverage/features/:id/tests", controller.GetTestsCoverage)
+		v1.GET("/coverage/products/:id/tests", controller.GetProductTestsCoverage)
 	}
 
 	port, found := os.LookupEnv("PORT")

@@ -287,15 +287,24 @@ func (r Repository) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 
 // Get all tests for the specified feature id
 func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
+	return getTests(r, fid, model.SELECT_TESTS_28D, true)
+}
+
+// Get all tests for the specified product id
+func (r Repository) GetAllProductTests(pid string) ([]model.Test, error) {
+	return getTests(r, pid, model.SELECT_TESTS_BY_PRODUCT_28D, false)
+}
+
+func getTests(r Repository, id string, query string, saveAreaFeature bool) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, model.SELECT_TESTS_28D)
+	stmt, err := r.db.PrepareContext(ctx, query)
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, fid, time.Now().AddDate(0, 0, -28))
+	rows, err := stmt.QueryContext(ctx, id, time.Now().AddDate(0, 0, -28))
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err
@@ -306,7 +315,13 @@ func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
 	var prevRow model.Test = model.Test{}
 	for rows.Next() {
 		var t model.Test
-		if err := rows.Scan(&t.Id, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
+		var err error
+		if saveAreaFeature {
+			err = rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun)
+		} else {
+			err = rows.Scan(&t.Id, &t.ProductId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun)
+		}
+		if err != nil {
 			return tests, err
 		}
 		if prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {
@@ -322,7 +337,7 @@ func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
 
 // Get the test coverage information for all areas of the specified procduct
 func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.suite, t.file, t.testrun DESC;"
+	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -344,7 +359,7 @@ func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model
 
 	for rows.Next() {
 		var t model.Test
-		if err := rows.Scan(&t.Id, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
+		if err := rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
 			log.Println(err)
 			return nil, err
 		}
@@ -373,7 +388,7 @@ func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model
 
 // Get the test coverage information for all features of the specified area
 func (r Repository) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t WHERE t.area_id = ? and t.testrun > ? ORDER BY t.feature_id, t.suite, t.file, t.testrun DESC;"
+	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t WHERE t.area_id = ? and t.testrun > ? ORDER BY t.feature_id, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -395,7 +410,7 @@ func (r Repository) GetFeatureCoverageForArea(areaId string) (map[int64]model.Te
 
 	for rows.Next() {
 		var t model.Test
-		if err := rows.Scan(&t.Id, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
+		if err := rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
 			log.Println(err)
 			return nil, err
 		}
@@ -458,7 +473,7 @@ func (r Repository) GetExplTests(aid string) ([]model.ExplTest, error) {
 func (r Repository) GetAllTestForSuiteFile(suite string, file string) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, model.SELECT_TESTS_BY_FILTER)
+	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE suite = ? AND file = ? ORDER BY testrun DESC;")
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return nil, err
@@ -474,7 +489,7 @@ func (r Repository) GetAllTestForSuiteFile(suite string, file string) ([]model.T
 	var tests = []model.Test{}
 	for rows.Next() {
 		var t model.Test
-		if err := rows.Scan(&t.Id, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
+		if err := rows.Scan(&t.Id, &t.ProductId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
 			return tests, err
 		}
 		tests = append(tests, t)

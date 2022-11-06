@@ -31,7 +31,7 @@ func AddTest(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_TEST, t.AreaId, t.FeatureId, t.Suite, t.FileName, t.Url, t.Total, t.Passes, t.Pending, t.Failures, t.Skipped, t.Uuid, t.TestRun)
+		id, err := repo.ExecuteSql(model.INSERT_TEST, t.ProductId, t.AreaId, t.FeatureId, t.Suite, t.FileName, t.Url, t.Total, t.Passes, t.Pending, t.Failures, t.Skipped, t.Uuid, t.TestRun)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

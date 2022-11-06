@@ -12,6 +12,7 @@ import "time"
 
 type Test struct {
 	Id        int64     `db:"id"          json:"id"`
+	ProductId int64     `db:"product_id"  json:"product-id"`
 	AreaId    int64     `db:"area_id"     json:"area-id"`
 	FeatureId int64     `db:"feature_id"  json:"feature-id"`
 	Suite     string    `db:"suite"       json:"suite"`
@@ -28,6 +29,7 @@ type Test struct {
 
 const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (
 	id INT AUTO_INCREMENT PRIMARY KEY,
+	product_id int,
 	area_id int,
 	feature_id int,
 	suite VARCHAR(255),  
@@ -45,10 +47,12 @@ const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (
 	FOREIGN KEY (feature_id) REFERENCES features(id)
 	)`
 
-const INSERT_TEST = "INSERT INTO tests (area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+const INSERT_TEST = "INSERT INTO tests (product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)"
+
+const INSERT_TEST_NO_AREA_FEATURE = "INSERT INTO tests (product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
 
 const DELETE_TEST = "DELETE FROM tests WHERE id = ?"
 
-const SELECT_TESTS_28D = "SELECT id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"
+const SELECT_TESTS_28D = "SELECT id, product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"
 
-const SELECT_TESTS_BY_FILTER = "SELECT id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE suite = ? AND file = ? ORDER BY testrun DESC;"
+const SELECT_TESTS_BY_PRODUCT_28D = "SELECT id, product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"

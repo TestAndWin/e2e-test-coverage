@@ -115,3 +115,21 @@ func GetTestsCoverage(c *gin.Context) {
 		c.JSON(http.StatusOK, t)
 	}
 }
+
+// GetProductTestsCoverage godoc
+// @Summary      Get coverage for all tests of a product.
+// @Description  Get coverage for all tests of a product for the last 28 days.
+// @Tags         coverage
+// @Produce      json
+// @Param        id    path      int     true  "Product ID"
+// @Success      200  {array}  model.Test
+// @Router       /coverage/products/:id/tests [get]
+func GetProductTestsCoverage(c *gin.Context) {
+	t, err := repo.GetAllProductTests(c.Param("id"))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+	} else {
+		c.JSON(http.StatusOK, t)
+	}
+}

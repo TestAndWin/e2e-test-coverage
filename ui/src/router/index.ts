@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ProductView from '../views/ProductView.vue'
 import CoverageView from '../views/CoverageView.vue'
+import TestView from '../views/TestView.vue'
 import NotFound from '../views/NotFound.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -22,6 +23,12 @@ const routes: Array<RouteRecordRaw> = [
     alias: ['/coverage.html'],
     name: 'coverage',
     component: CoverageView
+  },
+  {
+    path: '/tests',
+    alias: ['/tests.html'],
+    name: 'tests',
+    component: TestView
   },
   {
     path: '/404',

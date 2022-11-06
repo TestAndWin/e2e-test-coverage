@@ -3,65 +3,63 @@
     <span class="visually-hidden">Loading...</span>
   </div>
 
-  <div v-for="(test, index) in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
-    <div :id="`test-${index}`" class="row">
-      <div class="col-5">
-        <h6 @click="showTestRuns(test['suite'], test['file-name'])">
-          {{ test["suite"] }}
-        </h6>
+  <div class="container">
+    <div v-for="(test, index) in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
+      <div :id="`test-${index}`" class="row">
+        <div class="col-5">
+          <h6 @click="showTestRuns(test['suite'], test['file-name'])">
+            {{ test["suite"] }}
+          </h6>
+        </div>
+        <div class="col-5">
+          <span class="result total">{{ test["total"] }}</span> &nbsp; <span class="result passes">{{ test["passes"] }}</span> &nbsp;
+          <span class="result failures">{{ test["failures"] }}</span> &nbsp; <span class="result pending">{{ test["pending"] }}</span> &nbsp;
+          <span class="result skipped">{{ test["skipped"] }}</span>
+        </div>
+        <div class="col">&nbsp;</div>
       </div>
-      <div class="col-5">
-        <span class="result total">{{ test["total"] }}</span> &nbsp;
-        <span class="result passes">{{ test["passes"] }}</span> &nbsp;
-        <span class="result failures">{{ test["failures"] }}</span> &nbsp;
-        <span class="result pending">{{ test["pending"] }}</span> &nbsp;
-        <span class="result skipped">{{ test["skipped"] }}</span>
+      <div class="row">
+        <div class="col">
+          <span class="test-suite d-flex justify-content-between">File: {{ test["file-name"] }}</span>
+        </div>
       </div>
-      <div class="col">
-        &nbsp;
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <span class="test-suite d-flex justify-content-between">File: {{ test["file-name"] }}</span>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <span class="test-suite d-flex justify-content-between">Test run: {{ test["test-run"] }}</span>
+      <div class="row">
+        <div class="col">
+          <span class="test-suite d-flex justify-content-between">Test run: {{ test["test-run"] }}</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal to all tests -->
-  <div class="modal modal-fullscreen-sm-down fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="showTestRunsLabel">{{ suite }} - {{ file }}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="row bg-light">
-          <div class="col-1">&nbsp;</div>
-          <div class="col-3">Date</div>
-          <div class="col">Total</div>
-          <div class="col">Passes</div>
-          <div class="col">Failures</div>
-          <div class="col">Pending</div>
-          <div class="col">Skipped</div>
-        </div>
-        <div v-for="tr in testRuns" :key="tr['id']" class="row">
-          <div class="col-1">&nbsp;</div>
-          <div class="col-3">{{ tr["test-run"] }}</div>
-          <div class="col">{{ tr["total"] }}</div>
-          <div class="col">{{ tr["passes"] }}</div>
-          <div class="col">{{ tr["failures"] }}</div>
-          <div class="col">{{ tr["pending"] }}</div>
-          <div class="col">{{ tr["skipped"] }}</div>
-        </div>
-        <Line ref="chart" :chart-data="chartData" :chart-options="chartOptions" />
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Modal to all tests -->
+    <div class="modal modal-fullscreen-sm-down fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="showTestRunsLabel">{{ suite }} - {{ file }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="row bg-light">
+            <div class="col-1">&nbsp;</div>
+            <div class="col-3">Date</div>
+            <div class="col">Total</div>
+            <div class="col">Passes</div>
+            <div class="col">Failures</div>
+            <div class="col">Pending</div>
+            <div class="col">Skipped</div>
+          </div>
+          <div v-for="tr in testRuns" :key="tr['id']" class="row">
+            <div class="col-1">&nbsp;</div>
+            <div class="col-3">{{ tr["test-run"] }}</div>
+            <div class="col">{{ tr["total"] }}</div>
+            <div class="col">{{ tr["passes"] }}</div>
+            <div class="col">{{ tr["failures"] }}</div>
+            <div class="col">{{ tr["pending"] }}</div>
+            <div class="col">{{ tr["skipped"] }}</div>
+          </div>
+          <Line ref="chart" :chart-data="chartData" :chart-options="chartOptions" />
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
         </div>
       </div>
     </div>
@@ -83,7 +81,11 @@ export default defineComponent({
   props: {
     featureId: {
       type: Number,
-      required: true,
+      required: false,
+    },
+    productId: {
+      type: Number,
+      required: false,
     },
   },
   data() {
@@ -130,6 +132,17 @@ export default defineComponent({
     };
   },
   methods: {
+    async getTestsForProduct() {
+      this.loading = true;
+      await fetchData(`${process.env.VUE_APP_API_URL}/coverage/products/${this.productId}/tests`)
+        .then((data) => {
+          this.tests = data;
+        })
+        .catch((err) => {
+          this.$emit("showAlert", err);
+        });
+      this.loading = false;
+    },
     async getTestsForFeature() {
       this.loading = true;
       await fetchData(`${process.env.VUE_APP_API_URL}/coverage/features/${this.featureId}/tests`)
@@ -166,7 +179,12 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.getTestsForFeature();
+    if (this.featureId) {
+      this.getTestsForFeature();
+    }
+    if (this.productId) {
+      this.getTestsForProduct();
+    }
   },
   // eslint-disable-next-line
   components: { Line },

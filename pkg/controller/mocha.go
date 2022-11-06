@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -41,21 +42,24 @@ func UploadMochaReport(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, gin.H{"status": "Test had already been uploaded"})
 			} else {
 				// Check if product, area and feature exist
-				aid, fid, err := repo.GetAreaAndFeatureId(tr.Area, tr.Feature, c.Param("id"))
-				if err != nil {
+				pid := c.Param("id")
+				aid, fid, err := repo.GetAreaAndFeatureId(tr.Area, tr.Feature, pid)
+				if err != nil && err != sql.ErrNoRows {
 					log.Println(err)
 					c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 				} else {
+					// TODO Url
+					var id int64
+					var err error
 					if aid != 0 && fid != 0 {
-						// TODO Url
-						id, err := repo.ExecuteSql(model.INSERT_TEST, aid, fid, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
-						if err != nil {
-							c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-						} else {
-							c.JSON(http.StatusCreated, gin.H{"test-id": id})
-						}
+						id, err = repo.ExecuteSql(model.INSERT_TEST, pid, aid, fid, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
 					} else {
-						c.JSON(http.StatusBadRequest, gin.H{"status": "Found no matching product, area, and/or feature"})
+						id, err = repo.ExecuteSql(model.INSERT_TEST_NO_AREA_FEATURE, pid, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
+					}
+					if err != nil {
+						c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+					} else {
+						c.JSON(http.StatusCreated, gin.H{"test-id": id})
 					}
 				}
 			}

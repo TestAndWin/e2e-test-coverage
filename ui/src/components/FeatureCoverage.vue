@@ -1,27 +1,26 @@
 <template>
-  <div v-if="loading" variant="info" class="spinner-border" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-
-  <div v-for="feature in features" :key="feature['id']" class="feature shadow p-2 mb-2 rounded">
-    <div :id="`feature-${feature['id']}`" class="row">
-      <div class="col-5">
-        <h5 @click="showTests(feature['id'])">{{ feature["name"] }}</h5>
-      </div>
-      <div class="col-5">
-        <span v-if="feature['total'] < 1" class="result failures">{{ feature["total"] }}</span>
-        <span v-if="feature['total'] > 0" class="result total">{{ feature["total"] }}</span>
-        &nbsp;
-        <span class="result passes">{{ feature["passes"] }}</span> &nbsp;
-        <span class="result failures">{{ feature["failures"] }}</span> &nbsp;
-        <span class="result pending">{{ feature["pending"] }}</span> &nbsp;
-        <span class="result skipped">{{ feature["skipped"] }}</span>
-      </div>
-      <div class="col">
-        &nbsp;
-      </div>
+  <div class="container">
+    <div v-if="loading" variant="info" class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
-    <TestCoverage @show-alert="showAlert" v-if="featureToggle[feature['id']]" :featureId="feature['id']" />
+
+    <div v-for="feature in features" :key="feature['id']" class="feature shadow p-2 mb-2 rounded">
+      <div :id="`feature-${feature['id']}`" class="row">
+        <div class="col-5">
+          <h5 @click="showTests(feature['id'])">{{ feature["name"] }}</h5>
+        </div>
+        <div class="col-5">
+          <span v-if="feature['total'] < 1" class="result failures">{{ feature["total"] }}</span>
+          <span v-if="feature['total'] > 0" class="result total">{{ feature["total"] }}</span>
+          &nbsp;
+          <span class="result passes">{{ feature["passes"] }}</span> &nbsp; <span class="result failures">{{ feature["failures"] }}</span> &nbsp;
+          <span class="result pending">{{ feature["pending"] }}</span> &nbsp;
+          <span class="result skipped">{{ feature["skipped"] }}</span>
+        </div>
+        <div class="col">&nbsp;</div>
+      </div>
+      <TestCoverage @show-alert="showAlert" v-if="featureToggle[feature['id']]" :featureId="feature['id']" />
+    </div>
   </div>
 </template>
 

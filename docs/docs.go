@@ -696,6 +696,38 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/coverage/products/:id/tests": {
+            "get": {
+                "description": "Get coverage for all tests of a product for the last 28 days.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coverage"
+                ],
+                "summary": "Get coverage for all tests of a product.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Test"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -829,6 +861,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "pending": {
+                    "type": "integer"
+                },
+                "product-id": {
                     "type": "integer"
                 },
                 "skipped": {
