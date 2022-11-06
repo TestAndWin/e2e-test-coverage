@@ -168,6 +168,7 @@ export default defineComponent({
   mounted() {
     this.getTestsForFeature();
   },
+  // eslint-disable-next-line
   components: { Line },
 });
 </script>
