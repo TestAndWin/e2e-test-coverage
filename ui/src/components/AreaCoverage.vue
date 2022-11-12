@@ -67,6 +67,7 @@
             <br />
             <label>Rating ({{ etRating }} stars)</label>
             <input type="range" class="form-range" min="0" max="5" step="1.0" id="etRating" v-model="etRating" />
+            <i class="bi" v-for="n in 5" :class="{'bi-star-fill': n <= etRating, 'bi-star': n > etRating}" :key="n"></i> <br/><br/>
             <label>Test Date</label>
             <input id="etDate" class="form-control" type="date" v-model="etDate" />
           </div>
@@ -91,10 +92,12 @@
           <div class="modal-body">
             <div v-for="et in explTests" :key="et['id']">
               <label>
-                <strong>{{ new String(et["test-run"]).split("T")[0] }} / {{ et["rating"] }} stars</strong>
+                <strong>{{ new String(et["test-run"]).split("T")[0] }} / </strong>
+                <i class="bi" v-for="n in 5" :class="{'bi-star-fill': n <= et['rating'], 'bi-star': n > et['rating']}" :key="n"></i>
               </label>
               <p>{{ et["summary"] }}</p>
             </div>
+            <div v-if="explTests.length == 0">No exploratory tests logged.</div>
           </div>
         </form>
         <div class="modal-footer">
@@ -126,7 +129,7 @@ export default defineComponent({
       areaToggle: [false],
       etAreaId: 0,
       etSummary: "",
-      etRating: "3",
+      etRating: 3,
       etDate: "",
       explTests: [],
       error: "",
@@ -163,7 +166,7 @@ export default defineComponent({
 
       this.etDate = new Date().toISOString().split("T")[0];
       this.etSummary = "";
-      this.etRating = "3";
+      this.etRating = 3;
       this.getAreas();
     },
     async showExplTests(areaId: number) {

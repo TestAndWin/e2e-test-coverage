@@ -101,26 +101,31 @@ export default defineComponent({
           {
             label: "Total",
             backgroundColor: "blue",
-            data: [0, 6],
+            borderColor: "blue",
+            data: [],
           },
           {
             label: "Pass",
             backgroundColor: "green",
+            borderColor: "green",
             data: [],
           },
           {
             label: "Fail",
             backgroundColor: "red",
+            borderColor: "red",
             data: [],
           },
           {
             label: "Pending",
             backgroundColor: "orange",
+            borderColor: "orange",
             data: [],
           },
           {
             label: "Skipped",
             backgroundColor: "yellow",
+            borderColor: "yellow",
             data: [],
           },
         ],
@@ -128,6 +133,12 @@ export default defineComponent({
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
+        scales: {
+          y: {
+            type: 'linear',
+            min:0 
+          }
+        }
       },
     };
   },
@@ -163,12 +174,13 @@ export default defineComponent({
           this.testRuns = data;
           this.chartData.labels = [];
           for (let i = 0; i < data.length; i++) {
-            this.chartData.labels[i] = data[i]["test-run"];
-            this.chartData.datasets[0].data[i] = data[i]["total"];
-            this.chartData.datasets[1].data[i] = data[i]["passes"];
-            this.chartData.datasets[2].data[i] = data[i]["failures"];
-            this.chartData.datasets[3].data[i] = data[i]["pending"];
-            this.chartData.datasets[4].data[i] = data[i]["skipped"];
+            const r = data.length - 1 - i;
+            this.chartData.labels[i] = data[r]["test-run"];
+            this.chartData.datasets[0].data[i] = data[r]["total"];
+            this.chartData.datasets[1].data[i] = data[r]["passes"];
+            this.chartData.datasets[2].data[i] = data[r]["failures"];
+            this.chartData.datasets[3].data[i] = data[r]["pending"];
+            this.chartData.datasets[4].data[i] = data[r]["skipped"];
           }
         })
         .catch((err) => {
