@@ -287,15 +287,15 @@ func (r Repository) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 
 // Get all tests for the specified feature id
 func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
-	return getTests(r, fid, model.SELECT_TESTS_28D, true)
+	return getTests(r, fid, model.SELECT_TESTS_28D)
 }
 
 // Get all tests for the specified product id
 func (r Repository) GetAllProductTests(pid string) ([]model.Test, error) {
-	return getTests(r, pid, model.SELECT_TESTS_BY_PRODUCT_28D, false)
+	return getTests(r, pid, model.SELECT_TESTS_BY_PRODUCT_28D)
 }
 
-func getTests(r Repository, id string, query string, saveAreaFeature bool) ([]model.Test, error) {
+func getTests(r Repository, id string, query string) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -315,13 +315,7 @@ func getTests(r Repository, id string, query string, saveAreaFeature bool) ([]mo
 	var prevRow model.Test = model.Test{}
 	for rows.Next() {
 		var t model.Test
-		var err error
-		if saveAreaFeature {
-			err = rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun)
-		} else {
-			err = rows.Scan(&t.Id, &t.ProductId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun)
-		}
-		if err != nil {
+		if err := rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.TestRun); err != nil {
 			return tests, err
 		}
 		if prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {

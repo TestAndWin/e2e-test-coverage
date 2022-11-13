@@ -55,4 +55,4 @@ const DELETE_TEST = "DELETE FROM tests WHERE id = ?"
 
 const SELECT_TESTS_28D = "SELECT id, product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"
 
-const SELECT_TESTS_BY_PRODUCT_28D = "SELECT id, product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"
+const SELECT_TESTS_BY_PRODUCT_28D = "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"

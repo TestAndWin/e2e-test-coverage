@@ -26,6 +26,7 @@
       <div class="row">
         <div class="col">
           <span class="test-suite d-flex justify-content-between">Test run: {{ test["test-run"] }}</span>
+          <span v-if="test['area-id']==0"><i>Not assigned to an area/feature</i></span>
         </div>
       </div>
     </div>
