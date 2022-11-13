@@ -39,13 +39,9 @@
           </span>
         </div>
         <div class="col">
-          <span class="result expl-test" @click="showExplTests(area['id'])">
-            {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }})
-          </span>
+          <span class="result expl-test" @click="showExplTests(area['id'])"> {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }}) </span>
           &nbsp;
-          <span class="result expl-test" @click="logExplTest(area['id'])">
-            New
-          </span>
+          <span class="result expl-test" @click="logExplTest(area['id'])"> New </span>
         </div>
       </div>
       <FeatureCoverage @show-alert="showAlert" v-if="areaToggle[area['id']]" :areaId="area['id']" />
@@ -65,9 +61,8 @@
             <label>Summary</label>
             <textarea type="text" class="form-control" id="etSummary" v-model="etSummary" />
             <br />
-            <label>Rating ({{ etRating }} stars)</label>
-            <input type="range" class="form-range" min="0" max="5" step="1.0" id="etRating" v-model="etRating" />
-            <i class="bi" v-for="n in 5" :class="{'bi-star-fill': n <= etRating, 'bi-star': n > etRating}" :key="n"></i> <br/><br/>
+            <label>Rating</label>
+            <star-rating :show-rating="false" active-color="#2c3e50" v-model:rating="etRating" /><br />
             <label>Test Date</label>
             <input id="etDate" class="form-control" type="date" v-model="etDate" />
           </div>
@@ -93,7 +88,7 @@
             <div v-for="et in explTests" :key="et['id']">
               <label>
                 <strong>{{ new String(et["test-run"]).split("T")[0] }} / </strong>
-                <i class="bi" v-for="n in 5" :class="{'bi-star-fill': n <= et['rating'], 'bi-star': n > et['rating']}" :key="n"></i>
+                <i class="bi" v-for="n in 5" :class="{ 'bi-star-fill': n <= et['rating'], 'bi-star': n > et['rating'] }" :key="n"></i>
               </label>
               <p>{{ et["summary"] }}</p>
             </div>
@@ -113,6 +108,7 @@ import { defineComponent } from "vue";
 import { Modal } from "bootstrap";
 import FeatureCoverage from "./FeatureCoverage.vue";
 import { fetchData } from "./ApiHelper";
+import StarRating from "vue-star-rating";
 
 export default defineComponent({
   name: "AreaCoverage",
@@ -129,7 +125,7 @@ export default defineComponent({
       areaToggle: [false],
       etAreaId: 0,
       etSummary: "",
-      etRating: 3,
+      etRating: 0,
       etDate: "",
       explTests: [],
       error: "",
@@ -166,7 +162,7 @@ export default defineComponent({
 
       this.etDate = new Date().toISOString().split("T")[0];
       this.etSummary = "";
-      this.etRating = 3;
+      this.etRating = 0;
       this.getAreas();
     },
     async showExplTests(areaId: number) {
@@ -190,7 +186,7 @@ export default defineComponent({
     this.getAreas();
     this.etDate = new Date().toISOString().split("T")[0];
   },
-  components: { FeatureCoverage },
+  components: { FeatureCoverage, StarRating },
 });
 </script>
 

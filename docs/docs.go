@@ -776,8 +776,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "rating": {
-                    "type": "string",
-                    "example": "0"
+                    "type": "integer"
                 },
                 "summary": {
                     "type": "string"

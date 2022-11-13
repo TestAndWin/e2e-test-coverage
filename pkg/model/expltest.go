@@ -14,7 +14,7 @@ type ExplTest struct {
 	Id      int64     `db:"id"          json:"id"`
 	AreaId  int64     `db:"area_id"     json:"area-id"`
 	Summary string    `db:"summary"     json:"summary"`
-	Rating  int64     `db:"rating"      json:"rating,string"`
+	Rating  int64     `db:"rating"      json:"rating"`
 	TestRun time.Time `db:"testrun"     json:"test-run" time_format:"2006-01-02" `
 }
 

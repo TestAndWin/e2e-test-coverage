@@ -30,8 +30,7 @@ definitions:
       id:
         type: integer
       rating:
-        example: "0"
-        type: string
+        type: integer
       summary:
         type: string
       test-run:
