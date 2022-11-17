@@ -2,7 +2,7 @@
   <div class="container">
     <div v-if="error" class="alert alert-danger">
       <span>{{ error }}</span>
-      <button type="button" class="btn-close" aria-label="Close" @click="closeAlert()"></button>
+      <button type="button" class="btn-close pointer" aria-label="Close" @click="closeAlert()"></button>
     </div>
 
     <div v-if="loading" variant="info" class="spinner-border" role="status">
@@ -11,7 +11,7 @@
 
     <div v-for="area in areas" :key="area['id']" :id="`area-${area['id']}`" class="area shadow p-2 mb-2 rounded">
       <div class="row">
-        <div @click="showFeatures(area['id'])" class="col-5">
+        <div @click="showFeatures(area['id'])" class="col-5 pointer">
           <h4>{{ area["name"] }}</h4>
         </div>
         <div class="col-5">
@@ -39,9 +39,9 @@
           </span>
         </div>
         <div class="col">
-          <span class="result expl-test" @click="showExplTests(area['id'])"> {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }}) </span>
+          <span class="result expl-test pointer" @click="showExplTests(area['id'])"> {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }}) </span>
           &nbsp;
-          <span class="result expl-test" @click="logExplTest(area['id'])"> New </span>
+          <span class="result expl-test pointer" @click="logExplTest(area['id'])"> New </span>
         </div>
       </div>
       <FeatureCoverage @show-alert="showAlert" v-if="areaToggle[area['id']]" :areaId="area['id']" />
@@ -68,8 +68,8 @@
           </div>
         </form>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="saveExplTest">Save test</button>
+          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveExplTest">Save test</button>
         </div>
       </div>
     </div>

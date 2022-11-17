@@ -13,12 +13,12 @@
         <div :id="`area-${area['id']}`" class="">
           <div class="row">
             <div class="col">
-              <h5 class="area-name justify-content-between" @click="showFeatures(area['id'])" >
+              <h5 class="area-name justify-content-between pointer" @click="showFeatures(area['id'])" >
                 {{ area["name"] }}
                 &nbsp;
-                <i class="bi bi-pencil" @click="showChangeAreaModal(area['id'], area['name'])"></i>
+                <i class="bi bi-pencil pointer" @click="showChangeAreaModal(area['id'], area['name'])"></i>
                 &nbsp;
-                <i class="bi bi-trash" @click="removeArea(area['id'])"></i>
+                <i class="bi bi-trash pointer" @click="removeArea(area['id'])"></i>
               </h5>
             </div>
           </div>
@@ -30,9 +30,9 @@
                     <h6 class="feature-name justify-content-between">
                       {{ feature["name"] }}
                       &nbsp;
-                      <i class="bi bi-pencil" @click="showChangeFeatureModal(feature['id'], feature['name'])"></i>
+                      <i class="bi bi-pencil pointer" @click="showChangeFeatureModal(feature['id'], feature['name'])"></i>
                       &nbsp;
-                      <i class="bi bi-trash" @click="removeFeature(area['id'], feature['id'])"></i>
+                      <i class="bi bi-trash pointer" @click="removeFeature(area['id'], feature['id'])"></i>
                     </h6>
                   </div>
                 </div>
@@ -41,7 +41,7 @@
 
             <div class="input-group mb-3">
               <input type="text" class="form-control" placeholder="Feature Name" aria-label="Feature Name" aria-describedby="button-add-area" v-model="newFeature[area['id']]" />
-              <button class="btn btn-outline-secondary bi bi-plus-lg" type="button" id="button-add-feature" @click="addFeature(area['id'])"></button>
+              <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-feature" @click="addFeature(area['id'])"></button>
             </div>
           </div>
         </div>
@@ -50,12 +50,12 @@
 
       <div v-if="products.length > 0" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Area Name" aria-label="Area Name" aria-describedby="button-add-area" v-model="newArea" />
-        <button class="btn btn-outline-secondary bi bi-plus-lg" type="button" id="button-add-area" @click="addArea()"></button>
+        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-area" @click="addArea()"></button>
       </div>
 
       <div v-if="products.length == 0" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
-        <button class="btn btn-outline-secondary bi bi-plus-lg" type="button" id="button-add-product" @click="addProduct()"></button>
+        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()"></button>
       </div>
     </div>
   </div>
@@ -80,7 +80,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="changeAreaName()">Save changes</button>
+          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName()">Save changes</button>
         </div>
       </div>
     </div>
@@ -106,7 +106,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="changeFeatureName()">Save changes</button>
+          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeatureName()">Save changes</button>
         </div>
       </div>
     </div>

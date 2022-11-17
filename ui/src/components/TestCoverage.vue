@@ -7,7 +7,7 @@
     <div v-for="(test, index) in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
       <div :id="`test-${index}`" class="row">
         <div class="col-5">
-          <h6 @click="showTestRuns(test['suite'], test['file-name'])">
+          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
             {{ test["suite"] }}
           </h6>
         </div>

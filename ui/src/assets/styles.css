@@ -60,3 +60,6 @@ body { background: lightslategrey !important; }
   vertical-align: baseline;
   border-radius: var(--bs-badge-border-radius);
 }
+.pointer {
+  cursor: pointer;
+}

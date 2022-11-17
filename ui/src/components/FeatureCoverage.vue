@@ -7,7 +7,7 @@
     <div v-for="feature in features" :key="feature['id']" class="feature shadow p-2 mb-2 rounded">
       <div :id="`feature-${feature['id']}`" class="row">
         <div class="col-5">
-          <h5 @click="showTests(feature['id'])">{{ feature["name"] }}</h5>
+          <h5 @click="showTests(feature['id'])" class="pointer">{{ feature["name"] }}</h5>
         </div>
         <div class="col-5">
           <span v-if="feature['total'] < 1" class="result failures">{{ feature["total"] }}</span>
