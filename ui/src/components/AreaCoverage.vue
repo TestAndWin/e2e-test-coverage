@@ -14,7 +14,7 @@
         <div @click="showFeatures(area['id'])" class="col-5 pointer">
           <h4>{{ area["name"] }}</h4>
         </div>
-        <div class="col-5">
+        <div class="col-5 mb-2">
           <span v-if="area['total'] < 1" class="result failures">
             {{ area["total"] }}
           </span>
@@ -38,7 +38,7 @@
             {{ area["skipped"] }}
           </span>
         </div>
-        <div class="col">
+        <div class="col mb-2">
           <span class="result expl-test pointer" @click="showExplTests(area['id'])"> {{ parseFloat(area["expl-rating"]).toFixed(1) }} ({{ area["expl-tests"] }}) </span>
           &nbsp;
           <span class="result expl-test pointer" @click="logExplTest(area['id'])"> New </span>
