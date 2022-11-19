@@ -788,7 +788,10 @@
                 "area-id": {
                     "type": "integer"
                 },
-                "description": {
+                "business-value": {
+                    "type": "string"
+                },
+                "documentation": {
                     "type": "string"
                 },
                 "failures": {
@@ -796,9 +799,6 @@
                 },
                 "id": {
                     "type": "integer"
-                },
-                "importance": {
-                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -820,6 +820,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

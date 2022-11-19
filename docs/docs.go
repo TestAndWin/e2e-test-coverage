@@ -792,7 +792,10 @@ const docTemplate = `{
                 "area-id": {
                     "type": "integer"
                 },
-                "description": {
+                "business-value": {
+                    "type": "string"
+                },
+                "documentation": {
                     "type": "string"
                 },
                 "failures": {
@@ -800,9 +803,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
-                },
-                "importance": {
-                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -824,6 +824,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
