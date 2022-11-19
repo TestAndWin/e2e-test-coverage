@@ -31,7 +31,7 @@ func AddFeature(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_FEATURE, f.AreaId, f.Name, f.Description, f.Importance)
+		id, err := repo.ExecuteSql(model.INSERT_FEATURE, f.AreaId, f.Name, f.Documentation, f.Url, f.BusinessValue)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {
@@ -75,7 +75,7 @@ func UpdateFeature(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
 		f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.ExecuteSql(model.UPDATE_FEATURE, f.Name, f.Description, f.Importance, f.Id)
+		_, err := repo.ExecuteSql(model.UPDATE_FEATURE, f.Name, f.Documentation, f.Url, f.BusinessValue, f.Id)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {

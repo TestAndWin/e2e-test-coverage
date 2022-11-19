@@ -62,4 +62,5 @@ body { background: lightslategrey !important; }
 }
 .pointer {
   cursor: pointer;
+  color: #2c3e50;
 }

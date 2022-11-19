@@ -13,26 +13,29 @@
         <div :id="`area-${area['id']}`" class="">
           <div class="row">
             <div class="col">
-              <h5 class="area-name justify-content-between pointer" @click="showFeatures(area['id'])" >
+              <h5 class="area-name justify-content-between pointer" @click="showFeatures(area['id'])">
                 {{ area["name"] }}
                 &nbsp;
-                <i class="bi bi-pencil pointer" @click="showChangeAreaModal(area['id'], area['name'])"></i>
-                &nbsp;
-                <i class="bi bi-trash pointer" @click="removeArea(area['id'])"></i>
+                <a @click="showChangeAreaModal(area['id'], area['name'])"><i class="bi bi-pencil pointer"></i></a>&nbsp;
+                <a @click="removeArea(area['id'])"><i class="bi bi-trash pointer"></i></a>
               </h5>
             </div>
           </div>
-          <div v-if="areaToggle[area['id']]" >
+          <div v-if="areaToggle[area['id']]">
             <div v-for="feature in features[area['id']]" :key="feature['id']" class="feature shadow p-2 mb-2 rounded">
               <div :id="`feature-${feature['id']}`" class="">
                 <div class="row">
                   <div class="col">
                     <h6 class="feature-name justify-content-between">
                       {{ feature["name"] }}
+                      [{{ feature["business-value"] }}]
+                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer"></i></a>&nbsp;
+                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer"></i></a>&nbsp;
+                      <a @click="showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])">
+                        <i class="bi bi-pencil pointer"></i>
+                      </a>
                       &nbsp;
-                      <i class="bi bi-pencil pointer" @click="showChangeFeatureModal(feature['id'], feature['name'])"></i>
-                      &nbsp;
-                      <i class="bi bi-trash pointer" @click="removeFeature(area['id'], feature['id'])"></i>
+                      <a @click="removeFeature(area['id'], feature['id'])"> <i class="bi bi-trash pointer"></i></a>
                     </h6>
                   </div>
                 </div>
@@ -71,12 +74,10 @@
         <div class="modal-body">
           <form>
             <div class="mb-3">
-              <input type="text" class="form-control" id="newName" v-model="newName" />
+              <label>Name</label><input type="text" class="form-control" id="newName" v-model="newName" />
+              <label>Please be aware that the name is used to "match" the test results.</label>
             </div>
           </form>
-        </div>
-        <div class="modal-body">
-          <p>Please be aware that the name is used to "match" the test results.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -86,27 +87,35 @@
     </div>
   </div>
 
-  <!-- Modal to change the feature name -->
-  <div class="modal fade" ref="changeFeatureName" id="changeFeatureName" tabindex="-1" aria-labelledby="changeFeatureNameLabel" aria-hidden="true">
+  <!-- Modal to edit a feature -->
+  <div class="modal fade" ref="updateFeature" id="updateFeature" tabindex="-1" aria-labelledby="updateFeatureLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="changeFeatureNameLabel">Update</h5>
+          <h5 class="modal-title" id="updateFeatureLabel">Update</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form>
             <div class="mb-3">
-              <input type="text" class="form-control" id="newName" v-model="newName" />
+              <label>Name</label><input type="text" class="form-control" id="newName" v-model="newName" />
+              <label>Please be aware that the name is used to "match" the test results.</label><br /><br />
+              <label>Business Value</label><br />
+              <select v-model="featureBusinessValue">
+                <option disabled value="">Please select</option>
+                <option>low</option>
+                <option>medium</option>
+                <option>high</option>
+              </select>
+              <br /><br />
+              <label>Link to Documentation</label><input type="text" class="form-control" id="featureDocumentation" v-model="featureDocumentation" /><br />
+              <label>URL</label><input type="text" class="form-control" id="featureUrl" v-model="featureUrl" /><br />
             </div>
           </form>
         </div>
-        <div class="modal-body">
-          <p>Please be aware that the name is used to "match" the test results.</p>
-        </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeatureName()">Save changes</button>
+          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="updateFeature()">Save changes</button>
         </div>
       </div>
     </div>
@@ -138,6 +147,9 @@ export default defineComponent({
       newFeature: [""],
       features: [[]],
       newName: "",
+      featureBusinessValue: "",
+      featureDocumentation: "",
+      featureUrl: "",
       areaIdToChange: 0,
       featureIdToChange: 0,
       error: "",
@@ -205,7 +217,7 @@ export default defineComponent({
       await fetchData(`${process.env.VUE_APP_API_URL}/features`, {
         method: "POST",
         mode: "cors",
-        body: JSON.stringify({ "area-id": areaId, name: this.newFeature[areaId], description: "", importance: "" }),
+        body: JSON.stringify({ "area-id": areaId, name: this.newFeature[areaId], documentation: "", url: "", "business-value": "" }),
       }).catch((err) => {
         this.error = err;
       });
@@ -235,10 +247,13 @@ export default defineComponent({
       this.areaIdToChange = areaId;
       new Modal("#changeAreaName").show();
     },
-    async showChangeFeatureModal(featureId: number, name: string) {
+    async showUpdateFeatureModal(featureId: number, name: string, documentation: string, url: string, businessValue: string) {
       this.newName = name;
       this.featureIdToChange = featureId;
-      new Modal("#changeFeatureName").show();
+      this.featureBusinessValue = businessValue;
+      this.featureDocumentation = documentation;
+      this.featureUrl = url;
+      new Modal("#updateFeature").show();
     },
     async changeAreaName() {
       await fetchData(`${process.env.VUE_APP_API_URL}/areas/${this.areaIdToChange}`, {
@@ -252,15 +267,18 @@ export default defineComponent({
       this.areaIdToChange = 0;
       this.getAreas();
     },
-    async changeFeatureName() {
+    async updateFeature() {
       await fetchData(`${process.env.VUE_APP_API_URL}/features/${this.featureIdToChange}`, {
         method: "PUT",
         mode: "cors",
-        body: JSON.stringify({ name: this.newName, description: "", importance: "" }),
+        body: JSON.stringify({ name: this.newName, documentation: this.featureDocumentation, url: this.featureUrl, "business-value": this.featureBusinessValue }),
       }).catch((err) => {
         this.error = err;
       });
       this.newName = "";
+      this.featureBusinessValue = "";
+      this.featureDocumentation = "";
+      this.featureUrl = "";
       this.featureIdToChange = 0;
       this.getAreas();
     },

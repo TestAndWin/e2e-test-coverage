@@ -274,7 +274,7 @@ func (r Repository) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	var features = []model.Feature{}
 	for rows.Next() {
 		var prd model.Feature
-		if err := rows.Scan(&prd.Id, &prd.AreaId, &prd.Name, &prd.Description, &prd.Importance); err != nil {
+		if err := rows.Scan(&prd.Id, &prd.AreaId, &prd.Name, &prd.Documentation, &prd.Url, &prd.BusinessValue); err != nil {
 			return features, err
 		}
 		features = append(features, prd)
