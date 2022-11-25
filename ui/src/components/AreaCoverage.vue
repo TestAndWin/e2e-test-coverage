@@ -20,6 +20,8 @@
           </span>
           <span v-if="area['total'] > 0" class="result total">
             {{ area["total"] }}
+            <i v-if="area['total'] > area['first-total']" class="bi bi-caret-up"></i>
+            <i v-if="area['total'] < area['first-total']" class="bi bi-caret-down"></i>
           </span>
           &nbsp;
           <span class="result passes">

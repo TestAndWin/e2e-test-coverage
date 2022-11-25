@@ -45,6 +45,7 @@ func GetAreaCoverage(c *gin.Context) {
 					a.Pending = t.Pending
 					a.Failures = t.Failures
 					a.Skipped = t.Skipped
+					a.FirstTotal = t.FirstTotal
 				}
 				// Add expl. tests
 				explTest, err := repo.GetExplTestOverviewForArea(a.Id)
@@ -90,6 +91,7 @@ func GetFeatureCoverage(c *gin.Context) {
 					f.Pending = t.Pending
 					f.Failures = t.Failures
 					f.Skipped = t.Skipped
+					f.FirstTotal = t.FirstTotal
 				}
 				featuresCoverage = append(featuresCoverage, f)
 			}

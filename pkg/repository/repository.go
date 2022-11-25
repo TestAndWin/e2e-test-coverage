@@ -319,7 +319,12 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 			return tests, err
 		}
 		if prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {
+			t.FirstTotal = t.Total
 			tests = append(tests, t)
+		} else {
+			p := tests[len(tests)-1]
+			p.FirstTotal = p.FirstTotal - prevRow.Total + t.Total
+			tests[len(tests)-1] = p
 		}
 		prevRow = t
 	}
@@ -331,7 +336,7 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 
 // Get the test coverage information for all areas of the specified procduct
 func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.suite, t.file, t.testrun DESC;"
+	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.feature_id, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -358,18 +363,25 @@ func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model
 			return nil, err
 		}
 		if r, ok := coverage[t.AreaId]; ok {
-			// Only the latest test result is taken into account, if there is more than one for suite and file
+			// We already know the area
 			if prevRow.FeatureId != t.FeatureId || prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {
+				// Only the latest test result is taken into account, if there is more than one for the suite and file
 				r.Total += t.Total
 				r.Passes += t.Passes
 				r.Pending += t.Pending
 				r.Failures += t.Failures
 				r.Skipped += t.Skipped
-				r.Suite += " - " + t.Suite
-				r.FileName += " - " + t.FileName
-				coverage[t.AreaId] = r
+				r.FirstTotal += t.Total
+			} else {
+				// A bit tricky: FirstTotal stores the number of tests starting the period.
+				// And not to run another SQL, we must store the value or the first test.
+				// With this we first remove the number of previous test (same suite, file, ...) and then adding the current one.
+				r.FirstTotal = r.FirstTotal - prevRow.Total + t.Total
 			}
+			coverage[t.AreaId] = r
 		} else {
+			// new area
+			t.FirstTotal = t.Total
 			coverage[t.AreaId] = t
 		}
 		prevRow = t
@@ -410,18 +422,21 @@ func (r Repository) GetFeatureCoverageForArea(areaId string) (map[int64]model.Te
 		}
 
 		if r, ok := coverage[t.FeatureId]; ok {
-			// Only the latest test result is taken into account, if there more than one for suite and file
 			if prevRow.Suite != t.Suite || prevRow.Suite == t.Suite && prevRow.FileName != t.FileName {
+				// Only the latest test result is taken into account, if there more than one for suite and file
 				r.Total += t.Total
 				r.Passes += t.Passes
 				r.Pending += t.Pending
 				r.Failures += t.Failures
 				r.Skipped += t.Skipped
-				r.Suite += " - " + t.Suite
-				r.FileName += " - " + t.FileName
-				coverage[t.FeatureId] = r
+				r.FirstTotal += t.Total
+			} else {
+				// see GetAreaCoverageForProduct for explanation
+				r.FirstTotal = r.FirstTotal - prevRow.Total + t.Total
 			}
+			coverage[t.FeatureId] = r
 		} else {
+			t.FirstTotal = t.Total
 			coverage[t.FeatureId] = t
 		}
 		prevRow = t

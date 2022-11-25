@@ -14,9 +14,14 @@
         </div>
         <div class="col-5">
           <span v-if="feature['total'] < 1" class="result failures">{{ feature["total"] }}</span>
-          <span v-if="feature['total'] > 0" class="result total">{{ feature["total"] }}</span>
+          <span v-if="feature['total'] > 0" class="result total">
+            {{ feature["total"] }}
+            <i v-if="feature['total'] > feature['first-total']" class="bi bi-caret-up"></i>
+            <i v-if="feature['total'] < feature['first-total']" class="bi bi-caret-down"></i>
+          </span>
           &nbsp;
-          <span class="result passes">{{ feature["passes"] }}</span> &nbsp; <span class="result failures">{{ feature["failures"] }}</span> &nbsp;
+          <span class="result passes">{{ feature["passes"] }}</span> &nbsp; 
+          <span class="result failures">{{ feature["failures"] }}</span> &nbsp;
           <span class="result pending">{{ feature["pending"] }}</span> &nbsp;
           <span class="result skipped">{{ feature["skipped"] }}</span>
         </div>

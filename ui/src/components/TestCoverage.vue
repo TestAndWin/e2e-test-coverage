@@ -12,7 +12,12 @@
           </h6>
         </div>
         <div class="col-5">
-          <span class="result total">{{ test["total"] }}</span> &nbsp; <span class="result passes">{{ test["passes"] }}</span> &nbsp;
+          <span class="result total">
+            {{ test["total"] }}
+            <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
+            <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
+          </span> &nbsp; 
+          <span class="result passes">{{ test["passes"] }}</span> &nbsp;
           <span class="result failures">{{ test["failures"] }}</span> &nbsp; <span class="result pending">{{ test["pending"] }}</span> &nbsp;
           <span class="result skipped">{{ test["skipped"] }}</span>
         </div>
@@ -26,7 +31,7 @@
       <div class="row">
         <div class="col">
           <span class="test-suite d-flex justify-content-between">Test run: {{ test["test-run"] }}</span>
-          <span v-if="test['area-id']==0"><i>Not assigned to an area/feature</i></span>
+          <span v-if="test['area-id'] == 0"><i>Not assigned to an area/feature</i></span>
         </div>
       </div>
     </div>
@@ -136,10 +141,10 @@ export default defineComponent({
         maintainAspectRatio: false,
         scales: {
           y: {
-            type: 'linear',
-            min:0 
-          }
-        }
+            type: "linear",
+            min: 0,
+          },
+        },
       },
     };
   },

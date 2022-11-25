@@ -9,13 +9,14 @@ LICENSE file in the root directory of this source tree.
 package model
 
 type Feature struct {
-	Id            int64  `db:"id"              json:"id"`
-	AreaId        int64  `db:"area_id"         json:"area-id"`
-	Name          string `db:"name"            json:"name"`
-	Documentation string `db:"documentation"   json:"documentation"`
-	Url           string `db:"url"             json:"url"`
-	BusinessValue string `db:"business_value"  json:"business-value"`
+	Id            int64  `json:"id"              db:"id"`
+	AreaId        int64  `json:"area-id"         db:"area_id"`
+	Name          string `json:"name"            db:"name"`
+	Documentation string `json:"documentation"   db:"documentation"`
+	Url           string `json:"url"             db:"url"`
+	BusinessValue string `json:"business-value"  db:"business_value"`
 	Total         int64  `json:"total"`
+	FirstTotal    int64  `json:"first-total"`
 	Passes        int64  `json:"passes"`
 	Pending       int64  `json:"pending"`
 	Failures      int64  `json:"failures"`

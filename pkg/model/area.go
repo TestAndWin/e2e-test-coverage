@@ -9,10 +9,11 @@ LICENSE file in the root directory of this source tree.
 package model
 
 type Area struct {
-	Id         int64   `db:"id"           json:"id"`
-	ProductId  int64   `db:"product_id"   json:"product-id"`
-	Name       string  `db:"name"         json:"name"`
+	Id         int64   `json:"id"           db:"id"`
+	ProductId  int64   `json:"product_id"   db:"product-id"`
+	Name       string  `json:"name"         db:"name"`
 	Total      int64   `json:"total"`
+	FirstTotal int64   `json:"first-total"`
 	Passes     int64   `json:"passes"`
 	Pending    int64   `json:"pending"`
 	Failures   int64   `json:"failures"`
