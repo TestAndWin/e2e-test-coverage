@@ -287,12 +287,12 @@ func (r Repository) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 
 // Get all tests for the specified feature id
 func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
-	return getTests(r, fid, model.SELECT_TESTS_28D)
+	return getTests(r, fid, "SELECT id, product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
 }
 
 // Get all tests for the specified product id
 func (r Repository) GetAllProductTests(pid string) ([]model.Test, error) {
-	return getTests(r, pid, model.SELECT_TESTS_BY_PRODUCT_28D)
+	return getTests(r, pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
 }
 
 func getTests(r Repository, id string, query string) ([]model.Test, error) {
@@ -319,11 +319,19 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 			return tests, err
 		}
 		if prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {
+			if t.Failures > 0 {
+				t.FailedTestRuns = 1
+			}
+			t.TotalTestRuns = 1
 			t.FirstTotal = t.Total
 			tests = append(tests, t)
 		} else {
 			p := tests[len(tests)-1]
 			p.FirstTotal = p.FirstTotal - prevRow.Total + t.Total
+			if t.Failures > 0 {
+				p.FailedTestRuns += 1
+			}
+			p.TotalTestRuns += 1
 			tests[len(tests)-1] = p
 		}
 		prevRow = t

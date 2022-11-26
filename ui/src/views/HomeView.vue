@@ -20,7 +20,28 @@
               <i class="bi bi-caret-up"></i>
               <i class="bi bi-caret-down"></i>
             </span>
-            indicates if there are more or less tests
+            indicates if there are more or less tests for the last 28 days.
+          </p>
+          <p>The weather indicates the test stability for the last 28 days.</p>
+          <p>
+            <i class="bi bi-sun"></i>
+            All test runs without failures
+          </p>
+          <p>
+              <i class="bi bi-cloud-sun"></i>
+            &lt;=15% test runs with failures
+          </p>
+          <p>
+              <i class="bi bi-cloud"></i>
+            &lt;=30% test runs with failures
+          </p>
+          <p>
+              <i class="bi bi-cloud-rain"></i>
+            &lt;= 50% test runs with failures
+          </p>
+          <p>
+              <i class="bi bi-lightning"></i>
+            > 50% test runs with failures
           </p>
         </div>
         <p></p>

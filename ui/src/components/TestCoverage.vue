@@ -7,7 +7,7 @@
     <div v-for="(test, index) in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
       <div :id="`test-${index}`" class="row">
         <div class="col-5">
-          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
+          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer" :set="(percentage = test['failed-test-runs'] / test['total-test-runs'])">
             {{ test["suite"] }}
           </h6>
         </div>
@@ -16,12 +16,18 @@
             {{ test["total"] }}
             <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
             <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
-          </span> &nbsp; 
-          <span class="result passes">{{ test["passes"] }}</span> &nbsp;
-          <span class="result failures">{{ test["failures"] }}</span> &nbsp; <span class="result pending">{{ test["pending"] }}</span> &nbsp;
+          </span>
+          &nbsp; <span class="result passes">{{ test["passes"] }}</span> &nbsp; <span class="result failures">{{ test["failures"] }}</span> &nbsp;
+          <span class="result pending">{{ test["pending"] }}</span> &nbsp;
           <span class="result skipped">{{ test["skipped"] }}</span>
         </div>
-        <div class="col">&nbsp;</div>
+        <div class="col">
+          <i v-if="percentage == 0" class="bi bi-sun"></i>
+          <i v-if="percentage > 0 && percentage <= 0.15" class="bi bi-cloud-sun"></i>
+          <i v-if="percentage > 0.15 && percentage <= 0.3" class="bi bi-cloud"></i>
+          <i v-if="percentage >= 0.3 && percentage <= 0.5" class="bi bi-cloud-rain"></i>
+          <i v-if="percentage > 0.5" class="bi bi-lightning"></i>
+        </div>
       </div>
       <div class="row">
         <div class="col">
@@ -100,6 +106,7 @@ export default defineComponent({
       tests: [],
       suite: "",
       file: "",
+      percentage: 0.0,
       testRuns: [],
       chartData: {
         labels: [],

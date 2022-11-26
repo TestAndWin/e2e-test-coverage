@@ -739,6 +739,9 @@
                 "failures": {
                     "type": "integer"
                 },
+                "first-total": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -751,7 +754,7 @@
                 "pending": {
                     "type": "integer"
                 },
-                "product-id": {
+                "product_id": {
                     "type": "integer"
                 },
                 "skipped": {
@@ -795,6 +798,9 @@
                     "type": "string"
                 },
                 "failures": {
+                    "type": "integer"
+                },
+                "first-total": {
                     "type": "integer"
                 },
                 "id": {
@@ -843,6 +849,9 @@
                 "area-id": {
                     "type": "integer"
                 },
+                "failed-test-runs": {
+                    "type": "integer"
+                },
                 "failures": {
                     "type": "integer"
                 },
@@ -851,6 +860,9 @@
                 },
                 "file-name": {
                     "type": "string"
+                },
+                "first-total": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -874,6 +886,9 @@
                     "type": "string"
                 },
                 "total": {
+                    "type": "integer"
+                },
+                "total-test-runs": {
                     "type": "integer"
                 },
                 "url": {

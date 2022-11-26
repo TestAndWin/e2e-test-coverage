@@ -11,21 +11,23 @@ package model
 import "time"
 
 type Test struct {
-	Id         int64     `db:"id"          json:"id"`
-	ProductId  int64     `db:"product_id"  json:"product-id"`
-	AreaId     int64     `db:"area_id"     json:"area-id"`
-	FeatureId  int64     `db:"feature_id"  json:"feature-id"`
-	Suite      string    `db:"suite"       json:"suite"`
-	FileName   string    `db:"file"        json:"file-name"`
-	Url        string    `db:"url"         json:"url"`
-	Total      int64     `db:"total"       json:"total"`
-	FirstTotal int64     `                 json:"first-total"`
-	Passes     int64     `db:"passes"      json:"passes"`
-	Pending    int64     `db:"pending"     json:"pending"`
-	Failures   int64     `db:"failures"    json:"failures"`
-	Skipped    int64     `db:"skipped"     json:"skipped"`
-	Uuid       string    `db:"uuid"        json:"uuid"`
-	TestRun    time.Time `db:"testrun"     json:"test-run"`
+	Id             int64     `db:"id"          json:"id"`
+	ProductId      int64     `db:"product_id"  json:"product-id"`
+	AreaId         int64     `db:"area_id"     json:"area-id"`
+	FeatureId      int64     `db:"feature_id"  json:"feature-id"`
+	Suite          string    `db:"suite"       json:"suite"`
+	FileName       string    `db:"file"        json:"file-name"`
+	Url            string    `db:"url"         json:"url"`
+	Total          int64     `db:"total"       json:"total"`
+	Passes         int64     `db:"passes"      json:"passes"`
+	Pending        int64     `db:"pending"     json:"pending"`
+	Failures       int64     `db:"failures"    json:"failures"`
+	Skipped        int64     `db:"skipped"     json:"skipped"`
+	Uuid           string    `db:"uuid"        json:"uuid"`
+	TestRun        time.Time `db:"testrun"     json:"test-run"`
+	FailedTestRuns int64     `                 json:"failed-test-runs"`
+	TotalTestRuns  int64     `                 json:"total-test-runs"`
+	FirstTotal     int64     `                 json:"first-total"`
 }
 
 const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (
@@ -53,7 +55,3 @@ const INSERT_TEST = "INSERT INTO tests (product_id, area_id, feature_id, suite, 
 const INSERT_TEST_NO_AREA_FEATURE = "INSERT INTO tests (product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
 
 const DELETE_TEST = "DELETE FROM tests WHERE id = ?"
-
-const SELECT_TESTS_28D = "SELECT id, product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"
-
-const SELECT_TESTS_BY_PRODUCT_28D = "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;"

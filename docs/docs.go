@@ -743,6 +743,9 @@ const docTemplate = `{
                 "failures": {
                     "type": "integer"
                 },
+                "first-total": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -755,7 +758,7 @@ const docTemplate = `{
                 "pending": {
                     "type": "integer"
                 },
-                "product-id": {
+                "product_id": {
                     "type": "integer"
                 },
                 "skipped": {
@@ -799,6 +802,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "failures": {
+                    "type": "integer"
+                },
+                "first-total": {
                     "type": "integer"
                 },
                 "id": {
@@ -847,6 +853,9 @@ const docTemplate = `{
                 "area-id": {
                     "type": "integer"
                 },
+                "failed-test-runs": {
+                    "type": "integer"
+                },
                 "failures": {
                     "type": "integer"
                 },
@@ -855,6 +864,9 @@ const docTemplate = `{
                 },
                 "file-name": {
                     "type": "string"
+                },
+                "first-total": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"
@@ -878,6 +890,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total": {
+                    "type": "integer"
+                },
+                "total-test-runs": {
                     "type": "integer"
                 },
                 "url": {
