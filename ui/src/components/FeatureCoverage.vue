@@ -8,7 +8,9 @@
       <div :id="`feature-${feature['id']}`" class="row">
         <div class="col-5 mb-2">
           <h5 @click="showTests(feature['id'])" class="pointer">{{ feature["name"] }}</h5>
-          <span v-if="feature['business-value']">[{{ feature["business-value"] }}]</span>&nbsp;
+          <span v-if="feature['business-value'] == 'low'">&dollar;</span>
+          <span v-if="feature['business-value'] == 'medium'">&dollar;&dollar;</span>
+          <span v-if="feature['business-value'] == 'high'">&dollar;&dollar;&dollar;</span>&nbsp;
           <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer"></i></a>&nbsp;
           <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer"></i></a>
         </div>

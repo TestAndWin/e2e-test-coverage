@@ -22,7 +22,8 @@
             </span>
             indicates if there are more or less tests for the last 28 days.
           </p>
-          <p>The weather indicates the test stability for the last 28 days.</p>
+          <hr/>
+          <p>The weather symbol shows the test stability for the last 28 days.</p>
           <p>
             <i class="bi bi-sun"></i>
             All test runs without failures
@@ -43,9 +44,12 @@
               <i class="bi bi-lightning"></i>
             > 50% test runs with failures
           </p>
+          <hr/>
+          <p>$ symbol shows the business value of a feature. &dollar; = low, &dollar;&dollar; = medium, &dollar;&dollar;&dollar; = high</p>
         </div>
         <p></p>
         <p class="card-text"><a href="/docs/index.html" class="link-info">API Documentation</a></p>
+        <p>&copy; TestAndWin 2022</p>
       </div>
     </div>
   </div>
