@@ -758,7 +758,7 @@ const docTemplate = `{
                 "pending": {
                     "type": "integer"
                 },
-                "product_id": {
+                "product-id": {
                     "type": "integer"
                 },
                 "skipped": {

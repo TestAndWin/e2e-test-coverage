@@ -98,7 +98,7 @@
           </div>
         </form>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -136,7 +136,7 @@ export default defineComponent({
   methods: {
     async getAreas() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/coverage/${this.productId}/areas`)
+      await fetchData(`${window.location.origin}/api/v1/coverage/${this.productId}/areas`)
         .then((data) => {
           this.areas = data;
         })
@@ -154,7 +154,7 @@ export default defineComponent({
       new Modal("#logExplTest").show();
     },
     async saveExplTest() {
-      await fetchData(`${process.env.VUE_APP_API_URL}/expl-tests`, {
+      await fetchData(`${window.location.origin}/api/v1/expl-tests`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({ "area-id": this.etAreaId, summary: this.etSummary, rating: this.etRating, "test-run": this.etDate + "T00:00:00.000Z" }),
@@ -168,7 +168,7 @@ export default defineComponent({
       this.getAreas();
     },
     async showExplTests(areaId: number) {
-      await fetchData(`${process.env.VUE_APP_API_URL}/expl-tests/area/${areaId}`)
+      await fetchData(`${window.location.origin}/api/v1/expl-tests/area/${areaId}`)
         .then((data) => {
           this.explTests = data;
         })

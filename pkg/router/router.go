@@ -93,8 +93,8 @@ func HandleRequest() {
 
 	port, found := os.LookupEnv("PORT")
 	if found {
-		router.Run("localhost:" + port)
+		router.Run("0.0.0.0:" + port)
 	} else {
-		router.Run("localhost:8080")
+		router.Run("0.0.0.0:8080")
 	}
 }

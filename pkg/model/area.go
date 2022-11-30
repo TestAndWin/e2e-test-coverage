@@ -10,7 +10,7 @@ package model
 
 type Area struct {
 	Id         int64   `json:"id"           db:"id"`
-	ProductId  int64   `json:"product_id"   db:"product-id"`
+	ProductId  int64   `json:"product-id"   db:"product_id"`
 	Name       string  `json:"name"         db:"name"`
 	Total      int64   `json:"total"`
 	FirstTotal int64   `json:"first-total"`

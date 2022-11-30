@@ -130,6 +130,7 @@ func (r Repository) CreateTables() error {
 
 // Inserts/Deletes a row using the specified statement and params
 func (r Repository) ExecuteSql(statement string, params ...any) (int64, error) {
+	log.Printf("%s %s", statement, params)
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)

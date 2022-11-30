@@ -11,8 +11,8 @@
           <span v-if="feature['business-value'] == 'low'">&dollar;</span>
           <span v-if="feature['business-value'] == 'medium'">&dollar;&dollar;</span>
           <span v-if="feature['business-value'] == 'high'">&dollar;&dollar;&dollar;</span>&nbsp;
-          <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer"></i></a>&nbsp;
-          <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer"></i></a>
+          <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer" style="color: #2c3e50;"></i></a>&nbsp;
+          <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50;"></i></a>
         </div>
         <div class="col-5">
           <span v-if="feature['total'] < 1" class="result failures">{{ feature["total"] }}</span>
@@ -58,7 +58,7 @@ export default defineComponent({
   methods: {
     async getFeatures() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/coverage/areas/${this.areaId}/features`)
+      await fetchData(`${window.location.origin}/api/v1/coverage/areas/${this.areaId}/features`)
         .then((data) => {
           this.features = data;
         })

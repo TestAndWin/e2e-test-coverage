@@ -158,7 +158,7 @@ export default defineComponent({
   methods: {
     async getTestsForProduct() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/coverage/products/${this.productId}/tests`)
+      await fetchData(`${window.location.origin}/api/v1/coverage/products/${this.productId}/tests`)
         .then((data) => {
           this.tests = data;
         })
@@ -169,7 +169,7 @@ export default defineComponent({
     },
     async getTestsForFeature() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/coverage/features/${this.featureId}/tests`)
+      await fetchData(`${window.location.origin}/api/v1/coverage/features/${this.featureId}/tests`)
         .then((data) => {
           this.tests = data;
         })
@@ -182,7 +182,7 @@ export default defineComponent({
       this.loading = true;
       this.suite = suite;
       this.file = file;
-      await fetchData(`${process.env.VUE_APP_API_URL}/tests?suite=${suite}&file-name=${file}`)
+      await fetchData(`${window.location.origin}/api/v1/tests?suite=${suite}&file-name=${file}`)
         .then((data) => {
           this.testRuns = data;
           this.chartData.labels = [];

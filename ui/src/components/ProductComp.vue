@@ -80,7 +80,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName()">Save changes</button>
         </div>
       </div>
@@ -114,7 +114,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="updateFeature()">Save changes</button>
         </div>
       </div>
@@ -158,7 +158,7 @@ export default defineComponent({
   methods: {
     async getProducts() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/products`)
+      await fetchData(`${window.location.origin}/api/v1/products`)
         .then((data) => {
           this.products = data;
         })
@@ -169,7 +169,7 @@ export default defineComponent({
     },
     async getAreas() {
       this.loading = true;
-      await fetchData(`${process.env.VUE_APP_API_URL}/products/${this.productId}/areas`)
+      await fetchData(`${window.location.origin}/api/v1/products/${this.productId}/areas`)
         .then((data) => {
           this.areas = data;
         })
@@ -183,7 +183,7 @@ export default defineComponent({
       this.loading = false;
     },
     async getFeatures(areaId: number) {
-      await fetchData(`${process.env.VUE_APP_API_URL}/areas/${areaId}/features`)
+      await fetchData(`${window.location.origin}/api/v1/areas/${areaId}/features`)
         .then((data) => {
           this.features[areaId] = data;
         })
@@ -192,7 +192,7 @@ export default defineComponent({
         });
     },
     async addProduct() {
-      await fetchData(`${process.env.VUE_APP_API_URL}/products`, {
+      await fetchData(`${window.location.origin}/api/v1/products`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({ name: this.newProduct }),
@@ -203,7 +203,7 @@ export default defineComponent({
       this.getProducts();
     },
     async addArea() {
-      await fetchData(`${process.env.VUE_APP_API_URL}/areas`, {
+      await fetchData(`${window.location.origin}/api/v1/areas`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({ "product-id": this.productId, name: this.newArea }),
@@ -214,7 +214,7 @@ export default defineComponent({
       this.getAreas();
     },
     async addFeature(areaId: number) {
-      await fetchData(`${process.env.VUE_APP_API_URL}/features`, {
+      await fetchData(`${window.location.origin}/api/v1/features`, {
         method: "POST",
         mode: "cors",
         body: JSON.stringify({ "area-id": areaId, name: this.newFeature[areaId], documentation: "", url: "", "business-value": "" }),
@@ -225,7 +225,7 @@ export default defineComponent({
       this.getFeatures(areaId);
     },
     async removeArea(areaId: number) {
-      await fetchData(`${process.env.VUE_APP_API_URL}/areas/${areaId}`, {
+      await fetchData(`${window.location.origin}/api/v1/areas/${areaId}`, {
         method: "DELETE",
         mode: "cors",
       }).catch((err) => {
@@ -234,7 +234,7 @@ export default defineComponent({
       this.getAreas();
     },
     async removeFeature(areaId: number, featureId: number) {
-      await fetchData(`${process.env.VUE_APP_API_URL}/features/${featureId}`, {
+      await fetchData(`${window.location.origin}/api/v1/features/${featureId}`, {
         method: "DELETE",
         mode: "cors",
       }).catch((err) => {
@@ -256,7 +256,7 @@ export default defineComponent({
       new Modal("#updateFeature").show();
     },
     async changeAreaName() {
-      await fetchData(`${process.env.VUE_APP_API_URL}/areas/${this.areaIdToChange}`, {
+      await fetchData(`${window.location.origin}/api/v1/areas/${this.areaIdToChange}`, {
         method: "PUT",
         mode: "cors",
         body: JSON.stringify({ name: this.newName }),
@@ -268,7 +268,7 @@ export default defineComponent({
       this.getAreas();
     },
     async updateFeature() {
-      await fetchData(`${process.env.VUE_APP_API_URL}/features/${this.featureIdToChange}`, {
+      await fetchData(`${window.location.origin}/api/v1/features/${this.featureIdToChange}`, {
         method: "PUT",
         mode: "cors",
         body: JSON.stringify({ name: this.newName, documentation: this.featureDocumentation, url: this.featureUrl, "business-value": this.featureBusinessValue }),
