@@ -42,8 +42,8 @@
       </div>
     </div>
 
-    <!-- Modal to all tests -->
-    <div class="modal modal-fullscreen-sm-down fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
+    <!-- Modal to show all tests with a graph -->
+    <div class="modal fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
           <div class="modal-header">
