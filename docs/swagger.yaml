@@ -527,10 +527,9 @@ paths:
       summary: Deletes the test
       tags:
       - test
-  /coverage/:id/upload-mocha-report:
+  /coverage/:id/upload-mocha-summary-report:
     post:
-      description: Adds test result of a mocha report and returns the ID of the stored
-        test.
+      description: Adds test result of a mocha summary report.
       parameters:
       - description: Product ID
         in: path
@@ -550,7 +549,7 @@ paths:
           description: Created
           schema:
             type: string
-      summary: Adds test result of a mocha report
+      summary: Adds test result of a mocha summary report
       tags:
       - mocha
   /coverage/features/:id/tests:

@@ -38,42 +38,70 @@ type Results struct {
 
 type Suite struct {
 	Title string `json:"title"`
-	File  string `json:"file"`
+	Tests []Test `json:"tests"`
 }
 
-func ReadMochaResultFromContext(c *gin.Context) (TestResult, error) {
+type Test struct {
+	Pass    bool `json:"pass"`
+	Fail    bool `json:"fail"`
+	Pending bool `json:"pending"`
+	Skipped bool `json:"skipped"`
+}
+
+// Iterate through the mocha report and get all the needed data. Currently it is only support, that the results section contains only one suite entry.
+func ReadMochaResultFromContext(c *gin.Context) ([]TestResult, error) {
 	var m Mocha
 	if err := c.BindJSON(&m); err != nil {
 		fmt.Println("Error during BindJSON(): ", err)
-		return TestResult{}, err
+		return []TestResult{}, err
 	}
 	return getTestResultFromMocha(m), nil
 }
 
-func getTestResultFromMocha(m Mocha) TestResult {
-	tr := TestResult{}
-
-	if strings.Contains(m.Results[0].Suites[0].Title, "|") {
-		tr.Area = strings.Split(m.Results[0].Suites[0].Title, "|")[0]
-		tr.Feature = strings.Split(m.Results[0].Suites[0].Title, "|")[1]
-		tr.Suite = strings.Split(m.Results[0].Suites[0].Title, "|")[2]
-	} else {
-		tr.Suite = m.Results[0].Suites[0].Title
-	}
-
-	if len(m.Results[0].Suites[0].File) > 0 {
-		tr.File = m.Results[0].Suites[0].File
-	} else {
-		tr.File = m.Results[0].File
-	}
-	tr.Total = m.Stats.Tests
-	tr.Passes = m.Stats.Passes
-	tr.Pending = m.Stats.Pending
-	tr.Failures = m.Stats.Failures
-	tr.Skipped = m.Stats.Skipped
+func getTestResultFromMocha(m Mocha) []TestResult {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", m.Stats.End)
-	tr.TestRun = t
-	tr.Uuid = m.Results[0].Uuid
 
-	return tr
+	tests := []TestResult{}
+	for _, result := range m.Results {
+		tr := TestResult{}
+		if strings.Contains(result.Suites[0].Title, "|") {
+			tr.Area = strings.Split(result.Suites[0].Title, "|")[0]
+			tr.Feature = strings.Split(result.Suites[0].Title, "|")[1]
+			tr.Suite = strings.Split(result.Suites[0].Title, "|")[2]
+		} else {
+			tr.Suite = result.Suites[0].Title
+		}
+		tr.File = result.File
+		tr.Uuid = result.Uuid
+		tr.TestRun = t
+
+		// We have to iterate through the suites/tests to get the numbers
+		total := 0
+		passes := 0
+		pending := 0
+		failures := 0
+		skipped := 0
+		for _, test := range result.Suites[0].Tests {
+			total += 1
+			if test.Pass {
+				passes += 1
+			}
+			if test.Fail {
+				failures += 1
+			}
+			if test.Skipped {
+				skipped += 1
+			}
+			if test.Pending {
+				pending += 1
+			}
+		}
+		tr.Total = total
+		tr.Passes = passes
+		tr.Pending = pending
+		tr.Failures = failures
+		tr.Skipped = skipped
+		tests = append(tests, tr)
+	}
+	return tests
 }

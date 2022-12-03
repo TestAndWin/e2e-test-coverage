@@ -627,16 +627,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/coverage/:id/upload-mocha-report": {
+        "/coverage/:id/upload-mocha-summary-report": {
             "post": {
-                "description": "Adds test result of a mocha report and returns the ID of the stored test.",
+                "description": "Adds test result of a mocha summary report.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "mocha"
                 ],
-                "summary": "Adds test result of a mocha report",
+                "summary": "Adds test result of a mocha summary report",
                 "parameters": [
                     {
                         "type": "integer",

@@ -84,7 +84,7 @@ func HandleRequest() {
 		v1.GET("/expl-tests/area/:areaid", controller.GetExplTestsForArea)
 		v1.DELETE("/expl-tests/:id", controller.DeleteExplTest)
 
-		v1.POST("/coverage/:id/upload-mocha-report", controller.UploadMochaReport)
+		v1.POST("/coverage/:id/upload-mocha-summary-report", controller.UploadMochaSummaryReport)
 		v1.GET("/coverage/:id/areas", controller.GetAreaCoverage)
 		v1.GET("/coverage/areas/:id/features", controller.GetFeatureCoverage)
 		v1.GET("/coverage/features/:id/tests", controller.GetTestsCoverage)

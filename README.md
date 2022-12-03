@@ -77,7 +77,6 @@ Maybe the compiler settings in ```Makefile``` must be adapted to your needs.
 - [ ] Allow to re-order areas and features
 - [ ] Create area + feature automatically when uploading reports
 - [ ] Allow to add bugs in production (Ticket Number, Short Desc, severity). Or better: get this automatically
-- [ ] Allow to upload a Mocha summary file
 - [ ] Allow to use more than one product / maintain products
 - [ ] Security
 - [ ] Login

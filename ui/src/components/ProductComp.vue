@@ -29,8 +29,8 @@
                     <h6 class="feature-name justify-content-between">
                       {{ feature["name"] }}
                       [{{ feature["business-value"] }}]
-                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer"></i></a>&nbsp;
-                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer"></i></a>&nbsp;
+                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer" style="color: #2c3e50;"></i></a>&nbsp;
+                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50;"></i></a>&nbsp;
                       <a @click="showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])">
                         <i class="bi bi-pencil pointer"></i>
                       </a>

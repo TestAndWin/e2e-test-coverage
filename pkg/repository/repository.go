@@ -130,7 +130,6 @@ func (r Repository) CreateTables() error {
 
 // Inserts/Deletes a row using the specified statement and params
 func (r Repository) ExecuteSql(statement string, params ...any) (int64, error) {
-	log.Printf("%s %s", statement, params)
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -320,18 +319,21 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 			return tests, err
 		}
 		if prevRow.Suite != t.Suite || (prevRow.Suite == t.Suite && prevRow.FileName != t.FileName) {
-			if t.Failures > 0 {
-				t.FailedTestRuns = 1
-			}
 			t.TotalTestRuns = 1
+			/*
+				t.FailedTestRuns = 0
+				if t.Failures > 0 {
+					t.FailedTestRuns = 1
+				}
+			*/
 			t.FirstTotal = t.Total
 			tests = append(tests, t)
 		} else {
 			p := tests[len(tests)-1]
 			p.FirstTotal = p.FirstTotal - prevRow.Total + t.Total
-			if t.Failures > 0 {
+			/*if t.Failures > 0 {
 				p.FailedTestRuns += 1
-			}
+			}*/
 			p.TotalTestRuns += 1
 			tests[len(tests)-1] = p
 		}
