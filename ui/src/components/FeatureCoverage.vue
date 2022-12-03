@@ -58,7 +58,7 @@ export default defineComponent({
   methods: {
     async getFeatures() {
       this.loading = true;
-      await fetchData(`${window.location.origin}/api/v1/coverage/areas/${this.areaId}/features`)
+      await fetchData(`/api/v1/coverage/areas/${this.areaId}/features`)
         .then((data) => {
           this.features = data;
         })
