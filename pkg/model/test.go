@@ -29,29 +29,3 @@ type Test struct {
 	TotalTestRuns  int64     `                 json:"total-test-runs"`
 	FirstTotal     int64     `                 json:"first-total"`
 }
-
-const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id int,
-	area_id int,
-	feature_id int,
-	suite VARCHAR(255),  
-	file VARCHAR(255),
-	url VARCHAR(500), 
-	total int,  
-	passes int, 
-	pending int, 
-	failures int, 
-	skipped int, 
-	testrun datetime,
-	uuid VARCHAR(255),
-	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	FOREIGN KEY (feature_id) REFERENCES features(id),
-	FOREIGN KEY (feature_id) REFERENCES features(id)
-	)`
-
-const INSERT_TEST = "INSERT INTO tests (product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?, ?,?,?,?,?,?,?,?,?,?,?,?)"
-
-const INSERT_TEST_NO_AREA_FEATURE = "INSERT INTO tests (product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?)"
-
-const DELETE_TEST = "DELETE FROM tests WHERE id = ?"

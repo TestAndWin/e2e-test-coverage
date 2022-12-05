@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/model"
 	"github.com/TestAndWin/e2e-coverage/pkg/reporter"
 	"github.com/gin-gonic/gin"
 )
@@ -55,9 +54,9 @@ func UploadMochaSummaryReport(c *gin.Context) {
 						var id int64
 						var err error
 						if aid != 0 && fid != 0 {
-							id, err = repo.ExecuteSql(model.INSERT_TEST, pid, aid, fid, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
+							id, err = repo.InsertTestResult(pid, aid, fid, tr)
 						} else {
-							id, err = repo.ExecuteSql(model.INSERT_TEST_NO_AREA_FEATURE, pid, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
+							id, err = repo.InsertTestResultWithoutAreaFeature(pid, tr)
 						}
 						if err != nil {
 							status = append(status, err.Error())

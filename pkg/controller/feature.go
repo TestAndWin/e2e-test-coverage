@@ -31,7 +31,7 @@ func AddFeature(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_FEATURE, f.AreaId, f.Name, f.Documentation, f.Url, f.BusinessValue)
+		id, err := repo.InsertFeature(f)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {
@@ -75,7 +75,7 @@ func UpdateFeature(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
 		f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.ExecuteSql(model.UPDATE_FEATURE, f.Name, f.Documentation, f.Url, f.BusinessValue, f.Id)
+		_, err := repo.UpdateFeature(f)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {
@@ -93,7 +93,7 @@ func UpdateFeature(c *gin.Context) {
 // @Success      200
 // @Router       /api/v1/features/{id} [DELETE]
 func DeleteFeature(c *gin.Context) {
-	_, err := repo.ExecuteSql(model.DELETE_FEATURE, c.Param("id"))
+	_, err := repo.DeleteFeature(c.Param("id"))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

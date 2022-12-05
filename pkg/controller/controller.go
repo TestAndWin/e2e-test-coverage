@@ -24,10 +24,32 @@ func initRepository() repository.Repository {
 		log.Fatal("Error connecting to DB")
 		os.Exit(1)
 	}
-	err = repository.CreateTables()
+
+	err = repository.CreateProductsTable()
 	if err != nil {
-		log.Fatal("Error connecting to DB")
+		log.Fatal("Error creating DB tables")
 		os.Exit(1)
 	}
+	err = repository.CreateAreasTable()
+	if err != nil {
+		log.Fatal("Error creating DB tables")
+		os.Exit(1)
+	}
+	err = repository.CreateExplTestsTable()
+	if err != nil {
+		log.Fatal("Error creating DB tables")
+		os.Exit(1)
+	}
+	err = repository.CreateFeaturesTable()
+	if err != nil {
+		log.Fatal("Error creating DB tables")
+		os.Exit(1)
+	}
+	err = repository.CreateTestsTable()
+	if err != nil {
+		log.Fatal("Error creating DB tables")
+		os.Exit(1)
+	}
+
 	return repository
 }

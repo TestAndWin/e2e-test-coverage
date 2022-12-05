@@ -31,7 +31,7 @@ func AddProduct(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_PRODUCT, p.Name)
+		id, err := repo.InsertProduct(p)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
@@ -75,7 +75,7 @@ func UpdateProduct(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
 		p.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.ExecuteSql(model.UPDATE_PRODUCT, p.Name, p.Id)
+		_, err := repo.UpdateProduct(p)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
@@ -94,7 +94,7 @@ func UpdateProduct(c *gin.Context) {
 // @Success      200
 // @Router       /api/v1/products/{id} [DELETE]
 func DeleteProduct(c *gin.Context) {
-	_, err := repo.ExecuteSql(model.DELETE_PRODUCT, c.Param("id"))
+	_, err := repo.DeleteProduct(c.Param("id"))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

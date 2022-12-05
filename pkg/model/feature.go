@@ -23,22 +23,3 @@ type Feature struct {
 	Skipped       int64  `json:"skipped"`
 	Tests         []Test `json:"tests"`
 }
-
-const CREATE_FEATURE = `CREATE TABLE IF NOT EXISTS features(
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	area_id INT, 
-	name VARCHAR(255),
-	documentation VARCHAR(255),
-	url VARCHAR(255),
-	business_value VARCHAR(20),
-	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	FOREIGN KEY (area_id) REFERENCES areas(id)
-	)`
-
-const INSERT_FEATURE = "INSERT INTO features(area_id, name, documentation, url, business_value) VALUES (?,?,?,?,?)"
-
-const SELECT_FEATURES = "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ?;"
-
-const UPDATE_FEATURE = "UPDATE features SET name = ?, documentation = ?, url = ?, business_value = ? WHERE id = ?"
-
-const DELETE_FEATURE = "DELETE FROM features WHERE id = ?"

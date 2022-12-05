@@ -31,7 +31,7 @@ func AddArea(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_AREA, a.ProductId, a.Name)
+		id, err := repo.InsertArea(a)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {
@@ -75,7 +75,7 @@ func UpdateArea(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
 		a.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.ExecuteSql(model.UPDATE_AREA, a.Name, a.Id)
+		_, err := repo.UpdateArea(a)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 		} else {
@@ -93,7 +93,7 @@ func UpdateArea(c *gin.Context) {
 // @Success      200
 // @Router       /api/v1/areas/{id} [DELETE]
 func DeleteArea(c *gin.Context) {
-	_, err := repo.ExecuteSql(model.DELETE_AREA, c.Param("id"))
+	_, err := repo.DeleteArea(c.Param("id"))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

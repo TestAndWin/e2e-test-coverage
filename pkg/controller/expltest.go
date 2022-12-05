@@ -30,7 +30,7 @@ func AddExplTest(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		id, err := repo.ExecuteSql(model.INSERT_EXPL_TEST, et.AreaId, et.Summary, et.Rating, et.TestRun)
+		id, err := repo.InsertExplTest(et)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"status": err})
@@ -50,7 +50,7 @@ func AddExplTest(c *gin.Context) {
 // @Success      200
 // @Router       /api/v1/expl-tests/{id} [DELETE]
 func DeleteExplTest(c *gin.Context) {
-	_, err := repo.ExecuteSql(model.DELETE_TEST, c.Param("id"))
+	_, err := repo.DeleteExplTest(c.Param("id"))
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

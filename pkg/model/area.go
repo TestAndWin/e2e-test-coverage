@@ -21,19 +21,3 @@ type Area struct {
 	ExplTests  int64   `json:"expl-tests"`
 	ExplRating float64 `json:"expl-rating"`
 }
-
-const CREATE_AREA = `CREATE TABLE IF NOT EXISTS areas (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-	product_id int,
-	name VARCHAR(255),
-	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	FOREIGN KEY (product_id) REFERENCES products(id)
-	)`
-
-const INSERT_AREA = "INSERT INTO areas(product_id, name) VALUES (?, ?)"
-
-const SELECT_AREAS = "SELECT id, product_id, name FROM areas WHERE product_id = ?;"
-
-const UPDATE_AREA = "UPDATE areas SET name = ? WHERE id = ?"
-
-const DELETE_AREA = "DELETE FROM areas WHERE id = ?"
