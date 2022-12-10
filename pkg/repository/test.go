@@ -121,18 +121,18 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 			t.TotalTestRuns = 1
 
 			t.FailedTestRuns = 0
-			//if t.Failures > 0 {
-			//	t.FailedTestRuns = 1
-			//}
+			if t.Failures > 0 {
+				t.FailedTestRuns = 1
+			}
 
 			t.FirstTotal = t.Total
 			tests = append(tests, t)
 		} else {
 			p := tests[len(tests)-1]
 			p.FirstTotal = p.FirstTotal - prevRow.Total + t.Total
-			//if t.Failures > 0 {
-			//	p.FailedTestRuns += 1
-			//}
+			if t.Failures > 0 {
+				p.FailedTestRuns += 1
+			}
 			p.TotalTestRuns += 1
 			tests[len(tests)-1] = p
 		}
