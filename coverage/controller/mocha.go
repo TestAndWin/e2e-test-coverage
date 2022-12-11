@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/reporter"
+	"github.com/TestAndWin/e2e-coverage/coverage/reporter"
 	"github.com/gin-gonic/gin"
 )
 

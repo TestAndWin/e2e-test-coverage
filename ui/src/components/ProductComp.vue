@@ -56,7 +56,7 @@
         <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-area" @click="addArea()"></button>
       </div>
 
-      <div v-if="products.length == 0" class="input-group mb-3">
+      <div v-if="products.length == 0 && !error" class="input-group mb-3">
         <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
         <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()"></button>
       </div>

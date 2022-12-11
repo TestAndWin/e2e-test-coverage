@@ -12,7 +12,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/repository"
+	"github.com/TestAndWin/e2e-coverage/coverage/repository"
 )
 
 var repo = initRepository()

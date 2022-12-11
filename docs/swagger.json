@@ -137,6 +137,57 @@
                 }
             }
         },
+        "/api/v1/auth/refresh": {
+            "post": {
+                "description": "Checks if the token is valid and refreshes the token when expiry is within 60 seconds and returns the new token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Refresh the bearer token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/signin": {
+            "post": {
+                "description": "Signin and returning a JWT token if user name and password are correct",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Signin of a user",
+                "parameters": [
+                    {
+                        "description": "Credentials JSON",
+                        "name": "signin",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Credentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/coverage/areas/{id}/features": {
             "get": {
                 "description": "Get coverage for all area features. Only tests from the last 28 days are considered.",
@@ -762,6 +813,17 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.Credentials": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         },

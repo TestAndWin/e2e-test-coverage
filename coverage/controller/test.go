@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/model"
+	"github.com/TestAndWin/e2e-coverage/coverage/model"
 	"github.com/gin-gonic/gin"
 )
 

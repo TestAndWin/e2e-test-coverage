@@ -13,8 +13,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/model"
-	"github.com/TestAndWin/e2e-coverage/pkg/reporter"
+	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/coverage/reporter"
 )
 
 const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (

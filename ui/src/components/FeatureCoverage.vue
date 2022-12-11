@@ -29,7 +29,7 @@
         </div>
         <div class="col">&nbsp;</div>
       </div>
-      <TestCoverage @show-alert="showAlert" v-if="featureToggle[feature['id']]" :featureId="feature['id']" />
+      <TestCoverage v-if="featureToggle[feature['id']]" :featureId="feature['id']" />
     </div>
   </div>
 </template>

@@ -15,14 +15,20 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
+          <li v-if="signedin && isEditor" class="nav-item">
             <a class="nav-link" href="/product">Product</a>
           </li>
-          <li class="nav-item">
+          <li v-if="signedin && isConsumer" class="nav-item">
             <a class="nav-link" href="/coverage">Coverage</a>
           </li>
-          <li class="nav-item">
+          <li v-if="signedin && isConsumer" class="nav-item">
             <a class="nav-link" href="/tests">Tests</a>
+          </li>
+          <li v-if="!signedin" class="nav-item">
+            <a class="nav-link" href="/signin">Sign In</a>
+          </li>
+          <li v-if="signedin" class="nav-item">
+            <a class="nav-link" href="/signout">Sign Out</a>
           </li>
         </ul>
       </div>
@@ -30,6 +36,35 @@
   </nav>
   <router-view />
 </template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  name: 'App',
+  data() {
+    return {
+      signedin: sessionStorage.getItem('token') != undefined,
+    };
+  },
+  computed: {
+    isEditor() {
+      const s = sessionStorage.getItem('token');
+      if (s) {
+        return ("" + JSON.parse(s)['roles']).indexOf('e') > -1;
+      }
+      return false;
+    },
+    isConsumer() {
+      const s = sessionStorage.getItem('token');
+      if (s) {
+        return ("" + JSON.parse(s)['roles']).indexOf('c') > -1;
+      }
+      return false;
+    }
+  }
+})
+</script>
 
 <style>
 @import "./assets/styles.css";

@@ -3,6 +3,8 @@ import HomeView from '../views/HomeView.vue'
 import ProductView from '../views/ProductView.vue'
 import CoverageView from '../views/CoverageView.vue'
 import TestView from '../views/TestView.vue'
+import SignInView from '../views/SignInView.vue'
+import SignOutView from '../views/SignOutView.vue'
 import NotFound from '../views/NotFound.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -29,6 +31,18 @@ const routes: Array<RouteRecordRaw> = [
     alias: ['/tests.html'],
     name: 'tests',
     component: TestView
+  },
+  {
+    path: '/signin',
+    alias: ['/signin.html'],
+    name: 'signin',
+    component: SignInView
+  },
+  {
+    path: '/signout',
+    alias: ['/signout.html'],
+    name: 'signout',
+    component: SignOutView
   },
   {
     path: '/404',

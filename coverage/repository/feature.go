@@ -13,7 +13,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/model"
+	"github.com/TestAndWin/e2e-coverage/coverage/model"
 )
 
 const createFeatureStmt = `CREATE TABLE IF NOT EXISTS features(

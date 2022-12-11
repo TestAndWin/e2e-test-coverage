@@ -13,7 +13,7 @@ import (
 
 	_ "github.com/TestAndWin/e2e-coverage/docs"
 
-	"github.com/TestAndWin/e2e-coverage/pkg/router"
+	"github.com/TestAndWin/e2e-coverage/router"
 )
 
 // @title e2ecoverage
