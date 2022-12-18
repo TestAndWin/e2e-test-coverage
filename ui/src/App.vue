@@ -49,16 +49,16 @@ export default defineComponent({
   },
   computed: {
     isEditor() {
-      const s = sessionStorage.getItem('token');
+      const s = sessionStorage.getItem('roles');
       if (s) {
-        return ("" + JSON.parse(s)['roles']).indexOf('e') > -1;
+        return s.indexOf('e') > -1;
       }
       return false;
     },
     isConsumer() {
       const s = sessionStorage.getItem('token');
       if (s) {
-        return ("" + JSON.parse(s)['roles']).indexOf('c') > -1;
+        return s.indexOf('c') > -1;
       }
       return false;
     }

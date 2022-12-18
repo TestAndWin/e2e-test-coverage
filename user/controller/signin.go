@@ -74,11 +74,12 @@ func Signin(c *gin.Context) {
 // Retrieve token from request header Authorization
 func getToken(c *gin.Context) (*jwt.Token, error) {
 	token := c.Request.Header["Authorization"]
-	log.Println("Auth user: ", token)
-	if token == nil {
+	log.Printf("Auth user: %s", token)
+	if token == nil || len(token) < 1 || !strings.Contains(token[0], "Bearer ") {
 		return nil, nil
 	}
 	t := strings.Split(token[0], " ")[1]
+	log.Printf("Token: %s", t)
 
 	// Parse the JWT string
 	claims := &model.Claims{}
@@ -97,6 +98,7 @@ func AuthUser(level string) gin.HandlerFunc {
 
 		// Check if token is valid and not expired
 		if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
+			// Has the user the needed role
 			if strings.Contains(claims.Role, level) {
 				log.Printf("Sign in success: %v %v %v", claims.Email, claims.Role, claims.ExpiresAt)
 			} else {
@@ -123,13 +125,14 @@ func AuthUser(level string) gin.HandlerFunc {
 // @Router       /api/v1/auth/refresh [POST]
 func RefreshToken(c *gin.Context) {
 	tkn, err := getToken(c)
+	log.Println("Refresh: ", tkn, err)
 	if tkn == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 		c.Abort()
 		return
 	}
 
-	if err != nil && err == jwt.ErrSignatureInvalid || !tkn.Valid {
+	if err != nil && err == jwt.ErrSignatureInvalid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid signature or token is not valid"})
 		c.Abort()
 		return
@@ -153,6 +156,5 @@ func RefreshToken(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }

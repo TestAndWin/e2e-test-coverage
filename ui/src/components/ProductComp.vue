@@ -14,7 +14,7 @@
           <div class="row">
             <div class="col">
               <h5 class="area-name justify-content-between pointer" @click="showFeatures(area['id'])">
-                {{ area["name"] }}
+                {{ area['name'] }}
                 &nbsp;
                 <a @click="showChangeAreaModal(area['id'], area['name'])"><i class="bi bi-pencil pointer"></i></a>&nbsp;
                 <a @click="removeArea(area['id'])"><i class="bi bi-trash pointer"></i></a>
@@ -27,11 +27,19 @@
                 <div class="row">
                   <div class="col">
                     <h6 class="feature-name justify-content-between">
-                      {{ feature["name"] }}
-                      [{{ feature["business-value"] }}]
-                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer" style="color: #2c3e50;"></i></a>&nbsp;
-                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50;"></i></a>&nbsp;
-                      <a @click="showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])">
+                      {{ feature['name'] }}
+                      [{{ feature['business-value'] }}]
+                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"
+                        ><i class="bi bi-file-text pointer" style="color: #2c3e50"></i></a
+                      >&nbsp;
+                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"
+                        ><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i></a
+                      >&nbsp;
+                      <a
+                        @click="
+                          showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])
+                        "
+                      >
                         <i class="bi bi-pencil pointer"></i>
                       </a>
                       &nbsp;
@@ -43,8 +51,20 @@
             </div>
 
             <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="Feature Name" aria-label="Feature Name" aria-describedby="button-add-area" v-model="newFeature[area['id']]" />
-              <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-feature" @click="addFeature(area['id'])"></button>
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Feature Name"
+                aria-label="Feature Name"
+                aria-describedby="button-add-area"
+                v-model="newFeature[area['id']]"
+              />
+              <button
+                class="btn btn-outline-secondary bi bi-plus-lg pointer"
+                type="button"
+                id="button-add-feature"
+                @click="addFeature(area['id'])"
+              ></button>
             </div>
           </div>
         </div>
@@ -57,7 +77,14 @@
       </div>
 
       <div v-if="products.length == 0 && !error" class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Enter Product Name"
+          aria-label="Enter Product Name"
+          aria-describedby="button-add-product"
+          v-model="newProduct"
+        />
         <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()"></button>
       </div>
     </div>
@@ -108,7 +135,8 @@
                 <option>high</option>
               </select>
               <br /><br />
-              <label>Link to Documentation</label><input type="text" class="form-control" id="featureDocumentation" v-model="featureDocumentation" /><br />
+              <label>Link to Documentation</label
+              ><input type="text" class="form-control" id="featureDocumentation" v-model="featureDocumentation" /><br />
               <label>URL</label><input type="text" class="form-control" id="featureUrl" v-model="featureUrl" /><br />
             </div>
           </form>
@@ -123,13 +151,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import { Modal } from "bootstrap";
-import { fetchData } from "./ApiHelper";
+import { defineComponent } from 'vue';
+import { Modal } from 'bootstrap';
+import http from '@/common-http'
 
 export default defineComponent({
-  name: "ProductComp",
-  el: "#app",
+  name: 'ProductComp',
+  el: '#app',
   props: {
     productId: {
       type: Number,
@@ -142,110 +170,97 @@ export default defineComponent({
       areas: [],
       products: [],
       areaToggle: [false],
-      newArea: "",
-      newProduct: "",
-      newFeature: [""],
+      newArea: '',
+      newProduct: '',
+      newFeature: [''],
       features: [[]],
-      newName: "",
-      featureBusinessValue: "",
-      featureDocumentation: "",
-      featureUrl: "",
+      newName: '',
+      featureBusinessValue: '',
+      featureDocumentation: '',
+      featureUrl: '',
       areaIdToChange: 0,
       featureIdToChange: 0,
-      error: "",
+      error: '',
     };
   },
   methods: {
     async getProducts() {
       this.loading = true;
-      await fetchData(`/api/v1/products`)
-        .then((data) => {
-          this.products = data;
+      await http
+        .get(`/api/v1/products`)
+        .then((response) => {
+          this.products = response.data;
         })
         .catch((err) => {
-          this.error = err;
+          this.error = err + ' | ' + err.response.data.error;
         });
       this.loading = false;
     },
     async getAreas() {
       this.loading = true;
-      await fetchData(`/api/v1/products/${this.productId}/areas`)
-        .then((data) => {
-          this.areas = data;
+      await http
+        .get(`/api/v1/products/${this.productId}/areas`)
+        .then((response) => {
+          this.areas = response.data;
+          this.areas.forEach((a) => {
+            this.getFeatures(a['id']);
+          });
+          this.areaToggle = new Array(this.areas.length).fill(false);
         })
         .catch((err) => {
-          this.error = err;
+          this.error = err + ' | ' + err.response.data.error;
         });
-      this.areas.forEach((a) => {
-        this.getFeatures(a["id"]);
-      });
-      this.areaToggle = new Array(this.areas.length).fill(false);
       this.loading = false;
     },
     async getFeatures(areaId: number) {
-      await fetchData(`/api/v1/areas/${areaId}/features`)
-        .then((data) => {
-          this.features[areaId] = data;
+      await http
+        .get(`/api/v1/areas/${areaId}/features`)
+        .then((response) => {
+          this.features[areaId] = response.data;
         })
         .catch((err) => {
-          this.error = err;
+          this.error = err + ' | ' + err.response.data.error;
         });
     },
     async addProduct() {
-      await fetchData(`/api/v1/products`, {
-        method: "POST",
-        mode: "cors",
-        body: JSON.stringify({ name: this.newProduct }),
-      }).catch((err) => {
-        this.error = err;
+      await http.post(`/api/v1/products`, { name: this.newProduct }).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
       });
-      this.newProduct = "";
+      this.newProduct = '';
       this.getProducts();
     },
     async addArea() {
-      await fetchData(`/api/v1/areas`, {
-        method: "POST",
-        mode: "cors",
-        body: JSON.stringify({ "product-id": this.productId, name: this.newArea }),
-      }).catch((err) => {
-        this.error = err;
+      await http.post(`/api/v1/areas`, { 'product-id': this.productId, name: this.newArea }).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
       });
-      this.newArea = "";
+      this.newArea = '';
       this.getAreas();
     },
     async addFeature(areaId: number) {
-      await fetchData(`/api/v1/features`, {
-        method: "POST",
-        mode: "cors",
-        body: JSON.stringify({ "area-id": areaId, name: this.newFeature[areaId], documentation: "", url: "", "business-value": "" }),
-      }).catch((err) => {
-        this.error = err;
-      });
-      this.newFeature[areaId] = "";
+      await http
+        .post(`/api/v1/features`, { 'area-id': areaId, name: this.newFeature[areaId], documentation: '', url: '', 'business-value': '' })
+        .catch((err) => {
+          this.error = err + ' | ' + err.response.data.error;
+        });
+      this.newFeature[areaId] = '';
       this.getFeatures(areaId);
     },
     async removeArea(areaId: number) {
-      await fetchData(`/api/v1/areas/${areaId}`, {
-        method: "DELETE",
-        mode: "cors",
-      }).catch((err) => {
-        this.error = err;
+      await http.delete(`/api/v1/areas/${areaId}`).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
       });
       this.getAreas();
     },
     async removeFeature(areaId: number, featureId: number) {
-      await fetchData(`/api/v1/features/${featureId}`, {
-        method: "DELETE",
-        mode: "cors",
-      }).catch((err) => {
-        this.error = err;
+      await http.delete(`/api/v1/features/${featureId}`).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
       });
       this.getFeatures(areaId);
     },
     async showChangeAreaModal(areaId: number, name: string) {
       this.newName = name;
       this.areaIdToChange = areaId;
-      new Modal("#changeAreaName").show();
+      new Modal('#changeAreaName').show();
     },
     async showUpdateFeatureModal(featureId: number, name: string, documentation: string, url: string, businessValue: string) {
       this.newName = name;
@@ -253,37 +268,37 @@ export default defineComponent({
       this.featureBusinessValue = businessValue;
       this.featureDocumentation = documentation;
       this.featureUrl = url;
-      new Modal("#updateFeature").show();
+      new Modal('#updateFeature').show();
     },
     async changeAreaName() {
-      await fetchData(`/api/v1/areas/${this.areaIdToChange}`, {
-        method: "PUT",
-        mode: "cors",
-        body: JSON.stringify({ name: this.newName }),
-      }).catch((err) => {
-        this.error = err;
+      await http.put(`/api/v1/areas/${this.areaIdToChange}`, { name: this.newName }).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
       });
-      this.newName = "";
+      this.newName = '';
       this.areaIdToChange = 0;
       this.getAreas();
     },
     async updateFeature() {
-      await fetchData(`/api/v1/features/${this.featureIdToChange}`, {
-        method: "PUT",
-        mode: "cors",
-        body: JSON.stringify({ name: this.newName, documentation: this.featureDocumentation, url: this.featureUrl, "business-value": this.featureBusinessValue }),
-      }).catch((err) => {
-        this.error = err;
-      });
-      this.newName = "";
-      this.featureBusinessValue = "";
-      this.featureDocumentation = "";
-      this.featureUrl = "";
+      await http
+        .put(`/api/v1/features/${this.featureIdToChange}`, {
+          name: this.newName,
+          documentation: this.featureDocumentation,
+          url: this.featureUrl,
+          'business-value': this.featureBusinessValue,
+        })
+        .catch((err) => {
+          this.error = err + ' | ' + err.response.data.error;
+        });
+
+      this.newName = '';
+      this.featureBusinessValue = '';
+      this.featureDocumentation = '';
+      this.featureUrl = '';
       this.featureIdToChange = 0;
       this.getAreas();
     },
     async closeAlert() {
-      this.error = "";
+      this.error = '';
     },
     async showFeatures(areaId: number) {
       this.areaToggle[areaId] = !this.areaToggle[areaId];
@@ -298,5 +313,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-@import "../assets/styles.css";
+@import '../assets/styles.css';
 </style>

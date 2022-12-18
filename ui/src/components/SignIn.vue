@@ -20,9 +20,7 @@
       </div>
       <br />
       <div class="form-group">
-        <button class="btn btn-primary pointer" @click="signin()">
-          Sign In
-        </button>
+        <button class="btn btn-primary pointer" @click="signin()">Sign In</button>
       </div>
     </div>
   </div>
@@ -30,7 +28,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { fetchData } from './ApiHelper';
+import http from '@/common-http'
 
 export default defineComponent({
   name: 'SignIn',
@@ -47,13 +45,12 @@ export default defineComponent({
       this.loading = true;
       this.error = '';
 
-      await fetchData(`/api/v1/auth/signin`, {
-        method: 'POST',
-        mode: 'cors',
-        body: JSON.stringify({ email: this.email, password: this.password }),
-      })
-        .then((data) => {
-          sessionStorage.setItem('token', JSON.stringify(data));
+      http
+        .post('/api/v1/auth/signin', { email: this.email, password: this.password })
+        .then((response) => {
+          this.loading = false;
+          sessionStorage.setItem('token', response.data.token);
+          sessionStorage.setItem('roles', response.data.roles);
           location.assign('/');
         })
         .catch(() => {

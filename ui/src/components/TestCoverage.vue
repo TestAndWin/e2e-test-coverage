@@ -145,8 +145,8 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { fetchData } from './ApiHelper';
 import { Modal } from 'bootstrap';
+import http from '@/common-http'
 
 import { Line } from 'vue-chartjs';
 import {
@@ -244,9 +244,10 @@ export default defineComponent({
   methods: {
     async getTestsForProduct() {
       this.loading = true;
-      await fetchData(`/api/v1/coverage/products/${this.productId}/tests`)
-        .then((data) => {
-          this.tests = data;
+      await http
+        .get(`/api/v1/coverage/products/${this.productId}/tests`)
+        .then((response) => {
+          this.tests = response.data;
         })
         .catch((err) => {
           this.error = err;
@@ -255,31 +256,32 @@ export default defineComponent({
     },
     async getTestsForFeature() {
       this.loading = true;
-      await fetchData(`/api/v1/coverage/features/${this.featureId}/tests`)
-        .then((data) => {
-          this.tests = data;
+      await http.get(`/api/v1/coverage/features/${this.featureId}/tests`).then((response) => {
+          this.tests = response.data;
         })
         .catch((err) => {
           this.error = err;
         });
+
       this.loading = false;
     },
     async showTestRuns(suite: string, file: string) {
       this.loading = true;
       this.suite = suite;
       this.file = file;
-      await fetchData(`/api/v1/tests?suite=${suite}&file-name=${file}`)
-        .then((data) => {
-          this.testRuns = data;
+
+      await http.get(`/api/v1/tests?suite=${suite}&file-name=${file}`).then((response) => {
+          this.testRuns = response.data;
           this.chartData.labels = [];
-          for (let i = 0; i < data.length; i++) {
-            const r = data.length - 1 - i;
-            this.chartData.labels[i] = data[r]['test-run'];
-            this.chartData.datasets[0].data[i] = data[r]['total'];
-            this.chartData.datasets[1].data[i] = data[r]['passes'];
-            this.chartData.datasets[2].data[i] = data[r]['failures'];
-            this.chartData.datasets[3].data[i] = data[r]['pending'];
-            this.chartData.datasets[4].data[i] = data[r]['skipped'];
+          for (let i = 0; i < this.testRuns.length; i++) {
+            // different order
+            const r = this.testRuns.length - 1 - i;
+            this.chartData.labels[i] = this.testRuns[r]['test-run'];
+            this.chartData.datasets[0].data[i] = this.testRuns[r]['total'];
+            this.chartData.datasets[1].data[i] = this.testRuns[r]['passes'];
+            this.chartData.datasets[2].data[i] = this.testRuns[r]['failures'];
+            this.chartData.datasets[3].data[i] = this.testRuns[r]['pending'];
+            this.chartData.datasets[4].data[i] = this.testRuns[r]['skipped'];
           }
         })
         .catch((err) => {
