@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -67,7 +67,7 @@ func GetProducts(c *gin.Context) {
 // @Param        product  body      model.Product  true  "Product JSON"
 // @Produce      json
 // @Success      200  {object}  model.Product
-// @Router       /api/v1/products [PUT]
+// @Router       /api/v1/products/{id} [PUT]
 func UpdateProduct(c *gin.Context) {
 	var p model.Product
 	if err := c.BindJSON(&p); err != nil {

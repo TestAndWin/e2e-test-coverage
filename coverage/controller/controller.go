@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -18,7 +18,7 @@ import (
 var repo = initRepository()
 
 // Set-up the db connection and create the db tables if needed
-func initRepository() repository.Repository {
+func initRepository() *repository.CoverageStore {
 	repository, err := repository.OpenDbConnection()
 	if err != nil {
 		log.Fatal("Error connecting to DB")

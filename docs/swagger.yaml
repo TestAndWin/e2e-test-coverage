@@ -76,6 +76,13 @@ definitions:
       url:
         type: string
     type: object
+  model.NewPassword:
+    properties:
+      new-password:
+        type: string
+      password:
+        type: string
+    type: object
   model.Product:
     properties:
       id:
@@ -119,6 +126,19 @@ definitions:
         type: string
       uuid:
         type: string
+    type: object
+  model.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
     type: object
 host: localhost:8080
 info:
@@ -211,8 +231,14 @@ paths:
       - feature
   /api/v1/auth/refresh:
     post:
-      description: Checks if the token is valid and refreshes the token when expiry
-        is within 60 seconds and returns the new token
+      description: Checks if the token is valid and returns the "fresh" the token
+      parameters:
+      - description: JSON
+        in: body
+        name: token
+        required: true
+        schema:
+          type: string
       produces:
       - application/json
       responses:
@@ -225,8 +251,8 @@ paths:
       - user
   /api/v1/auth/signin:
     post:
-      description: Signin and returning a JWT token if user name and password are
-        correct
+      description: Sign in and returning a JWT token and a refresh token if user name
+        and password are correct
       parameters:
       - description: Credentials JSON
         in: body
@@ -241,7 +267,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Signin of a user
+      summary: Sign in of a user
       tags:
       - user
   /api/v1/coverage/{id}/areas:
@@ -444,6 +470,23 @@ paths:
       summary: Add a new product
       tags:
       - product
+  /api/v1/products/{id}:
+    delete:
+      description: Deletes the product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deletes the product
+      tags:
+      - product
     put:
       description: Takes a product JSON and product ID and updates it in DB. Return
         saved JSON.
@@ -467,23 +510,6 @@ paths:
           schema:
             $ref: '#/definitions/model.Product'
       summary: Updates a product
-      tags:
-      - product
-  /api/v1/products/{id}:
-    delete:
-      description: Deletes the product
-      parameters:
-      - description: Product ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Deletes the product
       tags:
       - product
   /api/v1/products/{id}/areas:
@@ -569,6 +595,73 @@ paths:
       summary: Deletes the test
       tags:
       - test
+  /api/v1/users:
+    post:
+      description: Takes a user JSON and stores it in DB. Return saved JSON.
+      parameters:
+      - description: User JSON
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+      summary: Add a new user
+      tags:
+      - user
+  /api/v1/users/{id}:
+    put:
+      description: Takes a user JSON and updates the user.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User JSON
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Changes the role of a user
+      tags:
+      - user
+  /api/v1/users/change-pwd/{id}:
+    put:
+      description: Takes the NewPassword JSON and updates the password. Only possible
+        for the current user to change his own password.
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: NewPassword JSON
+        in: body
+        name: newPassword
+        required: true
+        schema:
+          $ref: '#/definitions/model.NewPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Password Change
+      tags:
+      - user
   /coverage/:id/upload-mocha-summary-report:
     post:
       description: Adds test result of a mocha summary report.

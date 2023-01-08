@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -33,7 +33,7 @@ const updateFeatureStmt = "UPDATE features SET name = ?, documentation = ?, url 
 
 const deleteFeatureStmt = "DELETE FROM features WHERE id = ?"
 
-func (r Repository) CreateFeaturesTable() error {
+func (r CoverageStore) CreateFeaturesTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 
@@ -45,20 +45,20 @@ func (r Repository) CreateFeaturesTable() error {
 	return nil
 }
 
-func (r Repository) InsertFeature(f model.Feature) (int64, error) {
+func (r CoverageStore) InsertFeature(f model.Feature) (int64, error) {
 	return r.executeSql(insertFeatureStmt, f.AreaId, f.Name, f.Documentation, f.Url, f.BusinessValue)
 }
 
-func (r Repository) UpdateFeature(f model.Feature) (int64, error) {
+func (r CoverageStore) UpdateFeature(f model.Feature) (int64, error) {
 	return r.executeSql(updateFeatureStmt, f.Name, f.Documentation, f.Url, f.BusinessValue, f.Id)
 }
 
-func (r Repository) DeleteFeature(id string) (int64, error) {
+func (r CoverageStore) DeleteFeature(id string) (int64, error) {
 	return r.executeSql(deleteFeatureStmt, id)
 }
 
 // Get all features for the specified area id
-func (r Repository) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
+func (r CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ?;")

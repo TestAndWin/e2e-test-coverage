@@ -143,7 +143,7 @@ const docTemplate = `{
         },
         "/api/v1/auth/refresh": {
             "post": {
-                "description": "Checks if the token is valid and refreshes the token when expiry is within 60 seconds and returns the new token",
+                "description": "Checks if the token is valid and returns the \"fresh\" the token",
                 "produces": [
                     "application/json"
                 ],
@@ -151,6 +151,17 @@ const docTemplate = `{
                     "user"
                 ],
                 "summary": "Refresh the bearer token",
+                "parameters": [
+                    {
+                        "description": "JSON",
+                        "name": "token",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -163,14 +174,14 @@ const docTemplate = `{
         },
         "/api/v1/auth/signin": {
             "post": {
-                "description": "Signin and returning a JWT token if user name and password are correct",
+                "description": "Sign in and returning a JWT token and a refresh token if user name and password are correct",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "user"
                 ],
-                "summary": "Signin of a user",
+                "summary": "Sign in of a user",
                 "parameters": [
                     {
                         "description": "Credentials JSON",
@@ -460,6 +471,37 @@ const docTemplate = `{
                     }
                 }
             },
+            "post": {
+                "description": "Takes a product JSON and stores it in DB. Return saved JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "product"
+                ],
+                "summary": "Add a new product",
+                "parameters": [
+                    {
+                        "description": "Product JSON",
+                        "name": "product",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/products/{id}": {
             "put": {
                 "description": "Takes a product JSON and product ID and updates it in DB. Return saved JSON.",
                 "produces": [
@@ -496,37 +538,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
-                "description": "Takes a product JSON and stores it in DB. Return saved JSON.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "product"
-                ],
-                "summary": "Add a new product",
-                "parameters": [
-                    {
-                        "description": "Product JSON",
-                        "name": "product",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Product"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Product"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/products/{id}": {
             "delete": {
                 "description": "Deletes the product",
                 "produces": [
@@ -674,6 +685,107 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/api/v1/users": {
+            "post": {
+                "description": "Takes a user JSON and stores it in DB. Return saved JSON.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Add a new user",
+                "parameters": [
+                    {
+                        "description": "User JSON",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/change-pwd/{id}": {
+            "put": {
+                "description": "Takes the NewPassword JSON and updates the password. Only possible for the current user to change his own password.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Password Change",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "NewPassword JSON",
+                        "name": "newPassword",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.NewPassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{id}": {
+            "put": {
+                "description": "Takes a user JSON and updates the user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Changes the role of a user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User JSON",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     }
                 }
             }
@@ -898,6 +1010,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.NewPassword": {
+            "type": "object",
+            "properties": {
+                "new-password": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Product": {
             "type": "object",
             "properties": {
@@ -962,6 +1085,26 @@ const docTemplate = `{
                 },
                 "uuid": {
                     "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         }

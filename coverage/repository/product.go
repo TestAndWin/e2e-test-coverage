@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -28,7 +28,7 @@ const updateProductStmt = "UPDATE products SET name = ? WHERE id = ?"
 
 const deleteProductStmt = "DELETE FROM products WHERE id = ?"
 
-func (r Repository) CreateProductsTable() error {
+func (r CoverageStore) CreateProductsTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 
@@ -40,20 +40,20 @@ func (r Repository) CreateProductsTable() error {
 	return nil
 }
 
-func (r Repository) InsertProduct(p model.Product) (int64, error) {
+func (r CoverageStore) InsertProduct(p model.Product) (int64, error) {
 	return r.executeSql(insertProductStmt, p.Name)
 }
 
-func (r Repository) UpdateProduct(p model.Product) (int64, error) {
+func (r CoverageStore) UpdateProduct(p model.Product) (int64, error) {
 	return r.executeSql(updateProductStmt, p.Name, p.Id)
 }
 
-func (r Repository) DeleteProduct(id string) (int64, error) {
+func (r CoverageStore) DeleteProduct(id string) (int64, error) {
 	return r.executeSql(deleteProductStmt, id)
 }
 
 // Returns all products
-func (r Repository) GetAllProducts() ([]model.Product, error) {
+func (r CoverageStore) GetAllProducts() ([]model.Product, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT id, name FROM products;")

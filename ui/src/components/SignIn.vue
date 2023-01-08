@@ -28,14 +28,14 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import http from '@/common-http'
+import http from '@/common-http';
 
 export default defineComponent({
   name: 'SignIn',
   data() {
     return {
-      email: 'michael',
-      password: 'passQQQQ',
+      email: 'admin',
+      password: 'e2ecoverage',
       loading: false,
       error: '',
     };
@@ -50,6 +50,7 @@ export default defineComponent({
         .then((response) => {
           this.loading = false;
           sessionStorage.setItem('token', response.data.token);
+          sessionStorage.setItem('refreshToken', response.data.refreshToken);
           sessionStorage.setItem('roles', response.data.roles);
           location.assign('/');
         })

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -30,7 +30,7 @@ const updateAreaStmt = "UPDATE areas SET name = ? WHERE id = ?"
 
 const deleteAreaStmt = "DELETE FROM areas WHERE id = ?"
 
-func (r Repository) CreateAreasTable() error {
+func (r CoverageStore) CreateAreasTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 
@@ -42,20 +42,20 @@ func (r Repository) CreateAreasTable() error {
 	return nil
 }
 
-func (r Repository) InsertArea(a model.Area) (int64, error) {
+func (r CoverageStore) InsertArea(a model.Area) (int64, error) {
 	return r.executeSql(insertAreaStmt, a.ProductId, a.Name)
 }
 
-func (r Repository) UpdateArea(a model.Area) (int64, error) {
+func (r CoverageStore) UpdateArea(a model.Area) (int64, error) {
 	return r.executeSql(updateAreaStmt, a.Name, a.Id)
 }
 
-func (r Repository) DeleteArea(id string) (int64, error) {
+func (r CoverageStore) DeleteArea(id string) (int64, error) {
 	return r.executeSql(deleteAreaStmt, id)
 }
 
 // Get all areas for the specified product id
-func (r Repository) GetAllProductAreas(pid string) ([]model.Area, error) {
+func (r CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, name FROM areas WHERE product_id = ?;")
@@ -86,7 +86,7 @@ func (r Repository) GetAllProductAreas(pid string) ([]model.Area, error) {
 }
 
 // Returns the area and feature id for the given area and feature name and the product id.
-func (r Repository) GetAreaAndFeatureId(area string, feature string, productId string) (int64, int64, error) {
+func (r CoverageStore) GetAreaAndFeatureId(area string, feature string, productId string) (int64, int64, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT a.id, f.id FROM areas a JOIN features f ON a.id = f.area_id JOIN products p ON p.id = a.product_id WHERE a.name = ? and f.name = ? and p.id=?;")

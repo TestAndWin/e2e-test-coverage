@@ -15,14 +15,17 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li v-if="signedin && isEditor" class="nav-item">
+          <li v-if="signedin && isMaintainer" class="nav-item">
             <a class="nav-link" href="/product">Product</a>
           </li>
-          <li v-if="signedin && isConsumer" class="nav-item">
+          <li v-if="signedin && isTester" class="nav-item">
             <a class="nav-link" href="/coverage">Coverage</a>
           </li>
-          <li v-if="signedin && isConsumer" class="nav-item">
+          <li v-if="signedin && isTester" class="nav-item">
             <a class="nav-link" href="/tests">Tests</a>
+          </li>
+          <li v-if="signedin && isAdmin" class="nav-item">
+            <a class="nav-link" href="/admin">Admin</a>
           </li>
           <li v-if="!signedin" class="nav-item">
             <a class="nav-link" href="/signin">Sign In</a>
@@ -48,17 +51,24 @@ export default defineComponent({
     };
   },
   computed: {
-    isEditor() {
+    isMaintainer() {
       const s = sessionStorage.getItem('roles');
       if (s) {
-        return s.indexOf('e') > -1;
+        return s.indexOf('Maintainer') > -1;
       }
       return false;
     },
-    isConsumer() {
-      const s = sessionStorage.getItem('token');
+    isTester() {
+      const s = sessionStorage.getItem('roles');
       if (s) {
-        return s.indexOf('c') > -1;
+        return s.indexOf('Tester') > -1;
+      }
+      return false;
+    },
+    isAdmin() {
+      const s = sessionStorage.getItem('roles');
+      if (s) {
+        return s.indexOf('Admin') > -1;
       }
       return false;
     }

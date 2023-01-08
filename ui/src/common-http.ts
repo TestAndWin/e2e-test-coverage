@@ -16,15 +16,16 @@ http.interceptors.response.use(function (response) {
   if (error.response.status === 401 && !originalRequest?.doRefresh) {
     // Try only one time to refresh the token
     originalRequest.doRefresh = true;
-    await http.post('/api/v1/auth/refresh', { refreshToken: sessionStorage.getItem('refreshToken') }).then(response => {
+    await http.post('/api/v1/auth/refresh', { token: sessionStorage.getItem('refreshToken') }).then(response => {
       if (response.status === 200) {
         sessionStorage.setItem('token', response.data.token);
         originalRequest.headers['Authorization'] = `Bearer ${response.data.token}`;
-
+      }
+      else {
+        location.assign('/signin');
       }
     })
     return axios(originalRequest);
-        // TODO wenn das nicht klappt, umleiten zu Login
   }
   return Promise.reject(error);
 });

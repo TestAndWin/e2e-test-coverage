@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -71,38 +71,44 @@ func HandleRequest() {
 	// API
 	v1 := router.Group("/api/v1")
 	{
-		v1.POST("/products", usercontroller.AuthUser(model.EDITOR), controller.AddProduct)
-		v1.GET("/products", usercontroller.AuthUser(model.EDITOR), controller.GetProducts)
-		v1.PUT("/products/:id", usercontroller.AuthUser(model.EDITOR), controller.UpdateProduct)
-		v1.DELETE("/products/:id", usercontroller.AuthUser(model.EDITOR), controller.DeleteProduct)
+		// Product ... config
+		v1.POST("/products", usercontroller.AuthUser(model.MAINTAINER), controller.AddProduct)
+		v1.GET("/products", usercontroller.AuthUser(model.MAINTAINER), controller.GetProducts)
+		v1.PUT("/products/:id", usercontroller.AuthUser(model.MAINTAINER), controller.UpdateProduct)
+		v1.DELETE("/products/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteProduct)
 
-		v1.POST("/areas", usercontroller.AuthUser(model.EDITOR), controller.AddArea)
-		v1.GET("/products/:id/areas", usercontroller.AuthUser(model.EDITOR), controller.GetProductAreas)
-		v1.PUT("/areas/:id", usercontroller.AuthUser(model.EDITOR), controller.UpdateArea)
-		v1.DELETE("/areas/:id", usercontroller.AuthUser(model.EDITOR), controller.DeleteArea)
+		v1.POST("/areas", usercontroller.AuthUser(model.MAINTAINER), controller.AddArea)
+		v1.GET("/products/:id/areas", usercontroller.AuthUser(model.MAINTAINER), controller.GetProductAreas)
+		v1.PUT("/areas/:id", usercontroller.AuthUser(model.MAINTAINER), controller.UpdateArea)
+		v1.DELETE("/areas/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteArea)
 
-		v1.POST("/features", usercontroller.AuthUser(model.EDITOR), controller.AddFeature)
-		v1.GET("/areas/:id/features", usercontroller.AuthUser(model.EDITOR), controller.GetAreaFeatures)
-		v1.PUT("/features/:id", usercontroller.AuthUser(model.EDITOR), controller.UpdateFeature)
-		v1.DELETE("/features/:id", usercontroller.AuthUser(model.EDITOR), controller.DeleteFeature)
+		v1.POST("/features", usercontroller.AuthUser(model.MAINTAINER), controller.AddFeature)
+		v1.GET("/areas/:id/features", usercontroller.AuthUser(model.MAINTAINER), controller.GetAreaFeatures)
+		v1.PUT("/features/:id", usercontroller.AuthUser(model.MAINTAINER), controller.UpdateFeature)
+		v1.DELETE("/features/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteFeature)
 
-		v1.POST("/tests", usercontroller.AuthUser(model.EDITOR), controller.AddTest)
-		v1.GET("/tests", usercontroller.AuthUser(model.EDITOR), controller.GetAllTestForSuiteFile)
-		v1.DELETE("/tests/:id", usercontroller.AuthUser(model.EDITOR), controller.DeleteTest)
+		v1.POST("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.AddTest)
+		v1.GET("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.GetAllTestForSuiteFile)
+		v1.DELETE("/tests/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteTest)
 
-		v1.POST("/expl-tests", usercontroller.AuthUser(model.CONSUMER), controller.AddExplTest)
-		v1.GET("/expl-tests/area/:areaid", usercontroller.AuthUser(model.CONSUMER), controller.GetExplTestsForArea)
-		v1.DELETE("/expl-tests/:id", usercontroller.AuthUser(model.EDITOR), controller.DeleteExplTest)
+		// Expl Testing
+		v1.POST("/expl-tests", usercontroller.AuthUser(model.TESTER), controller.AddExplTest)
+		v1.GET("/expl-tests/area/:areaid", usercontroller.AuthUser(model.TESTER), controller.GetExplTestsForArea)
+		v1.DELETE("/expl-tests/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteExplTest)
 
+		// Test Coverage
 		v1.POST("/coverage/:id/upload-mocha-summary-report", AuthApi(), controller.UploadMochaSummaryReport)
-		v1.GET("/coverage/:id/areas", usercontroller.AuthUser(model.CONSUMER), controller.GetAreaCoverage)
-		v1.GET("/coverage/areas/:id/features", usercontroller.AuthUser(model.CONSUMER), controller.GetFeatureCoverage)
-		v1.GET("/coverage/features/:id/tests", usercontroller.AuthUser(model.CONSUMER), controller.GetTestsCoverage)
-		v1.GET("/coverage/products/:id/tests", usercontroller.AuthUser(model.CONSUMER), controller.GetProductTestsCoverage)
+		v1.GET("/coverage/:id/areas", usercontroller.AuthUser(model.TESTER), controller.GetAreaCoverage)
+		v1.GET("/coverage/areas/:id/features", usercontroller.AuthUser(model.TESTER), controller.GetFeatureCoverage)
+		v1.GET("/coverage/features/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetTestsCoverage)
+		v1.GET("/coverage/products/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetProductTestsCoverage)
 
 		// User related endpoints
 		v1.POST("/auth/signin", usercontroller.Signin)
 		v1.POST("/auth/refresh", usercontroller.RefreshToken)
+		v1.POST("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.CreateUser)
+		v1.PUT("/users/:id", usercontroller.AuthUser(model.ADMIN), usercontroller.UpdateUser)
+		v1.PUT("/users/change-pwd/:id", usercontroller.AuthUser(""), usercontroller.ChangePassword)
 	}
 
 	port, found := os.LookupEnv("PORT")

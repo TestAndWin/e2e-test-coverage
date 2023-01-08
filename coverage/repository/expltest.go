@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -30,7 +30,7 @@ const insertExplTestStmt = "INSERT INTO expl_tests (area_id, summary, rating, te
 
 const deleteExplTestStmt = "DELETE FROM expl_tests WHERE id = ?"
 
-func (r Repository) CreateExplTestsTable() error {
+func (r CoverageStore) CreateExplTestsTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 
@@ -42,16 +42,16 @@ func (r Repository) CreateExplTestsTable() error {
 	return nil
 }
 
-func (r Repository) InsertExplTest(et model.ExplTest) (int64, error) {
+func (r CoverageStore) InsertExplTest(et model.ExplTest) (int64, error) {
 	return r.executeSql(insertExplTestStmt, et.AreaId, et.Summary, et.Rating, et.TestRun)
 }
 
-func (r Repository) DeleteExplTest(id string) (int64, error) {
+func (r CoverageStore) DeleteExplTest(id string) (int64, error) {
 	return r.executeSql(deleteExplTestStmt, id)
 }
 
 // Get all exploratory tests for the specified area
-func (r Repository) GetExplTests(aid string) ([]model.ExplTest, error) {
+func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, summary, rating, testrun FROM expl_tests WHERE area_id = ? AND testrun > ?;")
@@ -82,7 +82,7 @@ func (r Repository) GetExplTests(aid string) ([]model.ExplTest, error) {
 }
 
 // Returns the number of expl. tests and the average rating for the specified area id
-func (r Repository) GetExplTestOverviewForArea(aid int64) (model.Area, error) {
+func (r CoverageStore) GetExplTestOverviewForArea(aid int64) (model.Area, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT count(*), COALESCE(AVG(rating),0) FROM expl_tests WHERE area_id = ? AND testrun > ?;")

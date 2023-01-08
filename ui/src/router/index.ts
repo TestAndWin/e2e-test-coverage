@@ -6,6 +6,7 @@ import TestView from '../views/TestView.vue'
 import SignInView from '../views/SignInView.vue'
 import SignOutView from '../views/SignOutView.vue'
 import NotFound from '../views/NotFound.vue'
+import AdminView from '../views/AdminView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -43,6 +44,12 @@ const routes: Array<RouteRecordRaw> = [
     alias: ['/signout.html'],
     name: 'signout',
     component: SignOutView
+  },
+  {
+    path: '/admin',
+    alias: ['/admin.html'],
+    name: 'admin',
+    component: AdminView
   },
   {
     path: '/404',

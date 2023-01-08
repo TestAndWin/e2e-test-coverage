@@ -19,14 +19,14 @@ Besides displaying the test coverage, **e2e test coverage** also allows collecti
 # Installation
 * Clone the project and build the application. See [Build project](#Build-project) section below.
 
-* **e2e test coverage** needs a MySQL database. The DB connection is configured in the ```db.env``` file. This file is stored in the same directory as the binary.
+* **e2e test coverage** needs a MySQL database. The DB connection is configured in the ``config.env``` file. This file is stored in the same directory as the binary.
 
   Example:
   ```
   DB_USER = "root"
   DB_PASSWORD = "root"
   DB_HOST = "127.0.0.1:3306"
-  DB_NAME   = "e2ecoverage"
+  JWT_KEY   = "please enter a long and unique key here"
   ```
 * Run ```e2e-coverage```
 

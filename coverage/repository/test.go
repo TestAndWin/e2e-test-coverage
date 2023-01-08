@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -43,7 +43,7 @@ const insertTestNoAreaFeatureStmt = "INSERT INTO tests (product_id, suite, file,
 
 const deleteTestStmt = "DELETE FROM tests WHERE id = ?"
 
-func (r Repository) CreateTestsTable() error {
+func (r CoverageStore) CreateTestsTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 
@@ -55,24 +55,24 @@ func (r Repository) CreateTestsTable() error {
 	return nil
 }
 
-func (r Repository) InsertTest(t model.Test) (int64, error) {
+func (r CoverageStore) InsertTest(t model.Test) (int64, error) {
 	return r.executeSql(insertTestStmt, t.ProductId, t.AreaId, t.FeatureId, t.Suite, t.FileName, t.Url, t.Total, t.Passes, t.Pending, t.Failures, t.Skipped, t.Uuid, t.TestRun)
 }
 
-func (r Repository) InsertTestResult(productId string, areadId int64, featureId int64, tr reporter.TestResult) (int64, error) {
+func (r CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, tr reporter.TestResult) (int64, error) {
 	return r.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
 }
 
-func (r Repository) InsertTestResultWithoutAreaFeature(productId string, tr reporter.TestResult) (int64, error) {
+func (r CoverageStore) InsertTestResultWithoutAreaFeature(productId string, tr reporter.TestResult) (int64, error) {
 	return r.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
 }
 
-func (r Repository) DeleteTest(id string) (int64, error) {
+func (r CoverageStore) DeleteTest(id string) (int64, error) {
 	return r.executeSql(deleteTestStmt, id)
 }
 
 // Checks if the test had already been uploaded.
-func (r Repository) HasTestBeenUploaded(uuid string) (bool, error) {
+func (r CoverageStore) HasTestBeenUploaded(uuid string) (bool, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT count(*) FROM tests WHERE uuid = ?;")
@@ -85,16 +85,16 @@ func (r Repository) HasTestBeenUploaded(uuid string) (bool, error) {
 }
 
 // Get all tests for the specified feature id
-func (r Repository) GetAllFeatureTests(fid string) ([]model.Test, error) {
+func (r CoverageStore) GetAllFeatureTests(fid string) ([]model.Test, error) {
 	return getTests(r, fid, "SELECT id, product_id, area_id, feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
 }
 
 // Get all tests for the specified product id
-func (r Repository) GetAllProductTests(pid string) ([]model.Test, error) {
+func (r CoverageStore) GetAllProductTests(pid string) ([]model.Test, error) {
 	return getTests(r, pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
 }
 
-func getTests(r Repository, id string, query string) ([]model.Test, error) {
+func getTests(r CoverageStore, id string, query string) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, query)
@@ -145,7 +145,7 @@ func getTests(r Repository, id string, query string) ([]model.Test, error) {
 }
 
 // Get the test coverage information for all areas of the specified procduct
-func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
+func (r CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
 	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.feature_id, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
@@ -203,7 +203,7 @@ func (r Repository) GetAreaCoverageForProduct(productId string) (map[int64]model
 }
 
 // Get the test coverage information for all features of the specified area
-func (r Repository) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
+func (r CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
 	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.testrun FROM tests t WHERE t.area_id = ? and t.testrun > ? ORDER BY t.feature_id, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
@@ -258,7 +258,7 @@ func (r Repository) GetFeatureCoverageForArea(areaId string) (map[int64]model.Te
 }
 
 // Get all tests for the specified suite and file
-func (r Repository) GetAllTestForSuiteFile(suite string, file string) ([]model.Test, error) {
+func (r CoverageStore) GetAllTestForSuiteFile(suite string, file string) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, suite, file, url, total, passes, pending, failures, skipped, uuid, testrun FROM tests WHERE suite = ? AND file = ? ORDER BY testrun DESC;")
