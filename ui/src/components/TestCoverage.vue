@@ -6,104 +6,54 @@
   <div class="container">
     <div v-if="error" class="alert alert-danger">
       <span>{{ error }}</span>
-      <button
-        type="button"
-        class="btn-close pointer"
-        aria-label="Close"
-        @click="closeAlert()"
-      ></button>
+      <button type="button" class="btn-close pointer" aria-label="Close" @click="closeAlert()"></button>
     </div>
 
-    <div
-      v-for="test in tests"
-      :key="test['id']"
-      class="test shadow p-2 mb-2 rounded"
-    >
+    <div v-for="test in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
       <div class="row">
         <div class="col-5">
-          <h6
-            @click="showTestRuns(test['suite'], test['file-name'])"
-            class="pointer"
-            :set="
-              (percentage = test['failed-test-runs'] / test['total-test-runs'])
-            "
-          >
+          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer" :set="(percentage = test['failed-test-runs'] / test['total-test-runs'])">
             {{ test['suite'] }}
           </h6>
         </div>
         <div class="col-5">
           <span class="result total">
             {{ test['total'] }}
-            <i
-              v-if="test['total'] > test['first-total']"
-              class="bi bi-caret-up"
-            ></i>
-            <i
-              v-if="test['total'] < test['first-total']"
-              class="bi bi-caret-down"
-            ></i>
+            <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
+            <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
           </span>
-          &nbsp; <span class="result passes">{{ test['passes'] }}</span> &nbsp;
-          <span class="result failures">{{ test['failures'] }}</span> &nbsp;
+          &nbsp; <span class="result passes">{{ test['passes'] }}</span> &nbsp; <span class="result failures">{{ test['failures'] }}</span> &nbsp;
           <span class="result pending">{{ test['pending'] }}</span> &nbsp;
           <span class="result skipped">{{ test['skipped'] }}</span>
         </div>
         <div class="col">
           <i v-if="percentage == 0" class="bi bi-sun"></i>
-          <i
-            v-if="percentage > 0 && percentage <= 0.15"
-            class="bi bi-cloud-sun"
-          ></i>
-          <i
-            v-if="percentage > 0.15 && percentage <= 0.3"
-            class="bi bi-cloud"
-          ></i>
-          <i
-            v-if="percentage >= 0.3 && percentage <= 0.5"
-            class="bi bi-cloud-rain"
-          ></i>
+          <i v-if="percentage > 0 && percentage <= 0.15" class="bi bi-cloud-sun"></i>
+          <i v-if="percentage > 0.15 && percentage <= 0.3" class="bi bi-cloud"></i>
+          <i v-if="percentage >= 0.3 && percentage <= 0.5" class="bi bi-cloud-rain"></i>
           <i v-if="percentage > 0.5" class="bi bi-lightning"></i>
         </div>
       </div>
       <div class="row">
         <div class="col">
-          <span class="test-suite d-flex justify-content-between"
-            >File: {{ test['file-name'] }}</span
-          >
+          <span class="test-suite d-flex justify-content-between">File: {{ test['file-name'] }}</span>
         </div>
       </div>
       <div class="row">
         <div class="col">
-          <span class="test-suite d-flex justify-content-between"
-            >Test run: {{ test['test-run'] }}</span
-          >
-          <span v-if="test['area-id'] == 0"
-            ><i>Not assigned to an area/feature</i></span
-          >
+          <span class="test-suite d-flex justify-content-between">Test run: {{ test['test-run'] }}</span>
+          <span v-if="test['area-id'] == 0"><i>Not assigned to an area/feature</i></span>
         </div>
       </div>
     </div>
 
     <!-- Modal to show all tests with a graph -->
-    <div
-      class="modal fade"
-      :id="'showTestRuns_' + featureId"
-      tabindex="-1"
-      aria-labelledby="showTestRunsLabel"
-      aria-hidden="true"
-    >
+    <div class="modal fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="showTestRunsLabel">
-              {{ suite }} - {{ file }}
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title" id="showTestRunsLabel">{{ suite }} - {{ file }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="row bg-light">
             <div class="col-1">&nbsp;</div>
@@ -123,19 +73,9 @@
             <div class="col">{{ tr['pending'] }}</div>
             <div class="col">{{ tr['skipped'] }}</div>
           </div>
-          <Line
-            ref="chart"
-            :chart-data="chartData"
-            :chart-options="chartOptions"
-          />
+          <Line ref="chart" :data="chartData" :chart-data="chartData" :chart-options="chartOptions" />
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -146,32 +86,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Modal } from 'bootstrap';
-import http from '@/common-http'
+import http from '@/common-http';
 
 import { Line } from 'vue-chartjs';
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement,
-} from 'chart.js';
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  LineController,
-  LineElement,
-  PointElement
-);
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement } from 'chart.js';
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement);
 
 export default defineComponent({
   name: 'TestCoverage',
@@ -256,7 +175,9 @@ export default defineComponent({
     },
     async getTestsForFeature() {
       this.loading = true;
-      await http.get(`/api/v1/coverage/features/${this.featureId}/tests`).then((response) => {
+      await http
+        .get(`/api/v1/coverage/features/${this.featureId}/tests`)
+        .then((response) => {
           this.tests = response.data;
         })
         .catch((err) => {
@@ -270,7 +191,9 @@ export default defineComponent({
       this.suite = suite;
       this.file = file;
 
-      await http.get(`/api/v1/tests?suite=${suite}&file-name=${file}`).then((response) => {
+      await http
+        .get(`/api/v1/tests?suite=${suite}&file-name=${file}`)
+        .then((response) => {
           this.testRuns = response.data;
           this.chartData.labels = [];
           for (let i = 0; i < this.testRuns.length; i++) {

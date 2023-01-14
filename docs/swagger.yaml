@@ -596,6 +596,20 @@ paths:
       tags:
       - test
   /api/v1/users:
+    get:
+      description: Gets all user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.User'
+            type: array
+      summary: Gets all user
+      tags:
+      - user
     post:
       description: Takes a user JSON and stores it in DB. Return saved JSON.
       parameters:
@@ -616,6 +630,22 @@ paths:
       tags:
       - user
   /api/v1/users/{id}:
+    delete:
+      description: Deletes the user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Deletes the user
+      tags:
+      - user
     put:
       description: Takes a user JSON and updates the user.
       parameters:

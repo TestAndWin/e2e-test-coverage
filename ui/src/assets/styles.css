@@ -8,6 +8,10 @@ body { background: lightslategrey !important; }
   color: #2c3e50;
  }
 
+.user {
+  background-color: #6FA9C6;
+}
+
 .area {
   background-color: #8FA9C6;
 }

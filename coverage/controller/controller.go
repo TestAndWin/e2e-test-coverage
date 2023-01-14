@@ -21,33 +21,33 @@ var repo = initRepository()
 func initRepository() *repository.CoverageStore {
 	repository, err := repository.OpenDbConnection()
 	if err != nil {
-		log.Fatal("Error connecting to DB")
+		log.Fatalf("Error connecting to DB: %s", err)
 		os.Exit(1)
 	}
 
 	err = repository.CreateProductsTable()
 	if err != nil {
-		log.Fatal("Error creating DB tables")
+		log.Fatalf("Error creating DB tables: %s", err)
 		os.Exit(1)
 	}
 	err = repository.CreateAreasTable()
 	if err != nil {
-		log.Fatal("Error creating DB tables")
+		log.Fatalf("Error creating DB tables: %s", err)
 		os.Exit(1)
 	}
 	err = repository.CreateExplTestsTable()
 	if err != nil {
-		log.Fatal("Error creating DB tables")
+		log.Fatalf("Error creating DB tables: %s", err)
 		os.Exit(1)
 	}
 	err = repository.CreateFeaturesTable()
 	if err != nil {
-		log.Fatal("Error creating DB tables")
+		log.Fatalf("Error creating DB tables: %s", err)
 		os.Exit(1)
 	}
 	err = repository.CreateTestsTable()
 	if err != nil {
-		log.Fatal("Error creating DB tables")
+		log.Fatalf("Error creating DB tables: %s", err)
 		os.Exit(1)
 	}
 

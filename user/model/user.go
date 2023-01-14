@@ -23,10 +23,10 @@ type NewPassword struct {
 }
 
 // Can view the coverage and report new exploratory tests
-const TESTER = "t"
+const TESTER = "Tester"
 
 // Can create new products, products areas, ...
-const MAINTAINER = "m"
+const MAINTAINER = "Maintainer"
 
 // Can create new user and edit them
-const ADMIN = "a"
+const ADMIN = "Admin"

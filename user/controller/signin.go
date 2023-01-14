@@ -136,12 +136,12 @@ func createToken(claims *model.Claims, secretKey []byte) (string, error) {
 // Retrieve token from request header Authorization
 func GetToken(c *gin.Context) (*jwt.Token, error) {
 	token := c.Request.Header["Authorization"]
-	log.Printf("Auth user: %s", token)
+	//log.Printf("Auth user: %s", token)
 	if token == nil || len(token) < 1 || !strings.Contains(token[0], "Bearer ") {
 		return nil, nil
 	}
 	t := strings.Split(token[0], " ")[1]
-	log.Printf("Token: %s", t)
+	//log.Printf("Token: %s", t)
 
 	// Parse the JWT string
 	claims := &model.Claims{}

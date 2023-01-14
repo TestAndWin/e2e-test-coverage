@@ -11,10 +11,47 @@ package controller
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/TestAndWin/e2e-coverage/user/model"
+	"github.com/TestAndWin/e2e-coverage/user/repository"
 	"github.com/gin-gonic/gin"
 )
+
+var userStore = initRepository()
+
+// Set-up the db connection and create the db tables if needed
+func initRepository() repository.UserStore {
+	userStore, err := repository.NewUserStore()
+	if err != nil {
+		log.Fatalf("Error connecting to DB: %s", err)
+		os.Exit(1)
+	}
+
+	err = userStore.CreateUsersTable()
+	if err != nil {
+		log.Fatalf("Error creating tables: %s", err)
+		os.Exit(1)
+	}
+	return *userStore
+}
+
+// GetUser godoc
+// @Summary      Gets all user
+// @Description  Gets all user
+// @Tags         user
+// @Produce      json
+// @Success      200  {array}  model.User
+// @Router       /api/v1/users [GET]
+func GetUser(c *gin.Context) {
+	user, err := userStore.GetUser()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+	} else {
+		c.JSON(http.StatusOK, user)
+	}
+}
 
 // CreateUser godoc
 // @Summary      Add a new user
@@ -95,5 +132,22 @@ func ChangePassword(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting token"})
 	}
+}
 
+// DeleteUser godoc
+// @Summary      Deletes the user
+// @Description  Deletes the user
+// @Tags         user
+// @Produce      json
+// @Param        id    path      int     true  "User ID"
+// @Success      200
+// @Router       /api/v1/users/{id} [DELETE]
+func DeleteUser(c *gin.Context) {
+	_, err := userStore.DeleteUser(c.Param("id"))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+	} else {
+		c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	}
 }

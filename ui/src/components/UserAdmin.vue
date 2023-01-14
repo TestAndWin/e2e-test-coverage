@@ -1,5 +1,5 @@
 <template>
-  <div class="card m-3">
+  <div class="product container">
     <div v-if="error" class="alert alert-danger">
       <span>{{ error }}</span>
     </div>
@@ -7,25 +7,52 @@
     <div v-if="loading" variant="info" class="spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
-    <h4 class="card-header">User</h4>
 
-    <h4 class="card-header">Create new user</h4>
-    <div class="card-body">
-      <div class="form-group">
-        <form @submit.prevent="createUser">
-          <label for="email">Email</label>
-          <input type="email" v-model="email" class="form-control" />
-          <br />
-          <label for="password">Password</label>
-          <input type="password" v-model="password" class="form-control" />
-          <br />
-          <label for="roles">Roles</label>
-          <select v-model="selectedRoles" multiple class="form-control">
-            <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-          </select>
-          <br />
-          <button class="btn btn-primary pointer" type="submit">Create User</button>
-        </form>
+    <h4 class="">User</h4>
+    <div class="user shadow p-2 mb-4 rounded">
+      <div v-for="u in user" :key="u['id']">
+        <div class="row">
+          <div class="col">
+            <span class="justify-content-between pointer">{{ u['email'] }}</span>
+            {{ u['roles'] }}
+            <!--<a @click="updateUser(u['id'], u['email'], u['role'])"><i class="bi bi-pencil pointer"></i></a>&nbsp;-->
+            <a @click="deleteUser(u['id'])"><i class="bi bi-trash pointer"></i></a>
+          </div>
+        </div>
+        <hr />
+      </div>
+    </div>
+    <button class="btn btn-primary pointer" type="submit" @click="showAddUserModal()">Add User</button>
+
+    <!-- Modal to add an user -->
+    <div class="modal fade" ref="addUser" id="addUser" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addUserLabel">Add User</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form @submit.prevent="createUser">
+            <div class="modal-body">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" v-model="email" class="form-control" />
+                <br />
+                <label for="password">Password</label>
+                <input type="password" v-model="password" class="form-control" />
+                <br />
+                <label for="roles">Roles</label>
+                <select v-model="selectedRoles" multiple class="form-control">
+                  <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal">Add User</button>
+              <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -34,6 +61,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import http from '@/common-http';
+import { Modal } from 'bootstrap';
 
 export default defineComponent({
   name: 'UserAdmin',
@@ -44,10 +72,33 @@ export default defineComponent({
       selectedRoles: [],
       roles: ['Admin', 'Maintainer', 'Tester'],
       error: '',
+      user: [],
       loading: false,
     };
   },
   methods: {
+    async showAddUserModal() {
+      new Modal('#addUser').show();
+    },
+    async getUser() {
+      this.loading = true;
+      await http
+        .get(`/api/v1/users`)
+        .then((response) => {
+          this.user = response.data;
+        })
+        .catch((err) => {
+          this.error = err + ' | ' + err.response.data.error;
+        });
+      this.loading = false;
+      this.$forceUpdate();
+    },
+    async deleteUser(userId: number) {
+      await http.delete(`/api/v1/users/${userId}`).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
+      });
+      this.getUser();
+    },
     async createUser() {
       this.loading = true;
       this.error = '';
@@ -65,7 +116,11 @@ export default defineComponent({
       this.email = '';
       this.password = '';
       this.selectedRoles = [];
+      this.getUser();
     },
+  },
+  mounted() {
+    this.getUser();
   },
 });
 </script>

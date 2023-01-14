@@ -106,8 +106,10 @@ func HandleRequest() {
 		// User related endpoints
 		v1.POST("/auth/signin", usercontroller.Signin)
 		v1.POST("/auth/refresh", usercontroller.RefreshToken)
+		v1.GET("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.GetUser)
 		v1.POST("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.CreateUser)
 		v1.PUT("/users/:id", usercontroller.AuthUser(model.ADMIN), usercontroller.UpdateUser)
+		v1.DELETE("/users/:id", usercontroller.AuthUser(model.ADMIN), usercontroller.DeleteUser)
 		v1.PUT("/users/change-pwd/:id", usercontroller.AuthUser(""), usercontroller.ChangePassword)
 	}
 

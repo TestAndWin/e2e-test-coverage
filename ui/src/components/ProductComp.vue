@@ -8,6 +8,8 @@
     <div v-if="loading" variant="info" class="spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
+
+    <h4 class="">Areas</h4>
     <div class="area shadow p-2 mb-4 rounded">
       <div v-for="area in areas" :key="area['id']">
         <div :id="`area-${area['id']}`" class="">
@@ -29,17 +31,15 @@
                     <h6 class="feature-name justify-content-between">
                       {{ feature['name'] }}
                       [{{ feature['business-value'] }}]
-                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"
-                        ><i class="bi bi-file-text pointer" style="color: #2c3e50"></i></a
-                      >&nbsp;
-                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"
-                        ><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i></a
-                      >&nbsp;
-                      <a
-                        @click="
-                          showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])
-                        "
-                      >
+                      <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank">
+                        <i class="bi bi-file-text pointer" style="color: #2c3e50"></i>
+                      </a>
+                      &nbsp;
+                      <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank">
+                        <i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i>
+                      </a>
+                      &nbsp;
+                      <a @click="showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])">
                         <i class="bi bi-pencil pointer"></i>
                       </a>
                       &nbsp;
@@ -51,20 +51,8 @@
             </div>
 
             <div class="input-group mb-3">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Feature Name"
-                aria-label="Feature Name"
-                aria-describedby="button-add-area"
-                v-model="newFeature[area['id']]"
-              />
-              <button
-                class="btn btn-outline-secondary bi bi-plus-lg pointer"
-                type="button"
-                id="button-add-feature"
-                @click="addFeature(area['id'])"
-              ></button>
+              <input type="text" class="form-control" placeholder="Feature Name" aria-label="Feature Name" aria-describedby="button-add-area" v-model="newFeature[area['id']]" />
+              <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-feature" @click="addFeature(area['id'])" />
             </div>
           </div>
         </div>
@@ -77,15 +65,8 @@
       </div>
 
       <div v-if="products.length == 0 && !error" class="input-group mb-3">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Enter Product Name"
-          aria-label="Enter Product Name"
-          aria-describedby="button-add-product"
-          v-model="newProduct"
-        />
-        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()"></button>
+        <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
+        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()" />
       </div>
     </div>
   </div>
@@ -135,8 +116,8 @@
                 <option>high</option>
               </select>
               <br /><br />
-              <label>Link to Documentation</label
-              ><input type="text" class="form-control" id="featureDocumentation" v-model="featureDocumentation" /><br />
+              <label>Link to Documentation</label>
+              <input type="text" class="form-control" id="featureDocumentation" v-model="featureDocumentation" /><br />
               <label>URL</label><input type="text" class="form-control" id="featureUrl" v-model="featureUrl" /><br />
             </div>
           </form>
@@ -153,7 +134,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Modal } from 'bootstrap';
-import http from '@/common-http'
+import http from '@/common-http';
 
 export default defineComponent({
   name: 'ProductComp',
@@ -237,11 +218,9 @@ export default defineComponent({
       this.getAreas();
     },
     async addFeature(areaId: number) {
-      await http
-        .post(`/api/v1/features`, { 'area-id': areaId, name: this.newFeature[areaId], documentation: '', url: '', 'business-value': '' })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
-        });
+      await http.post(`/api/v1/features`, { 'area-id': areaId, name: this.newFeature[areaId], documentation: '', url: '', 'business-value': '' }).catch((err) => {
+        this.error = err + ' | ' + err.response.data.error;
+      });
       this.newFeature[areaId] = '';
       this.getFeatures(areaId);
     },

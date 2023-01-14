@@ -24,13 +24,9 @@ const createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	email VARCHAR(255) UNIQUE,
 	password VARCHAR(255),
-	role VARCHAR(5),
+	role VARCHAR(50),
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 	)`
-
-const insertUserStmt = "INSERT INTO users(email, password, role) VALUES (?,?,?)"
-const updatePasswordStmt = "UPDATE users SET password = ? WHERE id = ? and email = ?"
-const loginStmt = "SELECT password, role FROM users WHERE email = ?"
 
 // UserStore is a store for user data that uses a MySQL database
 type UserStore struct {
@@ -79,7 +75,7 @@ func (s *UserStore) InsertUser(user model.User) (int64, error) {
 	}
 
 	// We keep it simple for now
-	return s.executeSql(insertUserStmt, user.Email, hashedPassword, strings.Join(user.Roles, ","))
+	return s.executeSql("INSERT INTO users(email, password, role) VALUES (?,?,?)", user.Email, hashedPassword, strings.Join(user.Roles, ","))
 }
 
 // Updates the user
@@ -125,7 +121,7 @@ func (s *UserStore) UpdatePassword(id string, email string, password string, new
 	}
 
 	// Update the password
-	_, err = s.executeSql(updatePasswordStmt, hashedPassword, id, email)
+	_, err = s.executeSql("UPDATE users SET password = ? WHERE id = ? and email = ?", hashedPassword, id, email)
 	return err
 }
 
@@ -133,7 +129,7 @@ func (s *UserStore) UpdatePassword(id string, email string, password string, new
 func (s *UserStore) Login(email string, password string) (string, error) {
 	var role string
 	var hashedPassword []byte
-	err := s.db.QueryRow(loginStmt, email).Scan(&hashedPassword, &role)
+	err := s.db.QueryRow("SELECT password, role FROM users WHERE email = ?", email).Scan(&hashedPassword, &role)
 	if err != nil {
 		return "", err
 	}
@@ -167,4 +163,42 @@ func (s *UserStore) executeSql(statement string, params ...any) (int64, error) {
 	}
 	log.Printf("%d row inserted/deleted/updated ", rows)
 	return res.LastInsertId()
+}
+
+// Returns all user
+func (s UserStore) GetUser() ([]model.User, error) {
+	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelfunc()
+	stmt, err := s.db.PrepareContext(ctx, "SELECT id, email, role FROM users;")
+	if err != nil {
+		log.Printf("Error %s when preparing SQL statement", err)
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx)
+	if err != nil {
+		log.Printf("Error %s when query context", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+	var user = []model.User{}
+	for rows.Next() {
+		var u model.User
+		var r string
+		if err := rows.Scan(&u.Id, &u.Email, &r); err != nil {
+			return user, err
+		}
+		u.Roles = strings.Split(r, ",")
+		user = append(user, u)
+	}
+	if err := rows.Err(); err != nil {
+		return []model.User{}, err
+	}
+	return user, nil
+}
+
+// Delete the user
+func (s UserStore) DeleteUser(id string) (int64, error) {
+	return s.executeSql("DELETE FROM users WHERE id = ?", id)
 }

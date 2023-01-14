@@ -9,6 +9,7 @@
       <span class="visually-hidden">Loading...</span>
     </div>
 
+    <h4 class="">Coverage</h4>
     <div v-for="area in areas" :key="area['id']" :id="`area-${area['id']}`" class="area shadow p-2 mb-2 rounded">
       <div class="row">
         <div @click="showFeatures(area['id'])" class="col-5 pointer">
