@@ -107,7 +107,7 @@ func (s *UserStore) UpdateUser(id string, user model.User) error {
 }
 
 // Updates the password. As first step the login with the old password is validated.
-func (s *UserStore) UpdatePassword(id string, email string, password string, newPassword string) error {
+func (s *UserStore) UpdatePassword(email string, password string, newPassword string) error {
 	// First check the old password
 	_, err := s.Login(email, password)
 	if err != nil {
@@ -121,7 +121,7 @@ func (s *UserStore) UpdatePassword(id string, email string, password string, new
 	}
 
 	// Update the password
-	_, err = s.executeSql("UPDATE users SET password = ? WHERE id = ? and email = ?", hashedPassword, id, email)
+	_, err = s.executeSql("UPDATE users SET password = ? WHERE email = ?", hashedPassword, email)
 	return err
 }
 

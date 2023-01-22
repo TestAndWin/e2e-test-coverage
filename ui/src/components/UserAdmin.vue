@@ -9,7 +9,7 @@
     </div>
 
     <h4 class="">User</h4>
-    <div class="user shadow p-2 mb-4 rounded" :key="componentKey">
+    <div id="user" class="user shadow p-2 mb-4 rounded">
       <div v-for="u in user" :key="u['id']">
         <div class="row">
           <div class="col">
@@ -86,7 +86,7 @@
           </form>
         </div>
       </div>
-    </div>    
+    </div>
   </div>
 </template>
 
@@ -111,9 +111,6 @@ export default defineComponent({
     };
   },
   methods: {
-    forceRerender() {
-      this.componentKey += 1;
-    },
     async showAddUserModal() {
       new Modal('#addUser').show();
     },
@@ -134,7 +131,6 @@ export default defineComponent({
           this.error = err + ' | ' + err.response.data.error;
         });
       this.loading = false;
-      this.forceRerender();
     },
     async deleteUser(userId: number) {
       await http.delete(`/api/v1/users/${userId}`).catch((err) => {
@@ -152,14 +148,14 @@ export default defineComponent({
         roles: this.selectedRoles,
       };
 
-      http.post('/api/v1/users', newUser).catch((err) => {
+      await http.post('/api/v1/users', newUser).catch((err) => {
         this.error = err + ' | ' + err.response?.data?.error;
       });
       this.loading = false;
       this.email = '';
       this.password = '';
       this.selectedRoles = [];
-      this.getUser();
+      await this.getUser();
     },
     async saveUser() {
       this.loading = true;
@@ -171,7 +167,7 @@ export default defineComponent({
         roles: this.selectedRoles,
       };
 
-      http.put(`/api/v1/users/${this.userId}`, newUser).catch((err) => {
+      await http.put(`/api/v1/users/${this.userId}`, newUser).catch((err) => {
         this.error = err + ' | ' + err.response?.data?.error;
       });
       this.userId = 0;
@@ -179,7 +175,7 @@ export default defineComponent({
       this.email = '';
       this.password = '';
       this.selectedRoles = [];
-      this.getUser();
+      await this.getUser();
     },
   },
   mounted() {

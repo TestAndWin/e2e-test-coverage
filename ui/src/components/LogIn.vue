@@ -8,7 +8,7 @@
       <span class="visually-hidden">Loading...</span>
     </div>
 
-    <h4 class="card-header">Sign In</h4>
+    <h4 class="card-header">Log In</h4>
     <div class="card-body">
       <div class="form-group">
         <label>E-Mail</label>
@@ -20,7 +20,7 @@
       </div>
       <br />
       <div class="form-group">
-        <button class="btn btn-primary pointer" @click="signin()">Sign In</button>
+        <button class="btn btn-primary pointer" @click="login()">Log In</button>
       </div>
     </div>
   </div>
@@ -31,7 +31,7 @@ import { defineComponent } from 'vue';
 import http from '@/common-http';
 
 export default defineComponent({
-  name: 'SignIn',
+  name: 'LogIn',
   data() {
     return {
       email: 'admin',
@@ -41,12 +41,12 @@ export default defineComponent({
     };
   },
   methods: {
-    async signin() {
+    async login() {
       this.loading = true;
       this.error = '';
 
       http
-        .post('/api/v1/auth/signin', { email: this.email, password: this.password })
+        .post('/api/v1/auth/login', { email: this.email, password: this.password })
         .then((response) => {
           this.loading = false;
           sessionStorage.setItem('token', response.data.token);
@@ -55,7 +55,7 @@ export default defineComponent({
           location.assign('/');
         })
         .catch(() => {
-          this.error = 'Sign in failed';
+          this.error = 'Log in failed';
           this.email = '';
           this.password = '';
           this.loading = false;

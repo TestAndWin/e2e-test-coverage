@@ -1,12 +1,13 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import ProductView from '../views/ProductView.vue'
-import CoverageView from '../views/CoverageView.vue'
-import TestView from '../views/TestView.vue'
-import SignInView from '../views/SignInView.vue'
-import SignOutView from '../views/SignOutView.vue'
-import NotFound from '../views/NotFound.vue'
-import AdminView from '../views/AdminView.vue'
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import ProductView from '../views/ProductView.vue';
+import CoverageView from '../views/CoverageView.vue';
+import TestView from '../views/TestView.vue';
+import LogInView from '../views/LogInView.vue';
+import LogOutView from '../views/LogOutView.vue';
+import NotFound from '../views/NotFound.vue';
+import AdminView from '../views/AdminView.vue';
+import MyAccountView from '../views/MyAccountView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -34,22 +35,28 @@ const routes: Array<RouteRecordRaw> = [
     component: TestView
   },
   {
-    path: '/signin',
-    alias: ['/signin.html'],
-    name: 'signin',
-    component: SignInView
+    path: '/login',
+    alias: ['/login.html'],
+    name: 'login',
+    component: LogInView
   },
   {
-    path: '/signout',
-    alias: ['/signout.html'],
-    name: 'signout',
-    component: SignOutView
+    path: '/logout',
+    alias: ['/logout.html'],
+    name: 'logout',
+    component: LogOutView
   },
   {
     path: '/admin',
     alias: ['/admin.html'],
     name: 'admin',
     component: AdminView
+  },
+  {
+    path: '/myaccount',
+    alias: ['/myaccount.html'],
+    name: 'myaccount',
+    component: MyAccountView
   },
   {
     path: '/404',

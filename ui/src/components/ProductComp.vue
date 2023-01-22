@@ -173,7 +173,7 @@ export default defineComponent({
           this.products = response.data;
         })
         .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
+          this.error = err + ' | ' + err.response?.data?.error;
         });
       this.loading = false;
     },
@@ -189,7 +189,7 @@ export default defineComponent({
           this.areaToggle = new Array(this.areas.length).fill(false);
         })
         .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
+          this.error = err + ' | ' + err.response?.data?.error;
         });
       this.loading = false;
     },
@@ -200,39 +200,39 @@ export default defineComponent({
           this.features[areaId] = response.data;
         })
         .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
+          this.error = err + ' | ' + err.response?.data?.error;
         });
     },
     async addProduct() {
       await http.post(`/api/v1/products`, { name: this.newProduct }).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.newProduct = '';
       this.getProducts();
     },
     async addArea() {
       await http.post(`/api/v1/areas`, { 'product-id': this.productId, name: this.newArea }).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.newArea = '';
       this.getAreas();
     },
     async addFeature(areaId: number) {
       await http.post(`/api/v1/features`, { 'area-id': areaId, name: this.newFeature[areaId], documentation: '', url: '', 'business-value': '' }).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.newFeature[areaId] = '';
       this.getFeatures(areaId);
     },
     async removeArea(areaId: number) {
       await http.delete(`/api/v1/areas/${areaId}`).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.getAreas();
     },
     async removeFeature(areaId: number, featureId: number) {
       await http.delete(`/api/v1/features/${featureId}`).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.getFeatures(areaId);
     },
@@ -251,7 +251,7 @@ export default defineComponent({
     },
     async changeAreaName() {
       await http.put(`/api/v1/areas/${this.areaIdToChange}`, { name: this.newName }).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
+        this.error = err + ' | ' + err.response?.data?.error;
       });
       this.newName = '';
       this.areaIdToChange = 0;
@@ -266,7 +266,7 @@ export default defineComponent({
           'business-value': this.featureBusinessValue,
         })
         .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
+          this.error = err + ' | ' + err.response?.data?.error;
         });
 
       this.newName = '';

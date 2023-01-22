@@ -32,15 +32,15 @@ func getJwtKey() []byte {
 	return []byte(key.JWTKey)
 }
 
-// Signin godoc
-// @Summary      Sign in of a user
-// @Description  Sign in and returning a JWT token and a refresh token if user name and password are correct
+// Login godoc
+// @Summary      Log in of a user
+// @Description  Log in and returning a JWT token and a refresh token if user name and password are correct
 // @Tags         user
 // @Produce      json
-// @Param        signin  body      model.Credentials  true  "Credentials JSON"
+// @Param        login  body      model.Credentials  true  "Credentials JSON"
 // @Success      200  {object}  string
-// @Router       /api/v1/auth/signin [POST]
-func Signin(c *gin.Context) {
+// @Router       /api/v1/auth/login [POST]
+func Login(c *gin.Context) {
 	var s model.Credentials
 	if err := c.BindJSON(&s); err != nil {
 		log.Println(err)
@@ -49,7 +49,7 @@ func Signin(c *gin.Context) {
 		// Check Login and get role
 		roles, err := userStore.Login(s.Email, s.Password)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"status": "Unauthorized"})
+			c.JSON(http.StatusForbidden, gin.H{"status": "Unauthorized"})
 			return
 		}
 
@@ -90,15 +90,16 @@ func RefreshToken(c *gin.Context) {
 	}
 
 	// Get the claims and check them
+	// This must return another error code than 401, otherwise the client will run into an endless loop
 	claims := &model.Claims{}
 	token, err := jwt.ParseWithClaims(refresh.Token, claims, func(token *jwt.Token) (interface{}, error) { return jwtKey, nil })
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	claims, ok := token.Claims.(*model.Claims)
 	if !ok || !token.Valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
 		return
 	}
 
@@ -162,10 +163,10 @@ func AuthUser(level string) gin.HandlerFunc {
 		// Check if token is valid and not expired
 		if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
 			// Has the user the needed role
-			if level != "" && strings.Contains(claims.Role, level) {
-				log.Printf("Sign in success: %v %v %v", claims.Email, claims.Role, claims.ExpiresAt)
+			if level == "" || strings.Contains(claims.Role, level) {
+				log.Printf("Log in success: %v %v %v", claims.Email, claims.Role, claims.ExpiresAt)
 			} else {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "User has no access to this resource"})
+				c.JSON(http.StatusForbidden, gin.H{"error": "User has no access to this resource"})
 				c.Abort()
 				return
 			}

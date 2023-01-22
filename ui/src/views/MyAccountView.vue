@@ -1,18 +1,18 @@
 <template>
   <div class="">
-    <SignIn />
+    <MyAccount />
   </div>
 </template>
 
 <script lang="ts">
-import SignIn from "@/components/SignIn.vue";
+import MyAccount from "@/components/MyAccount.vue";
 
 export default {
   components: {
-    SignIn,
+    MyAccount,
   },
   mounted() {
-    document.title = "e2e coverage - Sign In";
+    document.title = "e2e coverage - My Account";
   },
 };
 </script>

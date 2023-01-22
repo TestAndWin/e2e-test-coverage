@@ -15,23 +15,26 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li v-if="signedin && isMaintainer" class="nav-item">
+          <li v-if="loggedIn && isMaintainer" class="nav-item">
             <a class="nav-link" href="/product">Product</a>
           </li>
-          <li v-if="signedin && isTester" class="nav-item">
+          <li v-if="loggedIn && isTester" class="nav-item">
             <a class="nav-link" href="/coverage">Coverage</a>
           </li>
-          <li v-if="signedin && isTester" class="nav-item">
+          <li v-if="loggedIn && isTester" class="nav-item">
             <a class="nav-link" href="/tests">Tests</a>
           </li>
-          <li v-if="signedin && isAdmin" class="nav-item">
+          <li v-if="loggedIn && isAdmin" class="nav-item">
             <a class="nav-link" href="/admin">Admin</a>
           </li>
-          <li v-if="!signedin" class="nav-item">
-            <a class="nav-link" href="/signin">Sign In</a>
+          <li v-if="!loggedIn" class="nav-item">
+            <a class="nav-link" href="/login">Log In</a>
           </li>
-          <li v-if="signedin" class="nav-item">
-            <a class="nav-link" href="/signout">Sign Out</a>
+          <li v-if="loggedIn" class="nav-item">
+            <a class="nav-link" href="/myaccount">My Account</a>
+          </li>
+          <li v-if="loggedIn" class="nav-item">
+            <a class="nav-link" href="/logout">Log Out</a>
           </li>
         </ul>
       </div>
@@ -47,7 +50,7 @@ export default defineComponent({
   name: 'App',
   data() {
     return {
-      signedin: sessionStorage.getItem('token') != undefined,
+      loggedIn: sessionStorage.getItem('token') != undefined,
     };
   },
   computed: {

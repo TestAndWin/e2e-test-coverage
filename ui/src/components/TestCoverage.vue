@@ -73,7 +73,7 @@
             <div class="col">{{ tr['pending'] }}</div>
             <div class="col">{{ tr['skipped'] }}</div>
           </div>
-          <Line ref="chart" :data="chartData" :chart-data="chartData" :chart-options="chartOptions" />
+          <Line v-if="!loading" :data="chartData" :chart-options="chartOptions" />
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -88,9 +88,9 @@ import { defineComponent } from 'vue';
 import { Modal } from 'bootstrap';
 import http from '@/common-http';
 
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement } from 'chart.js';
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, LineController, LineElement, PointElement);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 export default defineComponent({
   name: 'TestCoverage',
@@ -195,6 +195,7 @@ export default defineComponent({
         .get(`/api/v1/tests?suite=${suite}&file-name=${file}`)
         .then((response) => {
           this.testRuns = response.data;
+          
           this.chartData.labels = [];
           for (let i = 0; i < this.testRuns.length; i++) {
             // different order
@@ -206,6 +207,7 @@ export default defineComponent({
             this.chartData.datasets[3].data[i] = this.testRuns[r]['pending'];
             this.chartData.datasets[4].data[i] = this.testRuns[r]['skipped'];
           }
+          
         })
         .catch((err) => {
           this.error = err;

@@ -122,7 +122,7 @@ func ChangePassword(c *gin.Context) {
 	// Token is already checked before. We need the token to get the email
 	tkn, _ := GetToken(c)
 	if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
-		err := userStore.UpdatePassword(c.Param("id"), claims.Email, pwd.Password, pwd.NewPassword)
+		err := userStore.UpdatePassword(claims.Email, pwd.Password, pwd.NewPassword)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

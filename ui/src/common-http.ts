@@ -22,8 +22,10 @@ http.interceptors.response.use(function (response) {
         originalRequest.headers['Authorization'] = `Bearer ${response.data.token}`;
       }
       else {
-        location.assign('/signin');
+        location.assign('/login');
       }
+    }).catch(() => {
+      location.assign('/login');
     })
     return axios(originalRequest);
   }

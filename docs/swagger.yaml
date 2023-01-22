@@ -229,6 +229,27 @@ paths:
       summary: Get all area features
       tags:
       - feature
+  /api/v1/auth/login:
+    post:
+      description: Log in and returning a JWT token and a refresh token if user name
+        and password are correct
+      parameters:
+      - description: Credentials JSON
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/model.Credentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Log in of a user
+      tags:
+      - user
   /api/v1/auth/refresh:
     post:
       description: Checks if the token is valid and returns the "fresh" the token
@@ -247,27 +268,6 @@ paths:
           schema:
             type: string
       summary: Refresh the bearer token
-      tags:
-      - user
-  /api/v1/auth/signin:
-    post:
-      description: Sign in and returning a JWT token and a refresh token if user name
-        and password are correct
-      parameters:
-      - description: Credentials JSON
-        in: body
-        name: signin
-        required: true
-        schema:
-          $ref: '#/definitions/model.Credentials'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Sign in of a user
       tags:
       - user
   /api/v1/coverage/{id}/areas:

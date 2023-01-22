@@ -137,6 +137,37 @@
                 }
             }
         },
+        "/api/v1/auth/login": {
+            "post": {
+                "description": "Log in and returning a JWT token and a refresh token if user name and password are correct",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Log in of a user",
+                "parameters": [
+                    {
+                        "description": "Credentials JSON",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Credentials"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/refresh": {
             "post": {
                 "description": "Checks if the token is valid and returns the \"fresh\" the token",
@@ -155,37 +186,6 @@
                         "required": true,
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/signin": {
-            "post": {
-                "description": "Sign in and returning a JWT token and a refresh token if user name and password are correct",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Sign in of a user",
-                "parameters": [
-                    {
-                        "description": "Credentials JSON",
-                        "name": "signin",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Credentials"
                         }
                     }
                 ],
