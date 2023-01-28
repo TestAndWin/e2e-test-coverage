@@ -22,44 +22,43 @@
             </span>
             indicates if there are more or less tests for the last 28 days.
           </p>
-          <hr/>
+          <hr />
           <p>The weather symbol shows the test stability for the last 28 days.</p>
           <p>
             <i class="bi bi-sun"></i>
             All test runs without failures
           </p>
           <p>
-              <i class="bi bi-cloud-sun"></i>
+            <i class="bi bi-cloud-sun"></i>
             &lt;=15% test runs with failures
           </p>
           <p>
-              <i class="bi bi-cloud"></i>
+            <i class="bi bi-cloud"></i>
             &lt;=30% test runs with failures
           </p>
           <p>
-              <i class="bi bi-cloud-rain"></i>
+            <i class="bi bi-cloud-rain"></i>
             &lt;= 50% test runs with failures
           </p>
           <p>
-              <i class="bi bi-lightning"></i>
+            <i class="bi bi-lightning"></i>
             > 50% test runs with failures
           </p>
-          <hr/>
+          <hr />
           <p>$ symbol shows the business value of a feature. &dollar; = low, &dollar;&dollar; = medium, &dollar;&dollar;&dollar; = high</p>
         </div>
         <p></p>
         <p class="card-text"><a href="/docs/index.html" class="link-info">API Documentation</a></p>
-        <p>&copy; TestAndWin 2022</p>
+        <p>&copy; TestAndWin 2023</p>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  components: {},
-  mounted() {
-    document.title = "e2e coverage - Home";
-  },
-};
+<script setup lang="ts">
+import { onMounted } from 'vue';
+
+onMounted(() => {
+  document.title = 'e2e coverage - Home';
+});
 </script>

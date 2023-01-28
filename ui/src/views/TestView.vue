@@ -14,15 +14,11 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import TestCoverage from "@/components/TestCoverage.vue";
+import { onMounted } from 'vue';
 
-export default {
-  components: {
-    TestCoverage,
-  },
-  mounted() {
-    document.title = "e2e coverage - Coverage";
-  },
-};
+onMounted(() => {
+  document.title = 'e2e coverage - Coverage';
+});
 </script>

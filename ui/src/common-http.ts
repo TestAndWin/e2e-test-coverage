@@ -1,4 +1,7 @@
 import axios from "axios";
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const http = axios.create({
   baseURL: process.env.VUE_APP_API_URL ? process.env.VUE_APP_API_URL : window.location.origin,
@@ -22,10 +25,10 @@ http.interceptors.response.use(function (response) {
         originalRequest.headers['Authorization'] = `Bearer ${response.data.token}`;
       }
       else {
-        location.assign('/login');
+        router.push('/login');
       }
     }).catch(() => {
-      location.assign('/login');
+      router.push('/login');
     })
     return axios(originalRequest);
   }

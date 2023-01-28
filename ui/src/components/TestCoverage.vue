@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" variant="info" class="spinner-border" role="status">
+  <div v-if="loading" class="info spinner-border" role="status">
     <span class="visually-hidden">Loading...</span>
   </div>
 
@@ -83,8 +83,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { Modal } from 'bootstrap';
 import http from '@/common-http';
 
@@ -92,143 +92,133 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import { Line } from 'vue-chartjs';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-export default defineComponent({
-  name: 'TestCoverage',
-  props: {
-    featureId: {
-      type: Number,
-      required: false,
-    },
-    productId: {
-      type: Number,
-      required: false,
-    },
-  },
-  data() {
-    return {
-      loading: true,
-      tests: [],
-      error: '',
-      suite: '',
-      file: '',
-      percentage: 0.0,
-      testRuns: [],
-      chartData: {
-        labels: [],
-        datasets: [
-          {
-            label: 'Total',
-            backgroundColor: 'blue',
-            borderColor: 'blue',
-            data: [],
-          },
-          {
-            label: 'Pass',
-            backgroundColor: 'green',
-            borderColor: 'green',
-            data: [],
-          },
-          {
-            label: 'Fail',
-            backgroundColor: 'red',
-            borderColor: 'red',
-            data: [],
-          },
-          {
-            label: 'Pending',
-            backgroundColor: 'orange',
-            borderColor: 'orange',
-            data: [],
-          },
-          {
-            label: 'Skipped',
-            backgroundColor: 'yellow',
-            borderColor: 'yellow',
-            data: [],
-          },
-        ],
-      },
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            type: 'linear',
-            min: 0,
-          },
-        },
-      },
-    };
-  },
-  methods: {
-    async getTestsForProduct() {
-      this.loading = true;
-      await http
-        .get(`/api/v1/coverage/products/${this.productId}/tests`)
-        .then((response) => {
-          this.tests = response.data;
-        })
-        .catch((err) => {
-          this.error = err;
-        });
-      this.loading = false;
-    },
-    async getTestsForFeature() {
-      this.loading = true;
-      await http
-        .get(`/api/v1/coverage/features/${this.featureId}/tests`)
-        .then((response) => {
-          this.tests = response.data;
-        })
-        .catch((err) => {
-          this.error = err;
-        });
+const props = defineProps({
+  productId: Number,
+  featureId: Number,
+});
 
-      this.loading = false;
-    },
-    async showTestRuns(suite: string, file: string) {
-      this.loading = true;
-      this.suite = suite;
-      this.file = file;
+const loading = ref(true);
+const error = ref('');
+const percentage = ref(0.0);
 
-      await http
-        .get(`/api/v1/tests?suite=${suite}&file-name=${file}`)
-        .then((response) => {
-          this.testRuns = response.data;
-          
-          this.chartData.labels = [];
-          for (let i = 0; i < this.testRuns.length; i++) {
-            // different order
-            const r = this.testRuns.length - 1 - i;
-            this.chartData.labels[i] = this.testRuns[r]['test-run'];
-            this.chartData.datasets[0].data[i] = this.testRuns[r]['total'];
-            this.chartData.datasets[1].data[i] = this.testRuns[r]['passes'];
-            this.chartData.datasets[2].data[i] = this.testRuns[r]['failures'];
-            this.chartData.datasets[3].data[i] = this.testRuns[r]['pending'];
-            this.chartData.datasets[4].data[i] = this.testRuns[r]['skipped'];
-          }
-          
-        })
-        .catch((err) => {
-          this.error = err;
-        });
-      this.loading = false;
-      new Modal('#showTestRuns_' + this.featureId).show();
+const chartData = ref({
+  labels: [],
+  datasets: [
+    {
+      label: 'Total',
+      backgroundColor: 'blue',
+      borderColor: 'blue',
+      data: [],
     },
-    async closeAlert() {
-      this.error = '';
+    {
+      label: 'Pass',
+      backgroundColor: 'green',
+      borderColor: 'green',
+      data: [],
+    },
+    {
+      label: 'Fail',
+      backgroundColor: 'red',
+      borderColor: 'red',
+      data: [],
+    },
+    {
+      label: 'Pending',
+      backgroundColor: 'orange',
+      borderColor: 'orange',
+      data: [],
+    },
+    {
+      label: 'Skipped',
+      backgroundColor: 'yellow',
+      borderColor: 'yellow',
+      data: [],
+    },
+  ],
+});
+
+const chartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      type: 'linear',
+      min: 0,
     },
   },
-  mounted() {
-    if (this.featureId) {
-      this.getTestsForFeature();
-    }
-    if (this.productId) {
-      this.getTestsForProduct();
-    }
-  },
-  // eslint-disable-next-line
-  components: { Line },
+});
+
+const tests = ref([]);
+const getTestsForProduct = async () => {
+  loading.value = true;
+  await http
+    .get(`/api/v1/coverage/products/${props.productId}/tests`)
+    .then((response) => {
+      tests.value = response.data;
+    })
+    .catch((err) => {
+      error.value = err;
+    });
+  loading.value = false;
+};
+
+const getTestsForFeature = async () => {
+  loading.value = true;
+  await http
+    .get(`/api/v1/coverage/features/${props.featureId}/tests`)
+    .then((response) => {
+      tests.value = response.data;
+    })
+    .catch((err) => {
+      error.value = err;
+    });
+
+  loading.value = false;
+};
+
+const testRuns = ref([]);
+const suite = ref('');
+const file = ref('');
+const showTestRuns = async (s: string, f: string) => {
+  loading.value = true;
+  suite.value = s;
+  file.value = f;
+
+  await http
+    .get(`/api/v1/tests?suite=${s}&file-name=${f}`)
+    .then((response) => {
+      testRuns.value = response.data;
+
+      chartData.value.labels = [];
+      for (let i = 0; i < testRuns.value.length; i++) {
+        // different order
+        const r = testRuns.value.length - 1 - i;
+        chartData.value.labels[i] = testRuns.value[r]['test-run'];
+        chartData.value.datasets[0].data[i] = testRuns.value[r]['total'];
+        chartData.value.datasets[1].data[i] = testRuns.value[r]['passes'];
+        chartData.value.datasets[2].data[i] = testRuns.value[r]['failures'];
+        chartData.value.datasets[3].data[i] = testRuns.value[r]['pending'];
+        chartData.value.datasets[4].data[i] = testRuns.value[r]['skipped'];
+      }
+    })
+    .catch((err) => {
+      error.value = err;
+    });
+  loading.value = false;
+  new Modal('#showTestRuns_' + props.featureId).show();
+};
+
+const closeAlert = () => {
+  error.value = '';
+};
+
+onMounted(() => {
+  if (props.featureId) {
+    getTestsForFeature();
+  }
+  if (props.productId) {
+    getTestsForProduct();
+  }
 });
 </script>
 

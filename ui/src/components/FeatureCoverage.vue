@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div v-if="loading" variant="info" class="spinner-border" role="status">
+    <div v-if="loading" class="info spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
 
@@ -11,12 +11,8 @@
           <span v-if="feature['business-value'] == 'low'">&dollar;</span>
           <span v-if="feature['business-value'] == 'medium'">&dollar;&dollar;</span>
           <span v-if="feature['business-value'] == 'high'">&dollar;&dollar;&dollar;</span>&nbsp;
-          <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"
-            ><i class="bi bi-file-text pointer" style="color: #2c3e50"></i></a
-          >&nbsp;
-          <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"
-            ><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i
-          ></a>
+          <a v-if="feature['documentation']" v-bind:href="feature['documentation']" target="_blank"><i class="bi bi-file-text pointer" style="color: #2c3e50"></i></a>&nbsp;
+          <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i></a>
         </div>
         <div class="col-5">
           <span v-if="feature['total'] < 1" class="result failures">{{ feature['total'] }}</span>
@@ -37,52 +33,39 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { defineProps, defineEmits, ref, onMounted } from 'vue';
 import TestCoverage from '@/components/TestCoverage.vue';
-import http from '@/common-http'
+import http from '@/common-http';
 
-export default defineComponent({
-  name: 'FeatureCoverage',
-  emits: ['showAlert'],
-  props: {
-    areaId: {
-      type: Number,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      loading: true,
-      features: [],
-      featureToggle: [false],
-    };
-  },
-  methods: {
-    async getFeatures() {
-      this.loading = true;
-      await http
-        .get(`/api/v1/coverage/areas/${this.areaId}/features`)
-        .then((response) => {
-          this.features = response.data;
-          this.featureToggle = new Array(this.features.length).fill(false);
-        })
-        .catch((err) => {
-          this.$emit('showAlert', err + ' | ' + err.response.data.error);
-        });
-      this.loading = false;
-    },
-    showTests(featureId: number) {
-      this.featureToggle[featureId] = !this.featureToggle[featureId];
-    },
-    showAlert(msg: never) {
-      this.$emit('showAlert', msg);
-    },
-  },
-  mounted() {
-    this.getFeatures();
-  },
-  components: { TestCoverage },
+const props = defineProps({
+  areaId: Number,
+});
+const emit = defineEmits(['showAlert']);
+const loading = ref(true);
+
+const features = ref([]);
+const featureToggle = ref([false]);
+const getFeatures = async () => {
+  loading.value = true;
+  await http
+    .get(`/api/v1/coverage/areas/${props.areaId}/features`)
+    .then((response) => {
+      features.value = response.data;
+      featureToggle.value = new Array(features.value.length).fill(false);
+    })
+    .catch((err) => {
+      emit('showAlert', err + ' | ' + err.response.data.error);
+    });
+  loading.value = false;
+};
+
+const showTests = (featureId: number) => {
+  featureToggle.value[featureId] = !featureToggle.value[featureId];
+};
+
+onMounted(() => {
+  getFeatures();
 });
 </script>
 

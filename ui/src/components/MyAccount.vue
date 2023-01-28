@@ -4,7 +4,7 @@
       <span>{{ error }}</span>
     </div>
 
-    <div v-if="loading" variant="info" class="spinner-border" role="status">
+    <div v-if="loading" class="info spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
 
@@ -26,41 +26,36 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import http from '@/common-http';
+const router = useRouter();
 
-export default defineComponent({
-  name: 'LogIn',
-  data() {
-    return {
-      newPassword: '',
-      password: '',
-      loading: false,
-      error: '',
-    };
-  },
-  methods: {
-    async changePassword() {
-      this.loading = true;
-      this.error = '';
+const loading = ref(false);
+const error = ref('');
 
-      http
-        .put(`/api/v1/users/change-pwd`, { "new-password": this.newPassword, password: this.password })
-        .then(() => {
-          this.loading = false;
-          location.assign('/');
-        })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response?.data?.error;
-        });
-      this.newPassword = '';
-      this.password = '';
-      this.loading = false;
-    },
-  },
-  components: {},
-});
+const newPassword = ref('');
+const password = ref('');
+const changePassword = async () => {
+  loading.value = true;
+  error.value = '';
+
+  http
+    .put(`/api/v1/users/change-pwd`, { 'new-password': newPassword.value, password: password.value })
+    .then(() => {
+      loading.value = false;
+      router.push('/');
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response?.data?.error;
+    })
+    .finally(() => {
+      newPassword.value = '';
+      password.value = '';
+      loading.value = false;
+    });
+};
 </script>
 
 <style scoped>

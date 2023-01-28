@@ -4,7 +4,7 @@
       <span>{{ error }}</span>
     </div>
 
-    <div v-if="loading" variant="info" class="spinner-border" role="status">
+    <div v-if="loading" class="spinner-border info" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
 
@@ -26,44 +26,40 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+//import { useRouter } from 'vue-router';
 import http from '@/common-http';
+//const router = useRouter();
 
-export default defineComponent({
-  name: 'LogIn',
-  data() {
-    return {
-      email: 'admin',
-      password: 'e2ecoverage',
-      loading: false,
-      error: '',
-    };
-  },
-  methods: {
-    async login() {
-      this.loading = true;
-      this.error = '';
+const loading = ref(false);
+const error = ref('');
 
-      http
-        .post('/api/v1/auth/login', { email: this.email, password: this.password })
-        .then((response) => {
-          this.loading = false;
-          sessionStorage.setItem('token', response.data.token);
-          sessionStorage.setItem('refreshToken', response.data.refreshToken);
-          sessionStorage.setItem('roles', response.data.roles);
-          location.assign('/');
-        })
-        .catch(() => {
-          this.error = 'Log in failed';
-          this.email = '';
-          this.password = '';
-          this.loading = false;
-        });
-    },
-  },
-  components: {},
-});
+const email = ref('admin');
+const password = ref('e2ecoverage');
+const login = async () => {
+  loading.value = true;
+  error.value = '';
+
+  http
+    .post('/api/v1/auth/login', { email: email.value, password: password.value })
+    .then((response) => {
+      loading.value = false;
+      sessionStorage.setItem('token', response.data.token);
+      sessionStorage.setItem('refreshToken', response.data.refreshToken);
+      sessionStorage.setItem('roles', response.data.roles);
+      location.assign('/');
+      //router.push('/');
+    })
+    .catch(() => {
+      error.value = 'Log in failed';
+    })
+    .finally(() => {
+      email.value = '';
+      password.value = '';
+      loading.value = false;
+    });
+};
 </script>
 
 <style scoped>

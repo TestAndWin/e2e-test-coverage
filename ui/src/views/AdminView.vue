@@ -11,15 +11,11 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import UserAdmin from '@/components/UserAdmin.vue';
+import { onMounted } from 'vue';
 
-export default {
-  components: {
-    UserAdmin,
-  },
-  mounted() {
-    document.title = 'e2e coverage - Admin';
-  },
-};
+onMounted(() => {
+  document.title = 'e2e coverage - Admin';
+});
 </script>

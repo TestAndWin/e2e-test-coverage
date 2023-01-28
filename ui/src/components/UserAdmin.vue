@@ -4,7 +4,7 @@
       <span>{{ error }}</span>
     </div>
 
-    <div v-if="loading" variant="info" class="spinner-border" role="status">
+    <div v-if="loading" class="info spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
 
@@ -25,7 +25,7 @@
     <button class="btn btn-primary pointer" type="submit" @click="showAddUserModal()">Add User</button>
 
     <!-- Modal to add an user -->
-    <div class="modal fade" ref="addUser" id="addUser" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
+    <div class="modal fade" id="addUser" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -57,7 +57,7 @@
     </div>
 
     <!-- Modal to edit an user -->
-    <div class="modal fade" ref="editUser" id="editUser" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
+    <div class="modal fade" id="editUser" tabindex="-1" aria-labelledby="editUserLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -80,7 +80,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal">Save</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal">Save</button>
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
             </div>
           </form>
@@ -90,96 +90,101 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import http from '@/common-http';
 import { Modal } from 'bootstrap';
 
-export default defineComponent({
-  name: 'UserAdmin',
-  data() {
-    return {
-      email: '',
-      password: '',
-      selectedRoles: [''],
-      roles: ['Admin', 'Maintainer', 'Tester'],
-      error: '',
-      user: [],
-      userId: 0,
-      loading: false,
-      componentKey: 0,
-    };
-  },
-  methods: {
-    async showAddUserModal() {
-      new Modal('#addUser').show();
-    },
-    async showEditUserModal(userId: number, email: string, roles: string) {
-      this.userId = userId;
-      this.email = email;
-      this.selectedRoles = Array.from(roles);
-      new Modal('#editUser').show();
-    },
-    async getUser() {
-      this.loading = true;
-      await http
-        .get(`/api/v1/users`)
-        .then((response) => {
-          this.user = response.data;
-        })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
-        });
-      this.loading = false;
-    },
-    async deleteUser(userId: number) {
-      await http.delete(`/api/v1/users/${userId}`).catch((err) => {
-        this.error = err + ' | ' + err.response.data.error;
-      });
-      this.getUser();
-    },
-    async createUser() {
-      this.loading = true;
-      this.error = '';
+const roles = ref(['Admin', 'Maintainer', 'Tester']);
+const error = ref('');
+const loading = ref(false);
 
-      const newUser = {
-        email: this.email,
-        password: this.password,
-        roles: this.selectedRoles,
-      };
+const showAddUserModal = () => {
+  new Modal('#addUser').show();
+};
 
-      await http.post('/api/v1/users', newUser).catch((err) => {
-        this.error = err + ' | ' + err.response?.data?.error;
-      });
-      this.loading = false;
-      this.email = '';
-      this.password = '';
-      this.selectedRoles = [];
-      await this.getUser();
-    },
-    async saveUser() {
-      this.loading = true;
-      this.error = '';
+const user = ref([]);
+const getUser = async () => {
+  loading.value = true;
+  await http
+    .get(`/api/v1/users`)
+    .then((response) => {
+      user.value = response.data;
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response.data.error;
+    });
+  loading.value = false;
+};
 
-      const newUser = {
-        email: this.email,
-        password: this.password,
-        roles: this.selectedRoles,
-      };
+const email = ref('');
+const password = ref('');
+const selectedRoles = ref(['']);
+const userId = ref(0);
+const showEditUserModal = (uId: number, e: string, r: string) => {
+  userId.value = uId;
+  email.value = e;
+  selectedRoles.value = Array.from(r);
+  new Modal('#editUser').show();
+};
 
-      await http.put(`/api/v1/users/${this.userId}`, newUser).catch((err) => {
-        this.error = err + ' | ' + err.response?.data?.error;
-      });
-      this.userId = 0;
-      this.loading = false;
-      this.email = '';
-      this.password = '';
-      this.selectedRoles = [];
-      await this.getUser();
-    },
-  },
-  mounted() {
-    this.getUser();
-  },
+const deleteUser = async (userId: number) => {
+  await http.delete(`/api/v1/users/${userId}`).catch((err) => {
+    error.value = err + ' | ' + err.response.data.error;
+  });
+  getUser();
+};
+
+const createUser = async () => {
+  loading.value = true;
+  error.value = '';
+
+  const newUser = {
+    email: email.value,
+    password: password.value,
+    roles: selectedRoles.value,
+  };
+
+  await http
+    .post('/api/v1/users', newUser)
+    .catch((err) => {
+      error.value = err + ' | ' + err.response?.data?.error;
+    })
+    .finally(() => {
+      loading.value = false;
+      email.value = '';
+      password.value = '';
+      selectedRoles.value = [];
+    });
+  await getUser();
+};
+
+const saveUser = async () => {
+  loading.value = true;
+  error.value = '';
+
+  const newUser = {
+    email: email.value,
+    password: password.value,
+    roles: selectedRoles.value,
+  };
+
+  await http
+    .put(`/api/v1/users/${userId.value}`, newUser)
+    .catch((err) => {
+      error.value = err + ' | ' + err.response?.data?.error;
+    })
+    .finally(() => {
+      userId.value = 0;
+      loading.value = false;
+      email.value = '';
+      password.value = '';
+      selectedRoles.value = [];
+    });
+  await getUser();
+};
+
+onMounted(() => {
+  getUser();
 });
 </script>

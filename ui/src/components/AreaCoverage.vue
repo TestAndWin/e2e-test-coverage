@@ -5,7 +5,7 @@
       <button type="button" class="btn-close pointer" aria-label="Close" @click="closeAlert()"></button>
     </div>
 
-    <div v-if="loading" variant="info" class="spinner-border" role="status">
+    <div v-if="loading" class="info spinner-border" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
 
@@ -42,11 +42,9 @@
           </span>
         </div>
         <div class="col mb-2">
-          <span class="result expl-test pointer" @click="showExplTests(area['id'])">
-            {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }})
-          </span>
+          <span class="result expl-test pointer" @click="showExplTests(area['id'])"> {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }}) </span>
           &nbsp;
-          <span class="result expl-test pointer" @click="logExplTest(area['id'])"> New </span>
+          <span class="result expl-test pointer" @click="showLogExplTest(area['id'])"> New </span>
         </div>
       </div>
       <FeatureCoverage @show-alert="showAlert" v-if="areaToggle[area['id']]" :areaId="area['id']" />
@@ -54,7 +52,7 @@
   </div>
 
   <!-- Modal to add an exploratory test-->
-  <div class="modal fade" ref="logExplTest" id="logExplTest" tabindex="-1" aria-labelledby="logExplTestLabel" aria-hidden="true">
+  <div class="modal fade" id="logExplTest" tabindex="-1" aria-labelledby="logExplTestLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -71,17 +69,17 @@
             <label>Test Date</label>
             <input id="etDate" class="form-control" type="date" v-model="etDate" />
           </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveExplTest">Save test</button>
+          </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveExplTest">Save test</button>
-        </div>
       </div>
     </div>
   </div>
 
   <!-- Modal to show exploratory test-->
-  <div class="modal fade" ref="showExplTest" id="showExplTest" tabindex="-1" aria-labelledby="showExplTestLabel" aria-hidden="true">
+  <div class="modal fade" id="showExplTest" tabindex="-1" aria-labelledby="showExplTestLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -107,105 +105,103 @@
             </div>
             <div v-if="explTests.length == 0">No exploratory tests logged.</div>
           </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
+          </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import { Modal } from 'bootstrap';
 import FeatureCoverage from './FeatureCoverage.vue';
 import StarRating from 'vue-star-rating';
-import http from '@/common-http'
+import http from '@/common-http';
 
-export default defineComponent({
-  name: 'AreaCoverage',
-  props: {
-    productId: {
-      type: Number,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      loading: true,
-      areas: [],
-      areaToggle: [false],
-      etAreaId: 0,
-      etSummary: '',
-      etRating: 0,
-      etDate: '',
-      explTests: [],
-      error: '',
-    };
-  },
-  methods: {
-    async getAreas() {
-      this.loading = true;
-      await http
-        .get(`/api/v1/coverage/${this.productId}/areas`)
-        .then((response) => {
-          this.areas = response.data;
-          this.areaToggle = new Array(this.areas.length).fill(false);
-        })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
-        });
+const props = defineProps({
+  productId: Number,
+});
 
-      this.loading = false;
-    },
-    async showFeatures(areaId: number) {
-      this.areaToggle[areaId] = !this.areaToggle[areaId];
-    },
-    async logExplTest(areaId: number) {
-      this.etAreaId = areaId;
-      new Modal('#logExplTest').show();
-    },
-    async saveExplTest() {
-      await http
-        .post(`/api/v1/expl-tests`, {
-          'area-id': this.etAreaId,
-          summary: this.etSummary,
-          rating: this.etRating,
-          'test-run': this.etDate + 'T00:00:00.000Z',
-        })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
-        });
-      this.etDate = new Date().toISOString().split('T')[0];
-      this.etSummary = '';
-      this.etRating = 0;
-      this.getAreas();
-    },
-    async showExplTests(areaId: number) {
-      await http
-        .get(`/api/v1/expl-tests/area/${areaId}`)
-        .then((response) => {
-          this.explTests = response.data;
-        })
-        .catch((err) => {
-          this.error = err + ' | ' + err.response.data.error;
-        });
+const loading = ref(true);
+const error = ref('');
 
-      new Modal('#showExplTest').show();
-    },
-    async closeAlert() {
-      this.error = '';
-    },
-    async showAlert(msg: never) {
-      this.error = msg;
-    },
-  },
-  mounted() {
-    this.getAreas();
-    this.etDate = new Date().toISOString().split('T')[0];
-  },
-  components: { FeatureCoverage, StarRating },
+const areaToggle = ref([false]);
+const areas = ref([]);
+const getAreas = async () => {
+  loading.value = true;
+  await http
+    .get(`/api/v1/coverage/${props.productId}/areas`)
+    .then((response) => {
+      areas.value = response.data;
+      areaToggle.value = new Array(areas.value.length).fill(false);
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response.data.error;
+    });
+
+  loading.value = false;
+};
+
+const showFeatures = (areaId: number) => {
+  areaToggle.value[areaId] = !areaToggle.value[areaId];
+};
+
+const etAreaId = ref(0);
+const etSummary = ref('');
+const etRating = ref(0);
+const etDate = ref('');
+const explTests = ref([]);
+const saveExplTest = async () => {
+  await http
+    .post(`/api/v1/expl-tests`, {
+      'area-id': etAreaId.value,
+      summary: etSummary.value,
+      rating: etRating.value,
+      'test-run': etDate.value + 'T00:00:00.000Z',
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response.data.error;
+    })
+    .finally(() => {
+      etDate.value = new Date().toISOString().split('T')[0];
+      etSummary.value = '';
+      etRating.value = 0;
+    });
+  getAreas();
+};
+
+const showLogExplTest = (areaId: number) => {
+  etAreaId.value = areaId;
+  etDate.value = new Date().toISOString().split('T')[0];
+  new Modal('#logExplTest').show();
+};
+
+const showExplTests = async (areaId: number) => {
+  await http
+    .get(`/api/v1/expl-tests/area/${areaId}`)
+    .then((response) => {
+      explTests.value = response.data;
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response.data.error;
+    });
+
+  new Modal('#showExplTest').show();
+};
+
+const closeAlert = () => {
+  error.value = '';
+};
+
+const showAlert = (msg: never) => {
+  error.value = msg;
+};
+
+onMounted(() => {
+  getAreas();
 });
 </script>
 

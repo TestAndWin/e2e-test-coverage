@@ -9,10 +9,10 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  mounted() {
-    document.title = "e2e coverage - 404";
-  },
-};
+<script setup lang="ts">
+import { onMounted } from 'vue';
+
+onMounted(() => {
+  document.title = 'e2e coverage - Not found';
+});
 </script>

@@ -43,42 +43,36 @@
   <router-view />
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
 
-export default defineComponent({
-  name: 'App',
-  data() {
-    return {
-      loggedIn: sessionStorage.getItem('token') != undefined,
-    };
-  },
-  computed: {
-    isMaintainer() {
-      const s = sessionStorage.getItem('roles');
-      if (s) {
-        return s.indexOf('Maintainer') > -1;
-      }
-      return false;
-    },
-    isTester() {
-      const s = sessionStorage.getItem('roles');
-      if (s) {
-        return s.indexOf('Tester') > -1;
-      }
-      return false;
-    },
-    isAdmin() {
-      const s = sessionStorage.getItem('roles');
-      if (s) {
-        return s.indexOf('Admin') > -1;
-      }
-      return false;
-    }
+const loggedIn = ref(sessionStorage.getItem('token') != undefined);
+
+const isMaintainer = computed(() => {
+  const s = sessionStorage.getItem('roles');
+  if (s) {
+    return s.indexOf('Maintainer') > -1;
   }
-})
+  return false;
+});
+
+const isTester = computed(() => {
+  const s = sessionStorage.getItem('roles');
+  if (s) {
+    return s.indexOf('Tester') > -1;
+  }
+  return false;
+});
+
+const isAdmin = computed(() => {
+  const s = sessionStorage.getItem('roles');
+  if (s) {
+    return s.indexOf('Admin') > -1;
+  }
+  return false;
+});
 </script>
 
 <style>
-@import "./assets/styles.css";
+@import './assets/styles.css';
 </style>

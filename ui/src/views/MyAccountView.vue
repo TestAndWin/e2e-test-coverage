@@ -4,15 +4,11 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import MyAccount from "@/components/MyAccount.vue";
+import { onMounted } from 'vue';
 
-export default {
-  components: {
-    MyAccount,
-  },
-  mounted() {
-    document.title = "e2e coverage - My Account";
-  },
-};
+onMounted(() => {
+  document.title = 'e2e coverage - My Account';
+});
 </script>

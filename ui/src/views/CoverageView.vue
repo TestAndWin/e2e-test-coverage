@@ -11,15 +11,11 @@
   </div>
 </template>
 
-<script lang="ts">
-import AreaCoverage from "@/components/AreaCoverage.vue";
+<script setup lang="ts">
+import AreaCoverage from '@/components/AreaCoverage.vue';
+import { onMounted } from 'vue';
 
-export default {
-  components: {
-    AreaCoverage,
-  },
-  mounted() {
-    document.title = "e2e coverage - Coverage";
-  },
-};
+onMounted(() => {
+  document.title = 'e2e coverage - Coverage';
+});
 </script>
