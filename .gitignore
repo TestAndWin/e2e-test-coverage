@@ -6,4 +6,4 @@ testresults
 WORKLOG.md
 bak.tar
 .DS_Store
-db_aws.env
+docker_env_vars

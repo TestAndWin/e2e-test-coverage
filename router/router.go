@@ -30,7 +30,6 @@ func HandleIndex() gin.HandlerFunc {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// TODO
 		c.Writer.Header().Set("Access-Control-Allow-Origin", c.GetHeader("origin"))
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
