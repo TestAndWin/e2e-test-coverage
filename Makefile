@@ -1,33 +1,43 @@
 BINARY_NAME=e2e-coverage
 
-build:
-	# Swagger
-	swag init -g cmd/coverage/main.go --output docs
-	# Build VUE app and generate ui_gen.go
-	go generate ./ui
-	GOOS=linux GOARCH=amd64 go build -o ./bin/${BINARY_NAME}-linux cmd/coverage/main.go
+build-ui:
+	cd ui; npm run build
 
-build-local:
+build: build-ui
 	# Swagger
-	swag init -g cmd/coverage/main.go --output docs
+	cd api; swag init -g cmd/coverage/main.go --output docs
 	# Build VUE app and generate ui_gen.go
-	go generate ./ui
-	# Build for local system
-	go build -o ./bin/${BINARY_NAME} cmd/coverage/main.go
-
-run:
-	./bin/${BINARY_NAME}
+	cd api; go generate ./ui
+	cd api; GOOS=linux GOARCH=amd64 go build -o ../bin/${BINARY_NAME}-linux cmd/coverage/main.go
 
 docker:
 	docker build -t e2ecoverage .
 
 docker-run:
 	docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage
-	
-build_and_run: build-local run
+
+build-local: build-ui
+	# Swagger
+	cd api; swag init -g cmd/coverage/main.go --output docs
+	# Build VUE app and generate ui_gen.go
+	cd api; go generate ./ui
+	# Build for local system
+	cd api; go build -o ../bin/${BINARY_NAME} cmd/coverage/main.go
+
+run:
+	./bin/${BINARY_NAME}
+
+build-and-run: build-local run
 
 clean:
 	go clean
-	rm bin/${BINARY_NAME}
-	rm bin/${BINARY_NAME}-win
-	rm bin/${BINARY_NAME}-linux
+	rm -f bin/${BINARY_NAME}
+	rm -f bin/${BINARY_NAME}-linux
+
+# Start Golang App directly
+run-local-api:
+	cd api; go run cmd/coverage/main.go
+
+# Start VUE Server in Dev Mode
+run-local-ui:
+	cd ui; npm run serve

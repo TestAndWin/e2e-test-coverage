@@ -1,5 +1,5 @@
 <template>
-  <div class="card m-3">
+  <div class="product container">
     <div v-if="error" class="alert alert-danger">
       <span>{{ error }}</span>
     </div>
@@ -8,8 +8,8 @@
       <span class="visually-hidden">Loading...</span>
     </div>
 
-    <h4 class="card-header">Change Password</h4>
-    <div class="card-body">
+    <h4 class="">Change Password</h4>
+    <div class="user shadow p-2 mb-4 rounded">
       <div class="form-group">
         <label>Password</label>
         <input v-model="password" type="password" class="form-control" />
@@ -23,17 +23,58 @@
         <button class="btn btn-primary pointer" @click="changePassword()">Save</button>
       </div>
     </div>
+
+    <div v-if="isAdmin">
+      <h4 class="">Generate API Key</h4>
+      <div class="user shadow p-2 mb-4 rounded">
+        <div class="form-group">
+          <button class="btn btn-primary pointer" @click="generateApiKey()">Generate</button>
+        </div>
+        <br />
+        <div class="form-group">
+          <label>API Key:</label>&nbsp;
+          <span>{{ apiKey }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import http from '@/common-http';
 const router = useRouter();
 
 const loading = ref(false);
 const error = ref('');
+
+// TODO Move isAdmin to js file
+const isAdmin = computed(() => {
+  const s = sessionStorage.getItem('roles');
+  if (s) {
+    return s.indexOf('Admin') > -1;
+  }
+  return false;
+});
+
+const apiKey = ref('');
+const generateApiKey = async () => {
+  loading.value = true;
+  error.value = '';
+
+  http
+    .post(`/api/v1/users/generate-api-key`, {  })
+    .then((response) => {
+      apiKey.value = response.data.key;
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response?.data?.error;
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
 
 const newPassword = ref('');
 const password = ref('');
@@ -44,7 +85,6 @@ const changePassword = async () => {
   http
     .put(`/api/v1/users/change-pwd`, { 'new-password': newPassword.value, password: password.value })
     .then(() => {
-      loading.value = false;
       router.push('/');
     })
     .catch((err) => {
