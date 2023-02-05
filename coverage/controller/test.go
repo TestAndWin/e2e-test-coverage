@@ -43,8 +43,8 @@ func AddTest(c *gin.Context) {
 }
 
 // DeleteTest godoc
-// @Summary      Deletes the test
-// @Description  Deletes the test
+// @Summary      Delete the test
+// @Description  Delete the test
 // @Tags         test
 // @Produce      json
 // @Param        id    path      int     true  "Test ID"

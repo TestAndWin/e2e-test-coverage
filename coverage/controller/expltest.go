@@ -42,8 +42,8 @@ func AddExplTest(c *gin.Context) {
 }
 
 // DeleteTest godoc
-// @Summary      Deletes the expl test
-// @Description  Deletes the expl test
+// @Summary      Delete an expl test
+// @Description  Delete an expl test
 // @Tags         expl-test
 // @Produce      json
 // @Param        id    path      int     true  "Test ID"

@@ -1,4 +1,11 @@
 <template>
+    <div class="container mb-3">
+    <div class="card">
+      <div class="card-body">
+        <p class="card-text">Change your password and Admin user can generate an API token.</p>
+      </div>
+    </div>
+  </div>
   <div class="">
     <MyAccount />
   </div>

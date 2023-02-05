@@ -60,7 +60,7 @@ func GetProductAreas(c *gin.Context) {
 }
 
 // UpdateArea godoc
-// @Summary      Updates an area
+// @Summary      Update an area
 // @Description  Takes an area JSON and the Area ID and updates an area in the DB.
 // @Tags         area
 // @Produce      json
@@ -85,8 +85,8 @@ func UpdateArea(c *gin.Context) {
 }
 
 // DeleteArea godoc
-// @Summary      Deletes the product area
-// @Description  Deletes the product area
+// @Summary      Delete the product area
+// @Description  Delete the product area
 // @Tags         area
 // @Produce      json
 // @Param        id    path      int     true  "Area ID"

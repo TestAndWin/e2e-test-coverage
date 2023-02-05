@@ -37,8 +37,8 @@ func initRepository() repository.UserStore {
 }
 
 // GetUser godoc
-// @Summary      Gets all user
-// @Description  Gets all user
+// @Summary      Get all user
+// @Description  Get all user
 // @Tags         user
 // @Produce      json
 // @Success      200  {array}  model.User
@@ -79,7 +79,7 @@ func CreateUser(c *gin.Context) {
 }
 
 // UpdateUser godoc
-// @Summary      Changes the role of a user
+// @Summary      Change the role, name and password of a user
 // @Description  Takes a user JSON and updates the user.
 // @Tags         user
 // @Produce      json
@@ -135,8 +135,8 @@ func ChangePassword(c *gin.Context) {
 }
 
 // DeleteUser godoc
-// @Summary      Deletes the user
-// @Description  Deletes the user
+// @Summary      Delete the user
+// @Description  Delete the user
 // @Tags         user
 // @Produce      json
 // @Param        id    path      int     true  "User ID"

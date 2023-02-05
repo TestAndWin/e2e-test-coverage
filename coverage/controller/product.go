@@ -60,7 +60,7 @@ func GetProducts(c *gin.Context) {
 }
 
 // UpdateProduct godoc
-// @Summary      Updates a product
+// @Summary      Update a product
 // @Description  Takes a product JSON and product ID and updates it in DB. Return saved JSON.
 // @Tags         product
 // @Param        id       path      int            true  "Product ID"
@@ -86,8 +86,8 @@ func UpdateProduct(c *gin.Context) {
 }
 
 // DeleteProduct godoc
-// @Summary      Deletes the product
-// @Description  Deletes the product
+// @Summary      Delete the product
+// @Description  Delete the product
 // @Tags         product
 // @Produce      json
 // @Param        id    path      int     true  "Product ID"

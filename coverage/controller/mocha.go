@@ -19,8 +19,8 @@ import (
 )
 
 // UploadMochaSummaryReport godoc
-// @Summary      Adds test result of a mocha summary report
-// @Description  Adds test result of a mocha summary report.
+// @Summary      Add test result of a mocha summary report
+// @Description  Add test result of a mocha summary report.
 // @Tags         mocha
 // @Produce      json
 // @Param        id    path      int     true  "Product ID"

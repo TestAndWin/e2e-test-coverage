@@ -60,7 +60,7 @@ func GetAreaFeatures(c *gin.Context) {
 }
 
 // UpdateFeature godoc
-// @Summary      Updates a feature
+// @Summary      Update a feature
 // @Description  Takes a feature JSON and feature ID and updates it in DB. Return saved JSON.
 // @Tags         feature
 // @Param        id       path      int            true  "Feature ID"
@@ -85,8 +85,8 @@ func UpdateFeature(c *gin.Context) {
 }
 
 // DeleteFeature godoc
-// @Summary      Deletes the product feature
-// @Description  Deletes the product feature
+// @Summary      Delete the product feature
+// @Description  Delete the product feature
 // @Tags         feature
 // @Produce      json
 // @Param        id    path      int     true  "Feature ID"
