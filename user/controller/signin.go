@@ -21,6 +21,9 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+const COOKIE_PAYLOAD = "header.payload"
+const COOKIE_SIGNATURE = "signature"
+
 var jwtKey = getJwtKey()
 
 func getJwtKey() []byte {
@@ -54,64 +57,29 @@ func Login(c *gin.Context) {
 		}
 
 		// Create the JWT token
-		claims := createClaims(s.Email, roles, time.Now().Add(5*time.Minute))
+		claims := createClaims(s.Email, roles, time.Now().Add(24*time.Hour))
 		token, err := createToken(claims, jwtKey)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			return
 		}
-		claims = createClaims(s.Email, roles, time.Now().Add(24*time.Hour))
-		refreshToken, err := createToken(claims, jwtKey)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-			return
+
+		// Split JWT Token Approach
+		t := strings.Split(token, ".")
+		c.SetCookie(COOKIE_PAYLOAD, t[0]+"."+t[1], 1800, "/", "", true, false)
+
+		// signature - Session live
+		cookie := &http.Cookie{
+			Name:     COOKIE_SIGNATURE,
+			Value:    t[2],
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
 		}
-
-		c.JSON(http.StatusOK, gin.H{"token": token, "roles": roles, "refreshToken": refreshToken})
+		http.SetCookie(c.Writer, cookie)
+		c.JSON(http.StatusOK, gin.H{"roles": roles})
 	}
-}
-
-// RefreshToken godoc
-// @Summary      Refresh the bearer token
-// @Description  Checks if the token is valid and returns the "fresh" the token
-// @Tags         user
-// @Param        token  body      string  true  "JSON"
-// @Produce      json
-// @Success      200  {object}  string
-// @Router       /api/v1/auth/refresh [POST]
-func RefreshToken(c *gin.Context) {
-	// Get the token from the post body
-	var refresh struct {
-		Token string `json:"token" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&refresh); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get the claims and check them
-	// This must return another error code than 401, otherwise the client will run into an endless loop
-	claims := &model.Claims{}
-	token, err := jwt.ParseWithClaims(refresh.Token, claims, func(token *jwt.Token) (interface{}, error) { return jwtKey, nil })
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	claims, ok := token.Claims.(*model.Claims)
-	if !ok || !token.Valid {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
-		return
-	}
-
-	// Create new token
-	newClaims := createClaims(claims.Email, claims.Role, time.Now().Add(5*time.Minute))
-	newToken, err := createToken(newClaims, []byte(jwtKey))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"token": newToken})
 }
 
 // Create the claims
@@ -121,6 +89,7 @@ func createClaims(email string, roles string, t time.Time) *model.Claims {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(t),
 			Issuer:    "TestAndWin.net",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		Role: roles,
 	}
@@ -134,15 +103,21 @@ func createToken(claims *model.Claims, secretKey []byte) (string, error) {
 	return signedToken, err
 }
 
-// Retrieve token from request header Authorization
+// Retrieve token from cookies
 func GetToken(c *gin.Context) (*jwt.Token, error) {
-	token := c.Request.Header["Authorization"]
-	//log.Printf("Auth user: %s", token)
-	if token == nil || len(token) < 1 || !strings.Contains(token[0], "Bearer ") {
+	// Get cookie values
+	p, err := c.Cookie(COOKIE_PAYLOAD)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Cookie not set")
 		return nil, nil
 	}
-	t := strings.Split(token[0], " ")[1]
-	//log.Printf("Token: %s", t)
+	s, err := c.Cookie(COOKIE_SIGNATURE)
+	if err != nil {
+		c.String(http.StatusUnauthorized, "Cookie not set")
+		return nil, nil
+	}
+	// And get the complete token
+	t := p + "." + s
 
 	// Parse the JWT string
 	claims := &model.Claims{}
@@ -151,6 +126,7 @@ func GetToken(c *gin.Context) (*jwt.Token, error) {
 
 // Reads the Bearer token and checks if the token is valid and if the role saved in the token matches the expected level.
 // Level can also be an empty string, then this check is skipped.
+// The header.payload cookie is updated with a new expire date (+30m)
 func AuthUser(level string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tkn, err := GetToken(c)
@@ -162,7 +138,7 @@ func AuthUser(level string) gin.HandlerFunc {
 
 		// Check if token is valid and not expired
 		if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
-			// Has the user the needed role
+			// Has the user the needed role?
 			if level == "" || strings.Contains(claims.Role, level) {
 				log.Printf("Log in success: %v %v %v", claims.Email, claims.Role, claims.ExpiresAt)
 			} else {
@@ -176,6 +152,9 @@ func AuthUser(level string) gin.HandlerFunc {
 			return
 		}
 
+		// Update the expire date
+		p, _ := c.Cookie(COOKIE_PAYLOAD)
+		c.SetCookie(COOKIE_PAYLOAD, p, 1800, "/", "", true, false)
 		c.Next()
 	}
 }

@@ -250,26 +250,6 @@ paths:
       summary: Log in of a user
       tags:
       - user
-  /api/v1/auth/refresh:
-    post:
-      description: Checks if the token is valid and returns the "fresh" the token
-      parameters:
-      - description: JSON
-        in: body
-        name: token
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Refresh the bearer token
-      tags:
-      - user
   /api/v1/coverage/{id}/areas:
     get:
       description: Get coverage for all product areas. Only tests from the last 28

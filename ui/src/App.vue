@@ -46,7 +46,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-const loggedIn = ref(sessionStorage.getItem('token') != undefined);
+const loggedIn = ref(sessionStorage.getItem('roles') != undefined);
 
 const isMaintainer = computed(() => {
   const s = sessionStorage.getItem('roles');

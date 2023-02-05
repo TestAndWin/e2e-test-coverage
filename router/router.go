@@ -30,9 +30,10 @@ func HandleIndex() gin.HandlerFunc {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// TODO Must the next line adapted?
 		c.Writer.Header().Set("Access-Control-Allow-Origin", c.GetHeader("origin"))
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, Content-Length, Accept-Encoding")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, DELETE, OPTIONS, GET, PUT")
 
 		if c.Request.Method == "OPTIONS" {
@@ -104,7 +105,6 @@ func HandleRequest() {
 
 		// User related endpoints
 		v1.POST("/auth/login", usercontroller.Login)
-		v1.POST("/auth/refresh", usercontroller.RefreshToken)
 		v1.GET("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.GetUser)
 		v1.POST("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.CreateUser)
 		v1.PUT("/users/:id", usercontroller.AuthUser(model.ADMIN), usercontroller.UpdateUser)

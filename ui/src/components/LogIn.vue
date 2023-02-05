@@ -28,9 +28,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-//import { useRouter } from 'vue-router';
 import http from '@/common-http';
-//const router = useRouter();
 
 const loading = ref(false);
 const error = ref('');
@@ -45,11 +43,9 @@ const login = async () => {
     .post('/api/v1/auth/login', { email: email.value, password: password.value })
     .then((response) => {
       loading.value = false;
-      sessionStorage.setItem('token', response.data.token);
-      sessionStorage.setItem('refreshToken', response.data.refreshToken);
       sessionStorage.setItem('roles', response.data.roles);
+      // Want to refresh the menu
       location.assign('/');
-      //router.push('/');
     })
     .catch(() => {
       error.value = 'Log in failed';

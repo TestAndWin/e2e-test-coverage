@@ -1,0 +1,4 @@
+DB_USER=root
+DB_PASSWORD=root
+DB_HOST=host.docker.internal:3306
+JWT_KEY=enter_your_jwt_key_here
