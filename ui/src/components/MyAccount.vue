@@ -64,7 +64,7 @@ const generateApiKey = async () => {
   error.value = '';
 
   http
-    .post(`/api/v1/users/generate-api-key`, {  })
+    .post(`/api/v1/users/generate-api-key`, {})
     .then((response) => {
       apiKey.value = response.data.key;
     })

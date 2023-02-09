@@ -3,9 +3,10 @@ BINARY_NAME=e2e-coverage
 build-ui:
 	cd ui; npm run build
 
-build: build-ui
-	# Swagger
+build-swagger:
 	cd api; swag init -g cmd/coverage/main.go --output docs
+
+build: build-ui build-swagger
 	# Build VUE app and generate ui_gen.go
 	cd api; go generate ./ui
 	cd api; GOOS=linux GOARCH=amd64 go build -o ../bin/${BINARY_NAME}-linux cmd/coverage/main.go
@@ -16,9 +17,7 @@ docker:
 docker-run:
 	docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage
 
-build-local: build-ui
-	# Swagger
-	cd api; swag init -g cmd/coverage/main.go --output docs
+build-local: build-ui build-swagger
 	# Build VUE app and generate ui_gen.go
 	cd api; go generate ./ui
 	# Build for local system
