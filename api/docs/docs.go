@@ -823,14 +823,14 @@ const docTemplate = `{
         },
         "/coverage/:id/upload-mocha-summary-report": {
             "post": {
-                "description": "Add test result of a mocha summary report.",
+                "description": "Add test results of a mocha summary report.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "mocha"
                 ],
-                "summary": "Add test result of a mocha summary report",
+                "summary": "Add test results of a mocha summary report",
                 "parameters": [
                     {
                         "type": "integer",
@@ -838,6 +838,19 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Api Key",
+                        "name": "apiKey",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Url of the detail test report",
+                        "name": "testReportUrl",
+                        "in": "header"
                     },
                     {
                         "description": "Mocha JSON",

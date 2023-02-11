@@ -45,6 +45,11 @@
           <span v-if="test['area-id'] == 0"><i>Not assigned to an area/feature</i></span>
         </div>
       </div>
+      <div class="row" v-if="test['url']">
+        <div class="col">
+          <span class="test-suite d-flex justify-content-between"><a v-bind:href="test['url']" target="_blank">Test Report</a></span>
+        </div>
+      </div>
     </div>
 
     <!-- Modal to show all tests with a graph -->

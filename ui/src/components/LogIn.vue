@@ -1,26 +1,28 @@
 <template>
-  <div class="card m-3">
-    <div v-if="error" class="alert alert-danger">
-      <span>{{ error }}</span>
-    </div>
-
-    <div v-if="loading" class="spinner-border info" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-
-    <h4 class="card-header">Log In</h4>
-    <div class="card-body">
-      <div class="form-group">
-        <label>E-Mail</label>
-        <input v-model="email" type="text" class="form-control" />
+  <div class="product container">
+    <div class="card m-3">
+      <div v-if="error" class="alert alert-danger">
+        <span>{{ error }}</span>
       </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input v-model="password" type="password" class="form-control" />
+
+      <div v-if="loading" class="spinner-border info" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
-      <br />
-      <div class="form-group">
-        <button class="btn btn-primary pointer" @click="login()">Log In</button>
+
+      <h4 class="card-header">Log In</h4>
+      <div class="card-body">
+        <div class="form-group">
+          <label>E-Mail</label>
+          <input v-model="email" type="text" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input v-model="password" type="password" class="form-control" />
+        </div>
+        <br />
+        <div class="form-group">
+          <button class="btn btn-primary pointer" @click="login()">Log In</button>
+        </div>
       </div>
     </div>
   </div>

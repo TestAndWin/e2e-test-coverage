@@ -19,16 +19,19 @@ import (
 )
 
 // UploadMochaSummaryReport godoc
-// @Summary      Add test result of a mocha summary report
-// @Description  Add test result of a mocha summary report.
+// @Summary      Add test results of a mocha summary report
+// @Description  Add test results of a mocha summary report.
 // @Tags         mocha
 // @Produce      json
-// @Param        id    path      int     true  "Product ID"
-// @Param        test  body      string  true  "Mocha JSON"
+// @Param        id            path      int     true   "Product ID"
+// @Param        apiKey        header    string  true   "Api Key"
+// @Param        testReportUrl header    string  false  "Url of the detail test report"
+// @Param        test          body      string  true   "Mocha JSON"
 // @Success      201   object string
 // @Router       /coverage/:id/upload-mocha-summary-report [POST]
 func UploadMochaSummaryReport(c *gin.Context) {
 	testResults, err := reporter.ReadMochaResultFromContext(c)
+	testReportUrl := c.GetHeader("testReportUrl")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
@@ -50,13 +53,12 @@ func UploadMochaSummaryReport(c *gin.Context) {
 						log.Println(err)
 						status = append(status, err.Error())
 					} else {
-						// TODO Url
 						var id int64
 						var err error
 						if aid != 0 && fid != 0 {
-							id, err = repo.InsertTestResult(pid, aid, fid, tr)
+							id, err = repo.InsertTestResult(pid, aid, fid, testReportUrl, tr)
 						} else {
-							id, err = repo.InsertTestResultWithoutAreaFeature(pid, tr)
+							id, err = repo.InsertTestResultWithoutAreaFeature(pid, testReportUrl, tr)
 						}
 						if err != nil {
 							status = append(status, err.Error())

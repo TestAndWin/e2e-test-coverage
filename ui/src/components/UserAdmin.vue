@@ -32,7 +32,7 @@
             <h5 class="modal-title" id="addUserLabel">Add User</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form @submit.prevent="createUser">
+          <form>
             <div class="modal-body">
               <div class="form-group">
                 <label for="email">Email</label>
@@ -48,7 +48,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal">Add</button>
+              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal" @click="createUser">Add</button>
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
             </div>
           </form>
@@ -64,7 +64,7 @@
             <h5 class="modal-title" id="editUserLabel">Edit User</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <form @submit.prevent="saveUser">
+          <form>
             <div class="modal-body">
               <div class="form-group">
                 <label for="email">Email</label>
@@ -80,7 +80,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal">Save</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveUser">Save</button>
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
             </div>
           </form>
@@ -98,12 +98,18 @@ import { Modal } from 'bootstrap';
 const roles = ref(['Admin', 'Maintainer', 'Tester']);
 const error = ref('');
 const loading = ref(false);
+const email = ref('');
+const password = ref('');
+const selectedRoles = ref(['']);
+const user = ref([]);
 
 const showAddUserModal = () => {
+  email.value = '';
+  password.value = '';
+  selectedRoles.value = [];
   new Modal('#addUser').show();
 };
 
-const user = ref([]);
 const getUser = async () => {
   loading.value = true;
   await http
@@ -117,9 +123,6 @@ const getUser = async () => {
   loading.value = false;
 };
 
-const email = ref('');
-const password = ref('');
-const selectedRoles = ref(['']);
 const userId = ref(0);
 const showEditUserModal = (uId: number, e: string, r: string) => {
   userId.value = uId;
@@ -168,6 +171,8 @@ const saveUser = async () => {
     password: password.value,
     roles: selectedRoles.value,
   };
+  console.log('aaveUser');
+  console.log(newUser);
 
   await http
     .put(`/api/v1/users/${userId.value}`, newUser)

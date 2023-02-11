@@ -685,13 +685,22 @@ paths:
       - user
   /coverage/:id/upload-mocha-summary-report:
     post:
-      description: Add test result of a mocha summary report.
+      description: Add test results of a mocha summary report.
       parameters:
       - description: Product ID
         in: path
         name: id
         required: true
         type: integer
+      - description: Api Key
+        in: header
+        name: apiKey
+        required: true
+        type: string
+      - description: Url of the detail test report
+        in: header
+        name: testReportUrl
+        type: string
       - description: Mocha JSON
         in: body
         name: test
@@ -705,7 +714,7 @@ paths:
           description: Created
           schema:
             type: string
-      summary: Add test result of a mocha summary report
+      summary: Add test results of a mocha summary report
       tags:
       - mocha
   /coverage/features/:id/tests:

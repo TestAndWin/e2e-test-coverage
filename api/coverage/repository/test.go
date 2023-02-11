@@ -59,12 +59,12 @@ func (r CoverageStore) InsertTest(t model.Test) (int64, error) {
 	return r.executeSql(insertTestStmt, t.ProductId, t.AreaId, t.FeatureId, t.Suite, t.FileName, t.Url, t.Total, t.Passes, t.Pending, t.Failures, t.Skipped, t.Uuid, t.TestRun)
 }
 
-func (r CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, tr reporter.TestResult) (int64, error) {
-	return r.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
+func (r CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, url string, tr reporter.TestResult) (int64, error) {
+	return r.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
 }
 
-func (r CoverageStore) InsertTestResultWithoutAreaFeature(productId string, tr reporter.TestResult) (int64, error) {
-	return r.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, "", tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
+func (r CoverageStore) InsertTestResultWithoutAreaFeature(productId string, url string, tr reporter.TestResult) (int64, error) {
+	return r.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, tr.TestRun)
 }
 
 func (r CoverageStore) DeleteTest(id string) (int64, error) {

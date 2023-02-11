@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div v-if="isAdmin">
+    <div v-if="isAdmin()">
       <h4 class="">Generate API Key</h4>
       <div class="user shadow p-2 mb-4 rounded">
         <div class="form-group">
@@ -41,22 +41,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import http from '@/common-http';
+import {isAdmin} from '@/menu';
 const router = useRouter();
 
 const loading = ref(false);
 const error = ref('');
-
-// TODO Move isAdmin to js file
-const isAdmin = computed(() => {
-  const s = sessionStorage.getItem('roles');
-  if (s) {
-    return s.indexOf('Admin') > -1;
-  }
-  return false;
-});
 
 const apiKey = ref('');
 const generateApiKey = async () => {

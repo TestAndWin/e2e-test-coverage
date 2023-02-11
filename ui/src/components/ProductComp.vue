@@ -80,14 +80,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="changeAreaName">
+          <form>
             <div class="mb-3">
               <label>Name</label><input type="text" class="form-control" id="newAreaName" v-model="newAreaName" />
               <label>Please be aware that the name is used to "match" the test results.</label>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal">Save changes</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName">Save changes</button>
             </div>
           </form>
         </div>
@@ -104,7 +104,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form @submit.prevent="changeFeature">
+          <form>
             <div class="mb-3">
               <label>Name</label><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
               <label>Please be aware that the name is used to "match" the test results.</label><br /><br />
@@ -122,7 +122,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal">Save changes</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeature">Save changes</button>
             </div>
           </form>
         </div>
