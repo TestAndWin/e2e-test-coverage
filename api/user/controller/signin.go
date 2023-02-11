@@ -162,3 +162,23 @@ func AuthUser(level string) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// Reads HTTP Header
+func AuthApi() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.GetHeader("apiKey")
+		if apiKey == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "apiKey is missing"})
+			c.Abort()
+			return
+		}
+		userId, err := userStore.GetUserIdForApiKey(apiKey)
+		if userId < 1 || err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong apiKey"})
+			c.Abort()
+			return
+		}
+		log.Printf("Request with API-Key for user %d", userId)
+		c.Next()
+	}
+}

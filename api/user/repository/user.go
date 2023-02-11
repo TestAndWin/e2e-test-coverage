@@ -10,9 +10,12 @@ package repository
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
+	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -25,6 +28,7 @@ const createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	email VARCHAR(255) UNIQUE,
 	password VARCHAR(255),
+	api_key VARCHAR(100),
 	role VARCHAR(50),
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 	)`
@@ -207,8 +211,24 @@ func (s UserStore) DeleteUser(id string) (int64, error) {
 	return s.executeSql("DELETE FROM users WHERE id = ?", id)
 }
 
-// Creates a new API Key
+// Create a new API Key and store it in the DB.
 func (s UserStore) GenerateApiKey(userId int64) (string, error) {
-	// TODO Store API Key in users Table - extend table with new column
-	return strconv.FormatInt(int64(userId), 10), nil
+	key := fmt.Sprintf("%d%s", userId, generateAPIKey())
+	_, err := s.executeSql("UPDATE users SET api_key = ? WHERE id = ?", key, userId)
+	return key, err
+}
+
+// Get the userId for the specified apiKey
+func (s UserStore) GetUserIdForApiKey(apiKey string) (int64, error) {
+	var userId int64
+	err := s.db.QueryRow("SELECT id FROM users WHERE id = ?", apiKey).Scan(&userId)
+	return userId, err
+}
+
+func generateAPIKey() string {
+	size := 32
+	key := make([]byte, size)
+	rand.Read(key)
+	hash := sha256.Sum256(key)
+	return base64.StdEncoding.EncodeToString(hash[:])
 }

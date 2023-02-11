@@ -44,13 +44,6 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func AuthApi() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// TODO
-		c.Next()
-	}
-}
-
 func HandleRequest() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -97,7 +90,7 @@ func HandleRequest() {
 		v1.DELETE("/expl-tests/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteExplTest)
 
 		// Test Coverage
-		v1.POST("/coverage/:id/upload-mocha-summary-report", AuthApi(), controller.UploadMochaSummaryReport)
+		v1.POST("/coverage/:id/upload-mocha-summary-report", usercontroller.AuthApi(), controller.UploadMochaSummaryReport)
 		v1.GET("/coverage/:id/areas", usercontroller.AuthUser(model.TESTER), controller.GetAreaCoverage)
 		v1.GET("/coverage/areas/:id/features", usercontroller.AuthUser(model.TESTER), controller.GetFeatureCoverage)
 		v1.GET("/coverage/features/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetTestsCoverage)

@@ -40,7 +40,7 @@ Besides displaying the test coverage, **e2e test coverage** also allows collecti
 * Upload the mocha report using the REST API endpoint (directly from the CI/CD pipeline)
 
   Example:
-  ```curl -d @mocha-report1_1.json http://localhost:8080/api/v1/coverage/1/upload-mocha-report```
+  ```curl -d @mocha-report1_1.json -H "apiKey: <your-api-key>" http://localhost:8080/api/v1/coverage/1/upload-mocha-summary-report```
 * Explore the _Coverage_ section
 * Start logging exploratory tests by clicking on _Log new_
 
@@ -48,7 +48,7 @@ Besides displaying the test coverage, **e2e test coverage** also allows collecti
 Please bear with me, this is my first Golang & Vue 3 project.
 
 Project developed with 
-* Golang 1.19
+* Golang 1.20
 * Vue 3
 * Bootstrap 5
 

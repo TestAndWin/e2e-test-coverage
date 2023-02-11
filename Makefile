@@ -6,6 +6,10 @@ build-ui:
 build-swagger:
 	cd api; swag init -g cmd/coverage/main.go --output docs
 
+update-libs:
+	cd api; go get -u ./...
+	cd ui; ncu -u; npm install
+
 build: build-ui build-swagger
 	# Build VUE app and generate ui_gen.go
 	cd api; go generate ./ui
