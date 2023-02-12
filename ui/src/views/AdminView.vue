@@ -2,7 +2,7 @@
   <div class="container mb-3">
     <div class="card">
       <div class="card-body">
-        <p class="card-text">Maintain user.</p>
+        <p class="card-text">Maintaining user.</p>
       </div>
     </div>
   </div>

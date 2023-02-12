@@ -4,10 +4,10 @@
       <div class="card-body">
         <h5 class="card-title">e2e test coverage</h5>
         <p class="card-text">
-          e2e test coverage gives an overview of the different product areas and how many automated tests exist in each area with their respective test status.
+          e2e test coverage provides a summary of the various product areas and the number of automated tests in each area, along with their respective test status. 
         </p>
-        <p>Additionally, the impressions of exploratory tests on the different product areas can be gathered.</p>
-        <p>The test results of the last 28 days are taken into account. Following numbers are displayed:</p>
+        <p>Furthermore, insights from exploratory testing on the different product areas can be obtained. </p>
+        <p>The results of the tests conducted over the last 28 days are considered. Following numbers are displayed:</p>
         <div class="rounded area p-2">
           <p class="">
             <span class="result total" style="width: 80px">Total</span>&nbsp; <span class="result passes" style="width: 80px">Passes</span> &nbsp;
@@ -20,10 +20,10 @@
               <i class="bi bi-caret-up"></i>
               <i class="bi bi-caret-down"></i>
             </span>
-            indicates if there are more or less tests for the last 28 days.
+            indicates whether there has been an increase or decrease in the number of tests over the last 28 days.
           </p>
           <hr />
-          <p>The weather symbol shows the test stability for the last 28 days.</p>
+          <p>The weather icon represents the stability of testing over the last 28 days.</p>
           <p>
             <i class="bi bi-sun"></i>
             All test runs without failures
@@ -45,7 +45,7 @@
             > 50% test runs with failures
           </p>
           <hr />
-          <p>$ symbol shows the business value of a feature. &dollar; = low, &dollar;&dollar; = medium, &dollar;&dollar;&dollar; = high</p>
+          <p>$ symbol represents the business value of a feature. &dollar; = low, &dollar;&dollar; = medium, &dollar;&dollar;&dollar; = high</p>
         </div>
         <p></p>
         <p class="card-text"><a href="/docs/index.html" class="link-info">API Documentation</a></p>

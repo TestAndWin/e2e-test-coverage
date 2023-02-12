@@ -1,83 +1,86 @@
 # e2e test coverage 
 
-There are many good test reporting tools that can be used to get an overview of automated test runs.
+There are several great test reporting tools that can provide an overview of automated test results. 
 
-But from my point of view, they lack an overview of which product area is covered with automated tests, incl. the respective test status. At least I have not found one.
+However, from my perspective, they often lack a comprehensive view of which product areas are covered by automated tests, along with the corresponding test status. 
 
-**e2e test coverage** allows to define a product overview with the different areas with their features and to upload the test results.
+I have yet to come across a tool that meets this requirement.
+
+**e2e test coverage** offers a way to define a product overview that includes different areas and their features, as well as to upload test results of automatic tests for these areas.
 
 ![e2e test coverage](e2e-test-coverage.png "e2e test coverage")
 
-In the automated tests, the same identifiers for the areas and features must then be used so that mapping can take place. The results of the automated tests can be uploaded via a REST endpoint. Currently, "only" Mocha reports are supported.
+For automated tests to be properly mapped to their corresponding areas and features, it is essential that the same identifiers are used. The results of these automated tests can be uploaded through a REST endpoint, and at present, only Mocha reports are supported.
 
-**e2e test coverage** considers test results of the last 28 days in the coverage view.
+**e2e test coverage** takes into account the test results from the last 28 days when displaying the coverage information.
 
-This is of course only a quantitative view and does not make any statement about the quality of the tests. But from my point of view it is still helpful to have such an overview.
+It's important to note that this representation is solely a quantitative view and does not provide any insights into the quality of the tests. However, even so, having such an overview can still be helpful in my opinion.
 
-Besides displaying the test coverage, **e2e test coverage** also allows collecting feedback from exploratory tests.
+In addition to displaying test coverage information, **e2e test coverage** also enables the collection of feedback from exploratory testing.
 
 # Installation
-* Clone the project and build the application. See [Build project](#Build-project) section below.
+* Download the Docker image 
 
-* **e2e test coverage** needs a MySQL database. The DB connection is configured in the ``config.env``` file. This file is stored in the same directory as the binary.
+* **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables.
 
-  Example:
+* To start it, please enter ```docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage```
+
+  Example ```docker_env_vars```:
   ```
-  DB_USER = "root"
-  DB_PASSWORD = "root"
-  DB_HOST = "127.0.0.1:3306"
-  JWT_KEY   = "please enter a long and unique key here"
+  DB_USER=<db user>
+  DB_PASSWORD=<db password>
+  DB_HOST=<db host:db port>
+  JWT_KEY=<please enter a random value>
   ```
-* Run ```e2e-coverage```
-
-  This starts **e2e test coverage** on port 8080. 
 
 # Guide 
-* Open **e2e test coverage** URL in the browser
-* Select _Product_ and enter a product name. (The product name is not visible later.)
-* Add areas and features to the product
-* Adapt the test files of your test automation to have a title with this build-up: ```{area name}|{feature name}|{suite name}```, e.g. for Cypress Tests ```describe('{area name}|{feature name}|{suite name}', () => {```
-* Upload the mocha report using the REST API endpoint (directly from the CI/CD pipeline)
+
+## **e2e test coverage** user interface
+* To access **e2e test coverage**, open the URL in your browser. Upon your first connection to the database, the user ```admin``` with the password ```e2ecoverage``` will be automatically created. It is highly recommended to change the password on the *My Account* page.
+
+* As a user with the Admin role, you have the ability to create an API key on the *My Account* page. This API key is necessary to upload test results through HTTP requests, such as from a CI/CD pipeline. The admin can also manage other users and assign them roles:
+
+  * Admin: has the capability to create new users and API keys
+  * Maintainer: responsible for maintaining products, areas, and features
+  * Tester: can view test coverage and add exploratory test results
+
+* On the *Product* page, you can select a product and enter its name. Please note that the product name will not be visible later on. You can also add areas and features to the selected product.
+
+* The *Coverage* page displays the number of test cases and their status over the past 28 days, including the impact of exploratory testing on each product area and feature. 
+
+* The *Tests* page provides a complete overview of all tests conducted on the product, including their status over the last 28 days. This includes tests that have not been assigned to a specific area or feature. Only the most recent test for each suite name will be displayed."
+
+## CI/CD integration
+* Please adapt your test files to include the following format for the title: ```{area name}|{feature name}|{suite name}```, e.g. for Cypress Tests ```describe('{area name}|{feature name}|{suite name}', () => {```
+* Upload the mocha report using the REST API endpoint (directly from the CI/CD pipeline):
 
   Example:
-  ```curl -d @mocha-report1_1.json -H "apiKey: <your-api-key>" http://localhost:8080/api/v1/coverage/1/upload-mocha-summary-report```
-* Explore the _Coverage_ section
-* Start logging exploratory tests by clicking on _Log new_
+  ```curl -d @mocha-report1_1.json -H "apiKey: <your api key>" -H "testReportUrl: <Url where the generated Mocha report can be found>" http://localhost:8080/api/v1/coverage/1/upload-mocha-summary-report```
 
 # Development
-Please bear with me, this is my first Golang & Vue 3 project.
+Please bear with me, this is my first Golang & Vue 3 project. I used
 
-Project developed with 
 * Golang 1.20
 * Vue 3
 * Bootstrap 5
 
 ## Folder Structure
-* ```cmd/coverage``` Main Golang Application
-* ```docs``` API Doc generated by Swag
-* ```pkg/controller``` Implementation of API endpoints
-* ```pkg/model``` Model of different structures
-* ```pkg/reporter``` Files to import tests, currently only Mocha is implemented
-* ```pkg/repository``` DB access
-* ```pkg/router``` Route to the different endpoints
-* ```ui``` Vue 3 application
+* ```api/cmd/coverage``` Main Golang Application
+* ```api/config``` Read config
+* ```api/coverage``` Endpoints to maintain areas and features, upload tests and coverage implementation
+* ```api/db``` Common DB function to connect to a database
+* ```api/docs``` API Doc generated by Swag
+* ```api/router``` Route to the different endpoints
+* ```api/ui``` Helper to include the Vue application in the Golang binary
+* ```api/user``` Endpoints to maintain user and to log-in
+* ```ui/``` Vue 3 application
 
-## Build project
-
-Go to ```ui``` and call ```npm install```
-
-### Development
-Call ```go run cmd/coverage/main.go``` to start the server, including UI. The Vue 3 app can also be started with ```npm run serve``` from the ```ui``` directory and is available on port 8081 (which I would recommend when working on the UI).
-
-### Production
-Call ```make build``` to create the binaries for the different operating systems. This call will also build the Vue 3 app and embeds this in the binary, as well as the Swagger doc. The binaries will be stored in the ```bin``` directory.
-Maybe the compiler settings in ```Makefile``` must be adapted to your needs.
+## Development 
+By running the command ```make help```, you can obtain a comprehensive overview of the various targets available, such as building the app, starting it locally in development mode, and others."
 
 # Further Ideas
-- [ ] Allow to re-order areas and features
-- [ ] Create area + feature automatically when uploading reports
-- [ ] Allow to add bugs in production (Ticket Number, Short Desc, severity). Or better: get this automatically
-- [ ] Allow to use more than one product / maintain products
-- [ ] Security
-- [ ] Login
-- [ ] Include SLA data, e.g. from Datadog
+- Allow to re-order areas and features
+- Create area + feature automatically when uploading reports
+- Allow to add bugs in production (Ticket Number, Short Desc, severity). Or better: get this automatically
+- Allow to use more than one product / maintain products
+- Include SLA data, e.g. from Datadog

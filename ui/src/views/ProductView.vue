@@ -2,7 +2,7 @@
   <div class="container mb-3">
     <div class="card">
       <div class="card-body">
-        <p class="card-text">Maintain products areas and their features.</p>
+        <p class="card-text">Maintaining product areas and their features.</p>
       </div>
     </div>
   </div>

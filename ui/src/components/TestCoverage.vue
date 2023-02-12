@@ -12,7 +12,7 @@
     <div v-for="test in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
       <div class="row">
         <div class="col-5">
-          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer" :set="(percentage = test['failed-test-runs'] / test['total-test-runs'])">
+          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
             {{ test['suite'] }}
           </h6>
         </div>
@@ -27,11 +27,11 @@
           <span class="result skipped">{{ test['skipped'] }}</span>
         </div>
         <div class="col">
-          <i v-if="percentage == 0" class="bi bi-sun"></i>
-          <i v-if="percentage > 0 && percentage <= 0.15" class="bi bi-cloud-sun"></i>
-          <i v-if="percentage > 0.15 && percentage <= 0.3" class="bi bi-cloud"></i>
-          <i v-if="percentage >= 0.3 && percentage <= 0.5" class="bi bi-cloud-rain"></i>
-          <i v-if="percentage > 0.5" class="bi bi-lightning"></i>
+          <i v-if="test['percent'] == 0" class="bi bi-sun"></i>
+          <i v-if="test['percent'] > 0 && test['percent'] <= 0.15" class="bi bi-cloud-sun"></i>
+          <i v-if="test['percent'] > 0.15 && test['percent'] <= 0.3" class="bi bi-cloud"></i>
+          <i v-if="test['percent'] >= 0.3 && test['percent'] <= 0.5" class="bi bi-cloud-rain"></i>
+          <i v-if="test['percent'] > 0.5" class="bi bi-lightning"></i>
         </div>
       </div>
       <div class="row">
@@ -104,7 +104,6 @@ const props = defineProps({
 
 const loading = ref(true);
 const error = ref('');
-const percentage = ref(0.0);
 
 const chartData = ref({
   labels: [],
@@ -160,6 +159,7 @@ const getTestsForProduct = async () => {
     .get(`/api/v1/coverage/products/${props.productId}/tests`)
     .then((response) => {
       tests.value = response.data;
+      calculatePercentage();
     })
     .catch((err) => {
       error.value = err;
@@ -173,12 +173,21 @@ const getTestsForFeature = async () => {
     .get(`/api/v1/coverage/features/${props.featureId}/tests`)
     .then((response) => {
       tests.value = response.data;
+      calculatePercentage();
     })
     .catch((err) => {
       error.value = err;
     });
 
   loading.value = false;
+};
+
+// Calculate the percentage of the failed tests
+const calculatePercentage = () => {
+  for (const test of tests.value) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (test as any)['percent'] = test['failed-test-runs'] / test['total-test-runs']
+  }
 };
 
 const testRuns = ref([]);
