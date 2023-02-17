@@ -23,7 +23,7 @@ jobs:
       run: cd ui; npm install
 
     - name: Install go commands
-      run: go get -u github.com/go-bindata/go-bindata/...
+      run: cd api; go get -u github.com/go-bindata/go-bindata/...
 
     - name: Build image
       run: make build
