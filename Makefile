@@ -13,7 +13,7 @@ update-libs:	## Update Golang and Vue 3 libs
 	cd api; go get -u ./...
 	cd ui; ncu -u; npm install
 
-build: build-ui build-swagger	## Build the Golang binary for Linux and create the Docker image
+build: build-ui	## Build the Golang binary for Linux and create the Docker image
 	cd api; go generate ./ui
 	cd api; GOOS=linux GOARCH=amd64 go build -o ../bin/${BINARY_NAME}-linux cmd/coverage/main.go
 	docker build -t e2ecoverage .
