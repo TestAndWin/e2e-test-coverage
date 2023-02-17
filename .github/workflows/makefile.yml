@@ -32,7 +32,7 @@ jobs:
     - name: Install go dependencies
       run: |
         cd api
-        go get .
+        go get ./...
         go get -u github.com/go-bindata/go-bindata/...
         cd ..
         make build
