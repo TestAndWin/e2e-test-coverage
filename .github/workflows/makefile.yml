@@ -34,6 +34,7 @@ jobs:
         cd api
         go get ./...
         go get -u github.com/go-bindata/go-bindata/...
+        go-bindata -version
         cd ..
         make build
 
