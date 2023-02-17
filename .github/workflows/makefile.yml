@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3-
+    - uses: actions/checkout@v3
 
     - name: Use Node.js 18.x
       uses: actions/setup-node@v3
@@ -24,6 +24,6 @@ jobs:
 
     - name: Install go commands
       run: go get -u github.com/go-bindata/go-bindata/...
-      
+
     - name: Build image
       run: make build
