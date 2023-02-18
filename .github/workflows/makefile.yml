@@ -31,7 +31,7 @@ jobs:
 
     - name: Install go-bindata
       run: |
-        # Ubunto provides only an older version
+        cd api
         go get -u github.com/go-bindata/go-bindata/...
         cd $GOPATH/src/github.com/go-bindata/go-bindata
         go build
