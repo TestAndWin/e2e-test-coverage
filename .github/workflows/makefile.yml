@@ -24,15 +24,17 @@ jobs:
         cd ui
         npm install
 
-    - name: Set up Go 1.x
+    - name: Setup Go
       uses: actions/setup-go@v3
       with:
         go-version: '1.20.x'
+        cache: true
 
-    - name: Install go dependencies
+    - name: Install go-bindata
       run: |
-        sudo apt update
-        sudo apt install go-bindata
+        go version
+        sudo apt-get update -y
+        sudo apt-get install -y go-bindata
         go-bindata -version
 
     - name: build
