@@ -33,7 +33,8 @@ jobs:
       run: |
         cd api
         go get -u github.com/go-bindata/go-bindata/...
-        cd $GOPATH/src/github.com/go-bindata/go-bindata
+        go env GOPATH
+        cd $(go env GOPATH)/src/github.com/go-bindata/go-bindata
         go build
         go-bindata -version
         sudo copy go-bindata /bin
