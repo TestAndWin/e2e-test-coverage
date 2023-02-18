@@ -31,10 +31,12 @@ jobs:
 
     - name: Install go-bindata
       run: |
-        go version
-        sudo apt-get update -y
-        sudo apt-get install -y go-bindata
+        # Ubunto provides only an older version
+        go get -u github.com/go-bindata/go-bindata/...
+        cd $GOPATH/src/github.com/go-bindata/go-bindata
+        go build
         go-bindata -version
+        sudo copy go-bindata /bin
 
     - name: build
       run:  make build
