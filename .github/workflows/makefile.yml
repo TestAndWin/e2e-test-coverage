@@ -31,11 +31,10 @@ jobs:
 
     - name: Install go dependencies
       run: |
-        cd api
-        go get ./...
-        go get -u github.com/go-bindata/go-bindata/...
-        export PATH=$(go env GOPATH)/bin:$PATH
+        sudo apt update
+        sudo apt install go-bindata
         go-bindata -version
-        cd ..
-        make build
+
+    - name: build
+      run:  make build
 
