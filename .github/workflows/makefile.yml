@@ -31,13 +31,9 @@ jobs:
 
     - name: Install go-bindata
       run: |
-        cd api
-        go get -u github.com/go-bindata/go-bindata/...
-        go env GOPATH
-        cd $(go env GOPATH)/src/github.com/go-bindata/go-bindata
-        go build
+        go install github.com/go-bindata/go-bindata/go-bindata@latest
+        export PATH=$(go env GOPATH)/bin:$PATH
         go-bindata -version
-        sudo copy go-bindata /bin
 
     - name: build
       run:  make build
