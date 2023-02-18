@@ -4,5 +4,5 @@ ui/ui_gen.go
 bin
 testresults
 WORKLOG.md
-bak.tar
+*.tar.gz
 .DS_Store

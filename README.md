@@ -19,7 +19,7 @@ It's important to note that this representation is solely a quantitative view an
 In addition to displaying test coverage information, **e2e test coverage** also enables the collection of feedback from exploratory testing.
 
 # Installation
-* Download the Docker image 
+* Download the Docker image and upload it via ```docker load -i e2ecoverage_<version>.tar.gz```
 
 * **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables.
 
@@ -32,7 +32,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
   DB_HOST=<db host:db port>
   JWT_KEY=<please enter a random value>
   ```
-
+  
 # Guide 
 
 ## **e2e test coverage** user interface

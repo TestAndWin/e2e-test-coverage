@@ -1,10 +1,11 @@
 name: Makefile CI
 
 on:
+  # deactivated the pipeline
   push:
-    branches: [ "main" ]
+    branches: [ "___main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "___main" ]
 
 jobs:
   build:
