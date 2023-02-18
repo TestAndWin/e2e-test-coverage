@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Use Node.js 18.x
+    - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18.x'
@@ -29,12 +29,12 @@ jobs:
       with:
         go-version: '1.20.x'
 
-    - name: Install go-bindata
+    - name: Install go-bindata and swag
       run: |
         go install github.com/go-bindata/go-bindata/go-bindata@latest
+        go install github.com/swaggo/swag/cmd/swag@latest
         export PATH=$(go env GOPATH)/bin:$PATH
-        go-bindata -version
 
-    - name: build
+    - name: Build
       run:  make build
 

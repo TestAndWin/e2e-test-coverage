@@ -171,8 +171,6 @@ const saveUser = async () => {
     password: password.value,
     roles: selectedRoles.value,
   };
-  console.log('aaveUser');
-  console.log(newUser);
 
   await http
     .put(`/api/v1/users/${userId.value}`, newUser)

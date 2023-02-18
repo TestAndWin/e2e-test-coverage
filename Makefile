@@ -10,12 +10,14 @@ build-swagger:	## Generate the swagger doc
 	cd api; swag init -g cmd/coverage/main.go --output docs
 
 update-libs:	## Update Golang and Vue 3 libs
-	cd api; go get -u ./...
+	cd api; go get -u ./...; go mod tidy
 	cd ui; ncu -u; npm install
 
-build: build-ui	## Build the Golang binary for Linux and create the Docker image
+build: build-ui	build-swagger ## Build the Golang binary for Linux and create the Docker image
 	cd api; go generate ./ui
 	cd api; GOOS=linux GOARCH=amd64 go build -o ../bin/${BINARY_NAME}-linux cmd/coverage/main.go
+
+docker: build	## Build the Docker image
 	docker build -t e2ecoverage .
 
 start:	## Start the docker image
