@@ -1,4 +1,4 @@
-body { background: lightslategrey !important; }
+body { background: rgb(213, 216, 220) !important; }
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -64,6 +64,16 @@ body { background: lightslategrey !important; }
   vertical-align: baseline;
   border-radius: var(--bs-badge-border-radius);
 }
+
 .pointer {
   cursor: pointer;
+}
+
+.btn-primary, .btn-primary:active, .btn-primary:visited {
+  background-color: #16657A !important;
+  border-color: #16657A !important;
+}
+
+.btn-primary:hover {
+  background-color: #125a6e !important;
 }

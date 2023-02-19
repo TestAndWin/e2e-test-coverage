@@ -21,7 +21,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 # Installation
 * Download the Docker image and upload it via ```docker load -i e2ecoverage_<version>.tar.gz```
 
-* **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables.
+* **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables. The databases *e2ecoverage* and *user* are created when it is started for the first time.
 
 * To start it, please enter ```docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage```
 

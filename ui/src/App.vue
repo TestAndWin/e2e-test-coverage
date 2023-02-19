@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/"> <img src="./assets/logo.png" alt="Test and Win - e2e test coverage" width="110" height="50" /></a>
+      <a class="navbar-brand" href="/"> <img src="./assets/logo_b.png" alt="Test and Win - e2e test coverage" width="110" height="50" /></a>
       <button
         class="navbar-toggler"
         type="button"

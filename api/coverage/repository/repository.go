@@ -22,7 +22,7 @@ type CoverageStore struct {
 	db *sql.DB
 }
 
-// Creates a new CoverageStore connecting to a MySQL database
+// Creates a new CoverageStore connecting to a MySQL database and creates a database with the name "e2ecoverage"
 func OpenDbConnection() (*CoverageStore, error) {
 	db, err := db.OpenDbConnection("e2ecoverage")
 	if err != nil {

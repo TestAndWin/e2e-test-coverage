@@ -35,8 +35,8 @@ import http from '@/common-http';
 const loading = ref(false);
 const error = ref('');
 
-const email = ref('admin');
-const password = ref('e2ecoverage');
+const email = ref('');
+const password = ref('');
 const login = async () => {
   loading.value = true;
   error.value = '';

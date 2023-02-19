@@ -38,7 +38,7 @@ type UserStore struct {
 	db *sql.DB
 }
 
-// NewUserStore creates a new UserStore that uses a MySQL database
+// NewUserStore creates a new UserStore that uses a MySQL database and create a database with the name "user"
 func NewUserStore() (*UserStore, error) {
 	db, err := db.OpenDbConnection("user")
 	if err != nil {
