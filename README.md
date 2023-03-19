@@ -23,7 +23,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 
 * **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables. The databases *e2ecoverage* and *user* are created when it is started for the first time.
 
-* To start it, please enter ```docker run --env-file docker_env_vars --add-host host.docker.internal:host-gateway -d  -p 127.0.0.1:8080:8080 e2ecoverage```
+* To start it, please enter ```docker run --env-file docker_env_vars --add-host host.docker.internal:host-gateway -d -p 0.0.0.0:8080:8080 e2ecoverage```
 
   Example ```docker_env_vars```:
   ```
