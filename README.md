@@ -23,14 +23,14 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 
 * **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables. The databases *e2ecoverage* and *user* are created when it is started for the first time.
 
-* To start it, please enter ```docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage```
+* To start it, please enter ```docker run --env-file docker_env_vars --add-host host.docker.internal:host-gateway -d  -p 127.0.0.1:8080:8080 e2ecoverage```
 
   Example ```docker_env_vars```:
   ```
-  DB_USER=<db user>
-  DB_PASSWORD=<db password>
-  DB_HOST=<db host:db port>
-  JWT_KEY=<please enter a random value>
+  DB_USER=root
+  DB_PASSWORD=your db password
+  DB_HOST=host.docker.internal:3306
+  JWT_KEY=please enter a random value
   ```
   
 # Guide 
@@ -77,6 +77,9 @@ Please bear with me, this is my first Golang & Vue 3 project. I used
 
 ## Development 
 By running the command ```make help```, you can obtain a comprehensive overview of the various targets available, such as building the app, starting it locally in development mode, and others."
+
+# TO-DO
+- Add forgot password feature
 
 # Further Ideas
 - Allow to re-order areas and features
