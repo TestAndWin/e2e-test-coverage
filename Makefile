@@ -18,8 +18,8 @@ build: build-ui	build-swagger ## Build the Golang binary for Linux and create th
 	cd api; GOOS=linux GOARCH=amd64 go build -o ../bin/${BINARY_NAME}-linux cmd/coverage/main.go
 	docker build -t e2ecoverage .
 
-start:	## Start the docker image
-	docker run --env-file docker_env_vars  -p 127.0.0.1:8080:8080 e2ecoverage
+start:	## Start the docker image in DEV mode
+	docker run -e DEV=true --env-file docker_env_vars -p 127.0.0.1:8080:8080 e2ecoverage
 
 docker-tar:	## Create tar.gz from the latest image
 	docker save e2ecoverage:latest | gzip > e2ecoverage.tar.gz
@@ -30,7 +30,7 @@ clean:	## Delete the binary
 	rm -f e2ecoverage.tar.gz
 
 start-api: ## Start Golang App directly, useful when working on it
-	cd api; go run cmd/coverage/main.go
+	cd api; DEV=true go run cmd/coverage/main.go
 
 start-ui: ## Start Vue Server in Dev Mode
 	cd ui; npm run serve

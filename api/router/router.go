@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -16,9 +17,11 @@ import (
 	"github.com/TestAndWin/e2e-coverage/ui"
 	usercontroller "github.com/TestAndWin/e2e-coverage/user/controller"
 	"github.com/TestAndWin/e2e-coverage/user/model"
+	"github.com/gin-gonic/autotls"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func HandleIndex() gin.HandlerFunc {
@@ -44,7 +47,7 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func HandleRequest() {
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 
@@ -105,10 +108,21 @@ func HandleRequest() {
 		v1.POST("users/generate-api-key", usercontroller.AuthUser(model.ADMIN), usercontroller.GenerateApiKey)
 	}
 
-	port, found := os.LookupEnv("PORT")
-	if found {
-		router.Run("0.0.0.0:" + port)
-	} else {
+	_, devMode := os.LookupEnv("DEV")
+	hostName, hostSet := os.LookupEnv("HOST")
+	if devMode || !hostSet {
+		fmt.Println("Start in DEV mode")
 		router.Run("0.0.0.0:8080")
+	} else {
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(hostName),
+			Cache:      autocert.DirCache("/var/www/.cache"),
+		}
+		fmt.Println("Start in Prod mode, host white list: ", hostName)
+		err := autotls.RunWithManager(router, &m)
+		if err != nil {
+			fmt.Println("Could not start in Prod mode: ", err)
+		}
 	}
 }
