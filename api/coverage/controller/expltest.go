@@ -13,6 +13,7 @@ import (
 	"net/http"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/user/controller"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,6 +31,7 @@ func AddExplTest(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
+		et.Tester = c.GetInt64(controller.USER_ID)
 		id, err := repo.InsertExplTest(et)
 		if err != nil {
 			log.Println(err)

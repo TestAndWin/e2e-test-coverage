@@ -22,11 +22,12 @@ const createExplTestStmt = `CREATE TABLE IF NOT EXISTS expl_tests (
 	summary TEXT,
 	rating INT,
 	testrun datetime,
+	tester INT,
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	FOREIGN KEY (area_id) REFERENCES areas(id)
 	)`
 
-const insertExplTestStmt = "INSERT INTO expl_tests (area_id, summary, rating, testrun) VALUES (?,?,?,?);"
+const insertExplTestStmt = "INSERT INTO expl_tests (area_id, summary, rating, testrun, tester) VALUES (?,?,?,?,?);"
 
 const deleteExplTestStmt = "DELETE FROM expl_tests WHERE id = ?"
 
@@ -43,7 +44,7 @@ func (r CoverageStore) CreateExplTestsTable() error {
 }
 
 func (r CoverageStore) InsertExplTest(et model.ExplTest) (int64, error) {
-	return r.executeSql(insertExplTestStmt, et.AreaId, et.Summary, et.Rating, et.TestRun)
+	return r.executeSql(insertExplTestStmt, et.AreaId, et.Summary, et.Rating, et.TestRun, et.Tester)
 }
 
 func (r CoverageStore) DeleteExplTest(id string) (int64, error) {
@@ -54,7 +55,7 @@ func (r CoverageStore) DeleteExplTest(id string) (int64, error) {
 func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, summary, rating, testrun FROM expl_tests WHERE area_id = ? AND testrun > ?;")
+	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, summary, rating, testrun, tester FROM expl_tests WHERE area_id = ? AND testrun > ?;")
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return nil, err
@@ -70,7 +71,7 @@ func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
 	var et = []model.ExplTest{}
 	for rows.Next() {
 		var e model.ExplTest
-		if err := rows.Scan(&e.Id, &e.AreaId, &e.Summary, &e.Rating, &e.TestRun); err != nil {
+		if err := rows.Scan(&e.Id, &e.AreaId, &e.Summary, &e.Rating, &e.TestRun, &e.Tester); err != nil {
 			return et, err
 		}
 		et = append(et, e)

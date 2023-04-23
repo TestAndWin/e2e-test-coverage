@@ -1000,6 +1000,9 @@
                 },
                 "test-run": {
                     "type": "string"
+                },
+                "tester": {
+                    "type": "integer"
                 }
             }
         },

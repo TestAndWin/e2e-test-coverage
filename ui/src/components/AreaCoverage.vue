@@ -102,6 +102,7 @@
                 ></i>
               </label>
               <p>{{ et['summary'] }}</p>
+              <p>Tester: {{ et['tester'] }}</p>
             </div>
             <div v-if="explTests.length == 0">No exploratory tests logged.</div>
           </div>

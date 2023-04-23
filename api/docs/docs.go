@@ -1004,6 +1004,9 @@ const docTemplate = `{
                 },
                 "test-run": {
                     "type": "string"
+                },
+                "tester": {
+                    "type": "integer"
                 }
             }
         },
