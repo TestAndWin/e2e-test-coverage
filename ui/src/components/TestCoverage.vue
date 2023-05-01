@@ -9,52 +9,65 @@
       <button type="button" class="btn-close pointer" aria-label="Close" @click="closeAlert()"></button>
     </div>
 
-    <div v-for="test in tests" :key="test['id']" class="test shadow p-2 mb-2 rounded">
-      <div class="row">
-        <div class="col-5">
-          <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
-            {{ test['suite'] }}
-          </h6>
+    <div class="test shadow p-2 mb-2 rounded">
+      <span><b>Filter</b> (selected level and worse): </span> &nbsp; 
+      <span @click="filter(sun)"><i class="bi bi-sun pointer"></i></span>&nbsp;
+      <span @click="filter(sun + 0.001)"><i class="bi bi-cloud-sun pointer"></i></span> &nbsp; 
+      <span @click="filter(sunCloud + 0.001)"><i class="bi bi-cloud pointer"></i></span> &nbsp;
+      <span @click="filter(cloud + 0.001)"><i class="bi bi-cloud-rain pointer"></i></span> &nbsp; 
+      <span @click="filter(cloudRain + 0.001)"><i class="bi bi-lightning pointer"></i></span>&nbsp;
+    </div>
+
+    <div v-for="test in tests" :key="test['id']">
+      <template v-if="test['percent'] >= filterCriteria">
+        <div class="test shadow p-2 mb-2 rounded">
+          <div class="row">
+            <div class="col-5">
+              <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
+                {{ test['suite'] }}
+              </h6>
+            </div>
+            <div class="col-5">
+              <span class="result total">
+                {{ test['total'] }}
+                <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
+                <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
+              </span>
+              &nbsp; <span class="result passes">{{ test['passes'] }}</span> &nbsp; <span class="result failures">{{ test['failures'] }}</span> &nbsp;
+              <span class="result pending">{{ test['pending'] }}</span> &nbsp;
+              <span class="result skipped">{{ test['skipped'] }}</span>
+            </div>
+            <div class="col">
+              <i v-if="test['percent'] == sun" class="bi bi-sun"></i>
+              <i v-if="test['percent'] > sun && test['percent'] <= sunCloud" class="bi bi-cloud-sun"></i>
+              <i v-if="test['percent'] > sunCloud && test['percent'] <= cloud" class="bi bi-cloud"></i>
+              <i v-if="test['percent'] >= cloud && test['percent'] <= cloudRain" class="bi bi-cloud-rain"></i>
+              <i v-if="test['percent'] > cloudRain" class="bi bi-lightning"></i>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <span class="test-suite d-flex justify-content-between">File: {{ test['file-name'] }}</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <span class="test-suite d-flex justify-content-between">Test run: {{ test['test-run'] }}</span>
+              <span v-if="test['area-id'] == 0"><i>Not assigned to an area/feature</i></span>
+            </div>
+          </div>
+          <div class="row" v-if="test['url']">
+            <div class="col">
+              <span class="test-suite d-flex justify-content-between"><a v-bind:href="test['url']" target="_blank">Test Report</a></span>
+            </div>
+          </div>
         </div>
-        <div class="col-5">
-          <span class="result total">
-            {{ test['total'] }}
-            <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
-            <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
-          </span>
-          &nbsp; <span class="result passes">{{ test['passes'] }}</span> &nbsp; <span class="result failures">{{ test['failures'] }}</span> &nbsp;
-          <span class="result pending">{{ test['pending'] }}</span> &nbsp;
-          <span class="result skipped">{{ test['skipped'] }}</span>
-        </div>
-        <div class="col">
-          <i v-if="test['percent'] == 0" class="bi bi-sun"></i>
-          <i v-if="test['percent'] > 0 && test['percent'] <= 0.15" class="bi bi-cloud-sun"></i>
-          <i v-if="test['percent'] > 0.15 && test['percent'] <= 0.3" class="bi bi-cloud"></i>
-          <i v-if="test['percent'] >= 0.3 && test['percent'] <= 0.5" class="bi bi-cloud-rain"></i>
-          <i v-if="test['percent'] > 0.5" class="bi bi-lightning"></i>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <span class="test-suite d-flex justify-content-between">File: {{ test['file-name'] }}</span>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col">
-          <span class="test-suite d-flex justify-content-between">Test run: {{ test['test-run'] }}</span>
-          <span v-if="test['area-id'] == 0"><i>Not assigned to an area/feature</i></span>
-        </div>
-      </div>
-      <div class="row" v-if="test['url']">
-        <div class="col">
-          <span class="test-suite d-flex justify-content-between"><a v-bind:href="test['url']" target="_blank">Test Report</a></span>
-        </div>
-      </div>
+      </template>
     </div>
 
     <!-- Modal to show all tests with a graph -->
     <div class="modal fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
-      <div class="modal-dialog modal-fullscreen">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="showTestRunsLabel">{{ suite }} - {{ file }}</h5>
@@ -69,14 +82,20 @@
             <div class="col">Pending</div>
             <div class="col">Skipped</div>
           </div>
-          <div v-for="tr in testRuns" :key="tr['id']" class="row">
-            <div class="col-1">&nbsp;</div>
-            <div class="col-3">{{ tr['test-run'] }}</div>
-            <div class="col">{{ tr['total'] }}</div>
-            <div class="col">{{ tr['passes'] }}</div>
-            <div class="col">{{ tr['failures'] }}</div>
-            <div class="col">{{ tr['pending'] }}</div>
-            <div class="col">{{ tr['skipped'] }}</div>
+          <div v-for="(tr, index) in testRuns" :key="index" class="row">
+            <template v-if="index < 5">
+              <div class="col-1">&nbsp;</div>
+              <div class="col-3">{{ tr['test-run'] }}</div>
+              <div class="col">{{ tr['total'] }}</div>
+              <div class="col">{{ tr['passes'] }}</div>
+              <div class="col">{{ tr['failures'] }}</div>
+              <div class="col">{{ tr['pending'] }}</div>
+              <div class="col">{{ tr['skipped'] }}</div>
+            </template>
+            <template v-if="index == 5">
+              <div class="col-1">&nbsp;</div>
+              <div class="col">(only the latest 5 are displayed)</div>
+            </template>
           </div>
           <Line v-if="!loading" :data="chartData" :chart-options="chartOptions" />
           <div class="modal-footer">
@@ -104,6 +123,10 @@ const props = defineProps({
 
 const loading = ref(true);
 const error = ref('');
+const sun = ref(0);
+const sunCloud = ref(0.15);
+const cloud = ref(0.3);
+const cloudRain = ref(0.5);
 
 const chartData = ref({
   labels: [],
@@ -186,7 +209,7 @@ const getTestsForFeature = async () => {
 const calculatePercentage = () => {
   for (const test of tests.value) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (test as any)['percent'] = test['failed-test-runs'] / test['total-test-runs']
+    (test as any)['percent'] = test['failed-test-runs'] / test['total-test-runs'];
   }
 };
 
@@ -224,6 +247,11 @@ const showTestRuns = async (s: string, f: string) => {
 
 const closeAlert = () => {
   error.value = '';
+};
+
+const filterCriteria = ref(0);
+const filter = (f: number) => {
+  filterCriteria.value = f;
 };
 
 onMounted(() => {
