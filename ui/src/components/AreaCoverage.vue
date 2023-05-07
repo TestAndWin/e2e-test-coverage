@@ -16,30 +16,7 @@
           <h4>{{ area['name'] }}</h4>
         </div>
         <div class="col-5 mb-2">
-          <span v-if="area['total'] < 1" class="result failures">
-            {{ area['total'] }}
-          </span>
-          <span v-if="area['total'] > 0" class="result total">
-            {{ area['total'] }}
-            <i v-if="area['total'] > area['first-total']" class="bi bi-caret-up"></i>
-            <i v-if="area['total'] < area['first-total']" class="bi bi-caret-down"></i>
-          </span>
-          &nbsp;
-          <span class="result passes">
-            {{ area['passes'] }}
-          </span>
-          &nbsp;
-          <span class="result failures">
-            {{ area['failures'] }}
-          </span>
-          &nbsp;
-          <span class="result pending">
-            {{ area['pending'] }}
-          </span>
-          &nbsp;
-          <span class="result skipped">
-            {{ area['skipped'] }}
-          </span>
+          <TestResult :test=area />
         </div>
         <div class="col mb-2">
           <span class="result expl-test pointer" @click="showExplTests(area['id'])"> {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }}) </span>
@@ -119,6 +96,7 @@
 import { onMounted, ref } from 'vue';
 import { Modal } from 'bootstrap';
 import FeatureCoverage from './FeatureCoverage.vue';
+import TestResult from './TestResult.vue';
 import StarRating from 'vue-star-rating';
 import http from '@/common-http';
 

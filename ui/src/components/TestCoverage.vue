@@ -10,16 +10,18 @@
     </div>
 
     <div class="test shadow p-2 mb-2 rounded">
-      <span><b>Filter</b> (selected level and worse): </span> &nbsp; 
-      <span @click="filter(sun)"><i class="bi bi-sun pointer"></i></span>&nbsp;
-      <span @click="filter(sun + 0.001)"><i class="bi bi-cloud-sun pointer"></i></span> &nbsp; 
-      <span @click="filter(sunCloud + 0.001)"><i class="bi bi-cloud pointer"></i></span> &nbsp;
-      <span @click="filter(cloud + 0.001)"><i class="bi bi-cloud-rain pointer"></i></span> &nbsp; 
-      <span @click="filter(cloudRain + 0.001)"><i class="bi bi-lightning pointer"></i></span>&nbsp;
+      <span><b>Filter</b>:</span> &nbsp; 
+      <span @click="filter(sun)"><span v-if="filterCriteria == sun">&gt;</span><i class="bi bi-sun pointer"></i></span>&nbsp;
+      <span @click="filter(sun + 0.001)"><span v-if="filterCriteria == sun + 0.001">&gt;</span><i class="bi bi-cloud-sun pointer"></i></span> &nbsp;
+      <span @click="filter(sunCloud + 0.001)"><span v-if="filterCriteria == sunCloud + 0.001">&gt;</span><i class="bi bi-cloud pointer"></i></span> &nbsp;
+      <span @click="filter(cloud + 0.001)"><span v-if="filterCriteria == cloud + 0.001">&gt;</span><i class="bi bi-cloud-rain pointer"></i></span> &nbsp;
+      <span @click="filter(cloudRain + 0.001)"><span v-if="filterCriteria == cloudRain + 0.001">&gt;</span><i class="bi bi-lightning pointer"></i></span>&nbsp; 
+      <span class="">and worse or</span>&nbsp;
+      <span v-if="filterLastFailed">&gt;</span><span class="pointer" @click="switchFilterLastFailed()">failed on last run</span>
     </div>
 
     <div v-for="test in tests" :key="test['id']">
-      <template v-if="test['percent'] >= filterCriteria">
+      <template v-if="(!filterLastFailed && test['percent'] >= filterCriteria) || (filterLastFailed && test['failures'] > 0)">
         <div class="test shadow p-2 mb-2 rounded">
           <div class="row">
             <div class="col-5">
@@ -28,14 +30,7 @@
               </h6>
             </div>
             <div class="col-5">
-              <span class="result total">
-                {{ test['total'] }}
-                <i v-if="test['total'] > test['first-total']" class="bi bi-caret-up"></i>
-                <i v-if="test['total'] < test['first-total']" class="bi bi-caret-down"></i>
-              </span>
-              &nbsp; <span class="result passes">{{ test['passes'] }}</span> &nbsp; <span class="result failures">{{ test['failures'] }}</span> &nbsp;
-              <span class="result pending">{{ test['pending'] }}</span> &nbsp;
-              <span class="result skipped">{{ test['skipped'] }}</span>
+              <TestResult :test="test" />
             </div>
             <div class="col">
               <i v-if="test['percent'] == sun" class="bi bi-sun"></i>
@@ -110,6 +105,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { Modal } from 'bootstrap';
+import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';
 
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
@@ -249,6 +245,10 @@ const closeAlert = () => {
   error.value = '';
 };
 
+const filterLastFailed = ref(false);
+const switchFilterLastFailed = () => {
+  filterLastFailed.value = !filterLastFailed.value;
+};
 const filterCriteria = ref(0);
 const filter = (f: number) => {
   filterCriteria.value = f;

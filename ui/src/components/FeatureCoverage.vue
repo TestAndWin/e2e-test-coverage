@@ -15,16 +15,7 @@
           <a v-if="feature['url']" v-bind:href="feature['url']" target="_blank"><i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i></a>
         </div>
         <div class="col-5">
-          <span v-if="feature['total'] < 1" class="result failures">{{ feature['total'] }}</span>
-          <span v-if="feature['total'] > 0" class="result total">
-            {{ feature['total'] }}
-            <i v-if="feature['total'] > feature['first-total']" class="bi bi-caret-up"></i>
-            <i v-if="feature['total'] < feature['first-total']" class="bi bi-caret-down"></i>
-          </span>
-          &nbsp;
-          <span class="result passes">{{ feature['passes'] }}</span> &nbsp; <span class="result failures">{{ feature['failures'] }}</span> &nbsp;
-          <span class="result pending">{{ feature['pending'] }}</span> &nbsp;
-          <span class="result skipped">{{ feature['skipped'] }}</span>
+          <TestResult :test=feature />
         </div>
         <div class="col">&nbsp;</div>
       </div>
@@ -36,6 +27,7 @@
 <script setup lang="ts">
 import { defineProps, ref, onMounted } from 'vue';
 import TestCoverage from '@/components/TestCoverage.vue';
+import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';
 
 const props = defineProps({
