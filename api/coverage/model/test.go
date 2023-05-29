@@ -17,6 +17,7 @@ type Test struct {
 	FeatureId      int64     `db:"feature_id"  json:"feature-id"`
 	Suite          string    `db:"suite"       json:"suite"`
 	FileName       string    `db:"file"        json:"file-name"`
+	Component      string    `db:"component"   json:"component"`
 	Url            string    `db:"url"         json:"url"`
 	Total          int64     `db:"total"       json:"total"`
 	Passes         int64     `db:"passes"      json:"passes"`
@@ -24,6 +25,7 @@ type Test struct {
 	Failures       int64     `db:"failures"    json:"failures"`
 	Skipped        int64     `db:"skipped"     json:"skipped"`
 	Uuid           string    `db:"uuid"        json:"uuid"`
+	IsFirst        bool      `db:"is_first"    json:"is-first"`
 	TestRun        time.Time `db:"testrun"     json:"test-run"`
 	FailedTestRuns int64     `                 json:"failed-test-runs"`
 	TotalTestRuns  int64     `                 json:"total-test-runs"`

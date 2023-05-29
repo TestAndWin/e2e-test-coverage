@@ -31,7 +31,6 @@ import (
 // @Router       /coverage/:id/upload-mocha-summary-report [POST]
 func UploadMochaSummaryReport(c *gin.Context) {
 	testResults, err := reporter.ReadMochaResultFromContext(c)
-	testReportUrl := c.GetHeader("testReportUrl")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
@@ -55,15 +54,22 @@ func UploadMochaSummaryReport(c *gin.Context) {
 					} else {
 						var id int64
 						var err error
-						if aid != 0 && fid != 0 {
-							id, err = repo.InsertTestResult(pid, aid, fid, testReportUrl, tr)
-						} else {
-							id, err = repo.InsertTestResultWithoutAreaFeature(pid, testReportUrl, tr)
-						}
+						testReportUrl := c.GetHeader("testReportUrl")
+						component := c.GetHeader("component")
+						isFirst, err := repo.IsThisTheFirstUpload(pid, aid, fid, tr.Suite, tr.File, component)
 						if err != nil {
 							status = append(status, err.Error())
 						} else {
-							status = append(status, strconv.FormatInt(id, 10))
+							if aid != 0 && fid != 0 {
+								id, err = repo.InsertTestResult(pid, aid, fid, component, testReportUrl, isFirst, tr)
+							} else {
+								id, err = repo.InsertTestResultWithoutAreaFeature(pid, component, testReportUrl, isFirst, tr)
+							}
+							if err != nil {
+								status = append(status, err.Error())
+							} else {
+								status = append(status, strconv.FormatInt(id, 10))
+							}
 						}
 					}
 				}

@@ -13,34 +13,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/TestAndWin/e2e-coverage/coverage/model"
 	"github.com/gin-gonic/gin"
 )
-
-// AddTest godoc
-// @Summary      Add a new test
-// @Description  Takes a test JSON and stores it in DB. Return saved JSON.
-// @Tags         test
-// @Produce      json
-// @Param        test  body      model.Test  true  "Test JSON"
-// @Success      201  {object}  model.Test
-// @Router       /api/v1/tests [POST]
-func AddTest(c *gin.Context) {
-	var t model.Test
-	if err := c.BindJSON(&t); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		id, err := repo.InsertTest(t)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			t.Id = id
-			c.JSON(http.StatusCreated, t)
-		}
-	}
-}
 
 // DeleteTest godoc
 // @Summary      Delete the test

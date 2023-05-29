@@ -601,35 +601,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Takes a test JSON and stores it in DB. Return saved JSON.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "test"
-                ],
-                "summary": "Add a new test",
-                "parameters": [
-                    {
-                        "description": "Test JSON",
-                        "name": "test",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.Test"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Test"
-                        }
-                    }
-                }
             }
         },
         "/api/v1/tests/{id}": {
@@ -1085,6 +1056,9 @@ const docTemplate = `{
                 "area-id": {
                     "type": "integer"
                 },
+                "component": {
+                    "type": "string"
+                },
                 "failed-test-runs": {
                     "type": "integer"
                 },
@@ -1102,6 +1076,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "is-first": {
+                    "type": "boolean"
                 },
                 "passes": {
                     "type": "integer"

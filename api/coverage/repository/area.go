@@ -71,13 +71,14 @@ func (r CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
 	}
 
 	defer rows.Close()
-	var areas = []model.Area{}
+	var areas []model.Area
 	for rows.Next() {
-		var prd model.Area
-		if err := rows.Scan(&prd.Id, &prd.ProductId, &prd.Name); err != nil {
+		a := model.Area{}
+		if err := rows.Scan(&a.Id, &a.ProductId, &a.Name); err != nil {
+			log.Println(err)
 			return areas, err
 		}
-		areas = append(areas, prd)
+		areas = append(areas, a)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

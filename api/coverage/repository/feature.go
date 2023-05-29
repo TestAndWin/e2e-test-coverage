@@ -74,13 +74,14 @@ func (r CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	}
 
 	defer rows.Close()
-	var features = []model.Feature{}
+	var features []model.Feature
 	for rows.Next() {
-		var prd model.Feature
-		if err := rows.Scan(&prd.Id, &prd.AreaId, &prd.Name, &prd.Documentation, &prd.Url, &prd.BusinessValue); err != nil {
+		f := model.Feature{}
+		if err := rows.Scan(&f.Id, &f.AreaId, &f.Name, &f.Documentation, &f.Url, &f.BusinessValue); err != nil {
+			log.Println(err)
 			return features, err
 		}
-		features = append(features, prd)
+		features = append(features, f)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -68,10 +68,11 @@ func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
 	}
 
 	defer rows.Close()
-	var et = []model.ExplTest{}
+	var et []model.ExplTest
 	for rows.Next() {
-		var e model.ExplTest
+		e := model.ExplTest{}
 		if err := rows.Scan(&e.Id, &e.AreaId, &e.Summary, &e.Rating, &e.TestRun, &e.Tester); err != nil {
+			log.Println(err)
 			return et, err
 		}
 		et = append(et, e)

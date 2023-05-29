@@ -37,8 +37,9 @@ type Results struct {
 }
 
 type Suite struct {
-	Title string `json:"title"`
-	Tests []Test `json:"tests"`
+	Title  string  `json:"title"`
+	Tests  []Test  `json:"tests"`
+	Suites []Suite `json:"suites"`
 }
 
 type Test struct {
@@ -81,19 +82,29 @@ func getTestResultFromMocha(m Mocha) []TestResult {
 		pending := 0
 		failures := 0
 		skipped := 0
-		for _, test := range result.Suites[0].Tests {
-			total += 1
-			if test.Pass {
-				passes += 1
+
+		for _, suite := range result.Suites {
+			allTests := suite.Tests
+			// Check if a suite is inside a suite (but only one level down)
+			for _, subSuite := range suite.Suites {
+				st := subSuite.Tests
+				allTests = append(allTests, st...)
 			}
-			if test.Fail {
-				failures += 1
-			}
-			if test.Skipped {
-				skipped += 1
-			}
-			if test.Pending {
-				pending += 1
+
+			for _, test := range allTests {
+				total += 1
+				if test.Pass {
+					passes += 1
+				}
+				if test.Fail {
+					failures += 1
+				}
+				if test.Skipped {
+					skipped += 1
+				}
+				if test.Pending {
+					pending += 1
+				}
 			}
 		}
 		tr.Total = total

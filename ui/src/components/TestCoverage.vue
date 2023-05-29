@@ -42,6 +42,11 @@
           </div>
           <div class="row">
             <div class="col">
+              <span class="test-suite d-flex justify-content-between">Component: {{ test['component'] }}</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
               <span class="test-suite d-flex justify-content-between">File: {{ test['file-name'] }}</span>
             </div>
           </div>

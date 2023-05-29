@@ -82,7 +82,6 @@ func HandleRequest() {
 		v1.PUT("/features/:id", usercontroller.AuthUser(model.MAINTAINER), controller.UpdateFeature)
 		v1.DELETE("/features/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteFeature)
 
-		v1.POST("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.AddTest)
 		v1.GET("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.GetAllTestForSuiteFile)
 		v1.DELETE("/tests/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteTest)
 

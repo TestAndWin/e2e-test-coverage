@@ -96,6 +96,8 @@ definitions:
     properties:
       area-id:
         type: integer
+      component:
+        type: string
       failed-test-runs:
         type: integer
       failures:
@@ -108,6 +110,8 @@ definitions:
         type: integer
       id:
         type: integer
+      is-first:
+        type: boolean
       passes:
         type: integer
       pending:
@@ -539,25 +543,6 @@ paths:
               $ref: '#/definitions/model.Test'
             type: array
       summary: Get all tests for the specified suite and filename.
-      tags:
-      - test
-    post:
-      description: Takes a test JSON and stores it in DB. Return saved JSON.
-      parameters:
-      - description: Test JSON
-        in: body
-        name: test
-        required: true
-        schema:
-          $ref: '#/definitions/model.Test'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.Test'
-      summary: Add a new test
       tags:
       - test
   /api/v1/tests/{id}:
