@@ -71,7 +71,7 @@ func (r CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
 	}
 
 	defer rows.Close()
-	var areas []model.Area
+	var areas = []model.Area{}
 	for rows.Next() {
 		a := model.Area{}
 		if err := rows.Scan(&a.Id, &a.ProductId, &a.Name); err != nil {

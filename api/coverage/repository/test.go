@@ -138,7 +138,8 @@ func getTests(r CoverageStore, id string, query string) ([]model.Test, error) {
 	}
 
 	defer rows.Close()
-	var tests []model.Test
+	// Empty array should be returned when no tests exist
+	var tests = []model.Test{}
 	var prevRow *model.Test
 	for rows.Next() {
 		t := model.Test{}
@@ -319,7 +320,7 @@ func (r CoverageStore) GetAllTestForSuiteFile(suite string, file string) ([]mode
 	}
 
 	defer rows.Close()
-	var tests []model.Test
+	var tests = []model.Test{}
 	for rows.Next() {
 		t := model.Test{}
 		if err := rows.Scan(&t.Id, &t.ProductId, &t.Suite, &t.FileName, &t.Component, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.IsFirst, &t.TestRun); err != nil {

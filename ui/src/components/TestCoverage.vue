@@ -9,15 +9,13 @@
       <button type="button" class="btn-close pointer" aria-label="Close" @click="closeAlert()"></button>
     </div>
 
-    <div class="test shadow p-2 mb-2 rounded">
-      <span><b>Filter</b>:</span> &nbsp; 
-      <span @click="filter(sun)"><span v-if="filterCriteria == sun">&gt;</span><i class="bi bi-sun pointer"></i></span>&nbsp;
+    <div v-if="tests.length > 0" class="test shadow p-2 mb-2 rounded">
+      <span><b>Filter</b>:</span> &nbsp; <span @click="filter(sun)"><span v-if="filterCriteria == sun">&gt;</span><i class="bi bi-sun pointer"></i></span>&nbsp;
       <span @click="filter(sun + 0.001)"><span v-if="filterCriteria == sun + 0.001">&gt;</span><i class="bi bi-cloud-sun pointer"></i></span> &nbsp;
       <span @click="filter(sunCloud + 0.001)"><span v-if="filterCriteria == sunCloud + 0.001">&gt;</span><i class="bi bi-cloud pointer"></i></span> &nbsp;
       <span @click="filter(cloud + 0.001)"><span v-if="filterCriteria == cloud + 0.001">&gt;</span><i class="bi bi-cloud-rain pointer"></i></span> &nbsp;
-      <span @click="filter(cloudRain + 0.001)"><span v-if="filterCriteria == cloudRain + 0.001">&gt;</span><i class="bi bi-lightning pointer"></i></span>&nbsp; 
-      <span class="">and worse or</span>&nbsp;
-      <span v-if="filterLastFailed">&gt;</span><span class="pointer" @click="switchFilterLastFailed()">failed on last run</span>
+      <span @click="filter(cloudRain + 0.001)"><span v-if="filterCriteria == cloudRain + 0.001">&gt;</span><i class="bi bi-lightning pointer"></i></span>&nbsp;
+      <span class="">and worse or</span>&nbsp; <span v-if="filterLastFailed">&gt;</span><span class="pointer" @click="switchFilterLastFailed()">failed on last run</span>
     </div>
 
     <div v-for="test in tests" :key="test['id']">
@@ -182,8 +180,10 @@ const getTestsForProduct = async () => {
   await http
     .get(`/api/v1/coverage/products/${props.productId}/tests`)
     .then((response) => {
-      tests.value = response.data;
-      calculatePercentage();
+      if (response.data) {
+        tests.value = response.data;
+        calculatePercentage();
+      }
     })
     .catch((err) => {
       error.value = err;
@@ -196,8 +196,10 @@ const getTestsForFeature = async () => {
   await http
     .get(`/api/v1/coverage/features/${props.featureId}/tests`)
     .then((response) => {
-      tests.value = response.data;
-      calculatePercentage();
+      if (response.data) {
+        tests.value = response.data;
+        calculatePercentage();
+      }
     })
     .catch((err) => {
       error.value = err;

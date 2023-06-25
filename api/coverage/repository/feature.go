@@ -74,7 +74,7 @@ func (r CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	}
 
 	defer rows.Close()
-	var features []model.Feature
+	var features = []model.Feature{}
 	for rows.Next() {
 		f := model.Feature{}
 		if err := rows.Scan(&f.Id, &f.AreaId, &f.Name, &f.Documentation, &f.Url, &f.BusinessValue); err != nil {

@@ -69,7 +69,7 @@ func (r CoverageStore) GetAllProducts() ([]model.Product, error) {
 	}
 
 	defer rows.Close()
-	var products []model.Product
+	var products = []model.Product{}
 	for rows.Next() {
 		prd := model.Product{}
 		if err := rows.Scan(&prd.Id, &prd.Name); err != nil {

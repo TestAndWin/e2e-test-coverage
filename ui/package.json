@@ -11,11 +11,11 @@
   "dependencies": {
     "@sideway/formula": "^3.0.1",
     "axios": "^1.4.0",
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.10.5",
     "bootstrap-icons-vue": "^1.10.3",
     "chart.js": "^4.3.0",
-    "core-js": "^3.30.2",
+    "core-js": "^3.31.0",
     "vue": "^3.3.4",
     "vue-chartjs": "^5.2.0",
     "vue-router": "^4.2.2",
@@ -23,15 +23,15 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.6",
-    "@typescript-eslint/eslint-plugin": "^5.59.7",
-    "@typescript-eslint/parser": "^5.59.7",
+    "@typescript-eslint/eslint-plugin": "^5.60.0",
+    "@typescript-eslint/parser": "^5.60.0",
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-plugin-router": "~5.0.8",
     "@vue/cli-plugin-typescript": "~5.0.8",
     "@vue/cli-service": "~5.0.8",
     "@vue/eslint-config-typescript": "^11.0.3",
-    "eslint": "^8.41.0",
-    "eslint-plugin-vue": "^9.14.1",
-    "typescript": "~5.0.4"
+    "eslint": "^8.43.0",
+    "eslint-plugin-vue": "^9.15.1",
+    "typescript": "~5.1.3"
   }
 }
