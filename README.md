@@ -27,6 +27,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 
   Example ```docker_env_vars```:
   ```
+  DB_ENGINE=[mysql|postgresql]
   DB_USER=root
   DB_PASSWORD=your db password
   DB_HOST=host.docker.internal:3306
