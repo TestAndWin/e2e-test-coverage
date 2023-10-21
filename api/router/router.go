@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/controller"
 	"github.com/TestAndWin/e2e-coverage/ui"
@@ -113,9 +114,10 @@ func HandleRequest() {
 		fmt.Println("Start in DEV mode")
 		router.Run("0.0.0.0:8080")
 	} else {
+		hostNames := strings.Split(hostName, ",")
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(hostName),
+			HostPolicy: autocert.HostWhitelist(hostNames...),
 			Cache:      autocert.DirCache("/var/www/.cache"),
 		}
 		fmt.Println("Start in Prod mode, host white list: ", hostName)

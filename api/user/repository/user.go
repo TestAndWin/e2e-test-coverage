@@ -33,16 +33,6 @@ const createUserTable = `CREATE TABLE IF NOT EXISTS users (
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 	)`
 
-/* Postgres
-CREATE TABLE IF NOT EXISTS users (
-id SERIAL PRIMARY KEY,
-email VARCHAR(255) UNIQUE,
-password VARCHAR(255),
-api_key VARCHAR(100),
-role VARCHAR(50),
-updated_at TIMESTAMP)
-*/
-
 // UserStore is a store for user data that uses a MySQL database
 type UserStore struct {
 	db *sql.DB
@@ -50,7 +40,7 @@ type UserStore struct {
 
 // NewUserStore creates a new UserStore that uses a MySQL database and create a database with the name "user"
 func NewUserStore() (*UserStore, error) {
-	db, err := db.OpenDbConnection("e2euser")
+	db, err := db.OpenDbConnection("user")
 	if err != nil {
 		return nil, err
 	}
