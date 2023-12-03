@@ -10,29 +10,30 @@
   },
   "dependencies": {
     "@sideway/formula": "^3.0.1",
-    "axios": "^1.5.1",
+    "axios": "^1.6.2",
     "bootstrap": "^5.3.2",
-    "bootstrap-icons": "^1.11.1",
+    "bootstrap-icons": "^1.11.2",
     "bootstrap-icons-vue": "^1.11.1",
     "chart.js": "^4.4.0",
-    "core-js": "^3.33.1",
-    "postcss": "^8.4.31",
-    "vue": "^3.3.6",
+    "core-js": "^3.33.3",
+    "vue": "^3.3.9",
     "vue-chartjs": "^5.2.0",
     "vue-router": "^4.2.5",
     "vue-star-rating": "^2.1.0"
   },
   "devDependencies": {
-    "@types/bootstrap": "^5.2.8",
-    "@typescript-eslint/eslint-plugin": "^6.8.0",
-    "@typescript-eslint/parser": "^6.8.0",
+    "@types/bootstrap": "^5.2.10",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
     "@vue/cli-plugin-eslint": "~5.0.8",
     "@vue/cli-plugin-router": "~5.0.8",
     "@vue/cli-plugin-typescript": "~5.0.8",
-    "@vue/cli-service": "~5.0.8",
     "@vue/eslint-config-typescript": "^12.0.0",
-    "eslint": "^8.52.0",
-    "eslint-plugin-vue": "^9.17.0",
-    "typescript": "~5.2.2"
+    "eslint": "^8.55.0",
+    "eslint-plugin-vue": "^9.19.2",
+    "typescript": "~5.3.2"
+  },
+  "overrides": {
+    "postcss": "latest"
   }
 }

@@ -65,7 +65,7 @@ func getTestResultFromMocha(m Mocha) []TestResult {
 	tests := []TestResult{}
 	for _, result := range m.Results {
 		tr := TestResult{}
-		if strings.Contains(result.Suites[0].Title, "|") {
+		if strings.Count(result.Suites[0].Title, "|") > 1 {
 			tr.Area = strings.Split(result.Suites[0].Title, "|")[0]
 			tr.Feature = strings.Split(result.Suites[0].Title, "|")[1]
 			tr.Suite = strings.Split(result.Suites[0].Title, "|")[2]
