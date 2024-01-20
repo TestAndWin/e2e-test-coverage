@@ -63,7 +63,7 @@
       </template>
     </div>
 
-    <!-- Modal to show all tests with a graph -->
+    <!-- Modal to show test results with a graph -->
     <div class="modal fade" :id="'showTestRuns_' + featureId" tabindex="-1" aria-labelledby="showTestRunsLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
@@ -71,6 +71,7 @@
             <h5 class="modal-title" id="showTestRunsLabel">{{ suite }} - {{ file }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+          <!--
           <div class="row bg-light">
             <div class="col-1">&nbsp;</div>
             <div class="col-3">Date</div>
@@ -81,7 +82,6 @@
             <div class="col">Skipped</div>
           </div>
           <div v-for="(tr, index) in testRuns" :key="index" class="row">
-            <template v-if="index < 5">
               <div class="col-1">&nbsp;</div>
               <div class="col-3">{{ tr['test-run'] }}</div>
               <div class="col">{{ tr['total'] }}</div>
@@ -89,13 +89,10 @@
               <div class="col">{{ tr['failures'] }}</div>
               <div class="col">{{ tr['pending'] }}</div>
               <div class="col">{{ tr['skipped'] }}</div>
-            </template>
-            <template v-if="index == 5">
-              <div class="col-1">&nbsp;</div>
-              <div class="col">(only the latest 5 are displayed)</div>
-            </template>
           </div>
+          -->
           <Line v-if="!loading" :data="chartData" :chart-options="chartOptions" />
+          <div class="col">(only the latest 10 are displayed)</div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
@@ -130,12 +127,12 @@ const cloudRain = ref(0.5);
 const chartData = ref({
   labels: [],
   datasets: [
-    {
+    /*{
       label: 'Total',
       backgroundColor: 'blue',
       borderColor: 'blue',
       data: [],
-    },
+    },*/
     {
       label: 'Pass',
       backgroundColor: 'green',
@@ -227,18 +224,19 @@ const showTestRuns = async (s: string, f: string) => {
   await http
     .get(`/api/v1/tests?suite=${s}&file-name=${f}`)
     .then((response) => {
-      testRuns.value = response.data;
+      // We use only the lastest 10
+      testRuns.value = response.data.slice(-10);
 
       chartData.value.labels = [];
       for (let i = 0; i < testRuns.value.length; i++) {
         // different order
         const r = testRuns.value.length - 1 - i;
         chartData.value.labels[i] = testRuns.value[r]['test-run'];
-        chartData.value.datasets[0].data[i] = testRuns.value[r]['total'];
-        chartData.value.datasets[1].data[i] = testRuns.value[r]['passes'];
-        chartData.value.datasets[2].data[i] = testRuns.value[r]['failures'];
-        chartData.value.datasets[3].data[i] = testRuns.value[r]['pending'];
-        chartData.value.datasets[4].data[i] = testRuns.value[r]['skipped'];
+        //chartData.value.datasets[0].data[i] = testRuns.value[r]['total'];
+        chartData.value.datasets[0].data[i] = testRuns.value[r]['passes'];
+        chartData.value.datasets[1].data[i] = testRuns.value[r]['failures'];
+        chartData.value.datasets[2].data[i] = testRuns.value[r]['pending'];
+        chartData.value.datasets[3].data[i] = testRuns.value[r]['skipped'];
       }
     })
     .catch((err) => {

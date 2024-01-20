@@ -9,8 +9,6 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -134,12 +132,6 @@ func GetProductTestsCoverage(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
 	} else {
-		e, err := json.Marshal(t)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(string(e))
-
 		c.JSON(http.StatusOK, t)
 	}
 }
