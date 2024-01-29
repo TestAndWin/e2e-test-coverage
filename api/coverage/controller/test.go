@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2024, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -39,14 +39,16 @@ func DeleteTest(c *gin.Context) {
 // @Description  Get all tests for the specified suite and filename.
 // @Tags         test
 // @Produce      json
+// @Param        componen       query      string     true  "Component name"
 // @Param        suite          query      string     true  "Suite name"
-// @Param        file-name    query      string     true  "File name"
+// @Param        file-name      query      string     true  "File name"
 // @Success      200 {array}  model.Test
 // @Router       /api/v1/tests [GET]
 func GetAllTestForSuiteFile(c *gin.Context) {
 	suite := c.Query("suite")
+	component := c.Query("component")
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
-	tests, err := repo.GetAllTestForSuiteFile(suite, file)
+	tests, err := repo.GetAllTestForSuiteFile(component, suite, file)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})

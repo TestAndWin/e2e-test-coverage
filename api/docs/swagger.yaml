@@ -523,6 +523,11 @@ paths:
     get:
       description: Get all tests for the specified suite and filename.
       parameters:
+      - description: Component name
+        in: query
+        name: componen
+        required: true
+        type: string
       - description: Suite name
         in: query
         name: suite

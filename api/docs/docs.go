@@ -577,6 +577,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Component name",
+                        "name": "componen",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Suite name",
                         "name": "suite",
                         "in": "query",

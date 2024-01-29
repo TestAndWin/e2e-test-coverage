@@ -77,3 +77,7 @@ body { background: rgb(213, 216, 220) !important; }
 .btn-primary:hover {
   background-color: #125a6e !important;
 }
+
+.component-select {
+  background-color:  #BEE1E1;
+}

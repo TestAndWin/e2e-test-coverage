@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2024, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -16,7 +16,6 @@ import (
 )
 
 type Config struct {
-	DBEngine   string `mapstructure:"DB_ENGINE"`
 	DBUser     string `mapstructure:"DB_USER"`
 	DBPassword string `mapstructure:"DB_PASSWORD"`
 	DBHost     string `mapstructure:"DB_HOST"`
@@ -34,7 +33,6 @@ func LoadConfig() (config Config, err error) {
 		c.DBPassword = os.Getenv("DB_PASSWORD")
 		c.DBHost = os.Getenv("DB_HOST")
 		c.JWTKey = os.Getenv("JWT_KEY")
-		c.DBEngine = os.Getenv("DB_ENGINE")
 		return c, nil
 	} else {
 		log.Println("Read config from config.env")

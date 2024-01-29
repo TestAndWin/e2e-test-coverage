@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2024, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -114,12 +114,12 @@ func (r CoverageStore) IsThisTheFirstUpload(pid string, aid int64, fid int64, su
 
 // Get all tests for the specified feature id
 func (r CoverageStore) GetAllFeatureTests(fid string) ([]model.Test, error) {
-	return getTests(r, fid, "SELECT id, product_id, area_id, feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
+	return getTests(r, fid, "SELECT id, product_id, area_id, feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
 }
 
 // Get all tests for the specified product id
 func (r CoverageStore) GetAllProductTests(pid string) ([]model.Test, error) {
-	return getTests(r, pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY suite, file, testrun DESC;")
+	return getTests(r, pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
 }
 
 func getTests(r CoverageStore, id string, query string) ([]model.Test, error) {
@@ -177,7 +177,7 @@ func getTests(r CoverageStore, id string, query string) ([]model.Test, error) {
 
 // Get the test coverage information for all areas of the specified procduct
 func (r CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.feature_id, t.suite, t.file, t.testrun DESC;"
+	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.feature_id, t.component, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -244,7 +244,7 @@ func (r CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]mo
 
 // Get the test coverage information for all features of the specified area
 func (r CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t WHERE t.area_id = ? and t.testrun > ? ORDER BY t.feature_id, t.suite, t.file, t.testrun DESC;"
+	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t WHERE t.area_id = ? AND t.testrun > ? ORDER BY t.feature_id, t.component, t.suite, t.file, t.testrun DESC;"
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
 	stmt, err := r.db.PrepareContext(ctx, statement)
@@ -304,16 +304,16 @@ func (r CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model
 }
 
 // Get all tests for the specified suite and file
-func (r CoverageStore) GetAllTestForSuiteFile(suite string, file string) ([]model.Test, error) {
+func (r CoverageStore) GetAllTestForSuiteFile(component string, suite string, file string) ([]model.Test, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE suite = ? AND file = ? ORDER BY testrun DESC;")
+	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE component = ? AND suite = ? AND file = ? AND testrun > ? ORDER BY testrun DESC;")
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, suite, file)
+	rows, err := stmt.QueryContext(ctx, component, suite, file, time.Now().AddDate(0, 0, -28))
 	if err != nil {
 		log.Printf("Error %s when querying context", err)
 		return nil, err

@@ -15,15 +15,21 @@
       <span @click="filter(sunCloud + 0.001)"><span v-if="filterCriteria == sunCloud + 0.001">&gt;</span><i class="bi bi-cloud pointer"></i></span> &nbsp;
       <span @click="filter(cloud + 0.001)"><span v-if="filterCriteria == cloud + 0.001">&gt;</span><i class="bi bi-cloud-rain pointer"></i></span> &nbsp;
       <span @click="filter(cloudRain + 0.001)"><span v-if="filterCriteria == cloudRain + 0.001">&gt;</span><i class="bi bi-lightning pointer"></i></span>&nbsp;
-      <span class="">and worse or</span>&nbsp; <span v-if="filterLastFailed">&gt;</span><span class="pointer" @click="switchFilterLastFailed()">failed on last run</span>
+      <span>or worse</span>&nbsp;<b>OR</b>&nbsp;<span v-if="filterLastFailed">&gt;</span><span class="pointer" @click="switchFilterLastFailed()">failed on last run</span>
+      <span>&nbsp;<b>AND</b>&nbsp;Component: </span>
+      <select class="component-select" v-model="selectedComponent">
+      <option v-for="c in components" :key="c" :value="c">
+        {{ c }}
+      </option>
+    </select>
     </div>
 
     <div v-for="test in tests" :key="test['id']">
-      <template v-if="(!filterLastFailed && test['percent'] >= filterCriteria) || (filterLastFailed && test['failures'] > 0)">
+      <template v-if="((!filterLastFailed && test['percent'] >= filterCriteria) || (filterLastFailed && test['failures'] > 0)) && (selectedComponent == 'all' || selectedComponent == test['component'])">
         <div class="test shadow p-2 mb-2 rounded">
           <div class="row">
             <div class="col-5">
-              <h6 @click="showTestRuns(test['suite'], test['file-name'])" class="pointer">
+              <h6 @click="showTestRuns(test['component'], test['suite'], test['file-name'])" class="pointer">
                 {{ test['suite'] }}
               </h6>
             </div>
@@ -166,7 +172,12 @@ const chartOptions = ref({
   scales: {
     y: {
       type: 'linear',
+      beginAtZero: true,
       min: 0,
+      ticks: {
+        stepSize: 1,
+        precision: 0,
+      },
     },
   },
 });
@@ -180,6 +191,7 @@ const getTestsForProduct = async () => {
       if (response.data) {
         tests.value = response.data;
         calculatePercentage();
+        setComponentsList();
       }
     })
     .catch((err) => {
@@ -196,6 +208,7 @@ const getTestsForFeature = async () => {
       if (response.data) {
         tests.value = response.data;
         calculatePercentage();
+        setComponentsList();
       }
     })
     .catch((err) => {
@@ -213,19 +226,26 @@ const calculatePercentage = () => {
   }
 };
 
+const components =  ref<string[]>([]);
+const selectedComponent= ref('all');
+// Get list of components from the test results
+const setComponentsList = () => {
+  components.value = ['all', ...new Set(tests.value.map((item) => item['component']))];
+};
+
 const testRuns = ref([]);
 const suite = ref('');
 const file = ref('');
-const showTestRuns = async (s: string, f: string) => {
+const showTestRuns = async (c: string, s: string, f: string) => {
   loading.value = true;
   suite.value = s;
   file.value = f;
 
   await http
-    .get(`/api/v1/tests?suite=${s}&file-name=${f}`)
+    .get(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`)
     .then((response) => {
       // We use only the lastest 10
-      testRuns.value = response.data.slice(-10);
+      testRuns.value = response.data.slice(0, 10);
 
       chartData.value.labels = [];
       for (let i = 0; i < testRuns.value.length; i++) {
@@ -253,6 +273,7 @@ const closeAlert = () => {
 const filterLastFailed = ref(false);
 const switchFilterLastFailed = () => {
   filterLastFailed.value = !filterLastFailed.value;
+  filterCriteria.value = -1;
 };
 const filterCriteria = ref(0);
 const filter = (f: number) => {

@@ -6,3 +6,4 @@ testresults
 WORKLOG.md
 *.tar.gz
 .DS_Store
+*.sql

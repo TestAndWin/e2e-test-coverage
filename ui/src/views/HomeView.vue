@@ -48,8 +48,7 @@
           <p>$ symbol represents the business value of a feature. &dollar; = low, &dollar;&dollar; = medium, &dollar;&dollar;&dollar; = high</p>
         </div>
         <p></p>
-        <p class="card-text"><a href="/docs/index.html" class="link-info">API Documentation</a></p>
-        <p>&copy; TestAndWin 2023</p>
+        <p>&copy; TestAndWin 2024</p>
       </div>
     </div>
   </div>
