@@ -61,7 +61,7 @@ func (r CoverageStore) DeleteFeature(id string) (int64, error) {
 func (r CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ?;")
+	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ? ORDER BY name;")
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return nil, err

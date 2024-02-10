@@ -94,6 +94,7 @@ func HandleRequest() {
 		// Test Coverage
 		v1.POST("/coverage/:id/upload-mocha-summary-report", usercontroller.AuthApi(), controller.UploadMochaSummaryReport)
 		v1.GET("/coverage/:id/areas", usercontroller.AuthUser(model.TESTER), controller.GetAreaCoverage)
+		v1.GET("/coverage/components", usercontroller.AuthUser(model.TESTER), controller.GetComponents)
 		v1.GET("/coverage/areas/:id/features", usercontroller.AuthUser(model.TESTER), controller.GetFeatureCoverage)
 		v1.GET("/coverage/features/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetTestsCoverage)
 		v1.GET("/coverage/products/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetProductTestsCoverage)

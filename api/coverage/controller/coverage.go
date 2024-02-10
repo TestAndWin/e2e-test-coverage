@@ -135,3 +135,20 @@ func GetProductTestsCoverage(c *gin.Context) {
 		c.JSON(http.StatusOK, t)
 	}
 }
+
+// GetComponents godoc
+// @Summary      Get all components with their latest test run
+// @Description  Get all components with their latest test run
+// @Tags         coverage
+// @Produce      json
+// @Success      200  {array}  model.Test
+// @Router       /coverage/components [get]
+func GetComponents(c *gin.Context) {
+	t, err := repo.GetComponents()
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+	} else {
+		c.JSON(http.StatusOK, t)
+	}
+}

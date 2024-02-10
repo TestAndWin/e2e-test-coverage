@@ -334,3 +334,35 @@ func (r CoverageStore) GetAllTestForSuiteFile(component string, suite string, fi
 	}
 	return tests, nil
 }
+
+// Get all components
+func (r CoverageStore) GetComponents() ([]model.Component, error) {
+	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelfunc()
+	stmt, err := r.db.PrepareContext(ctx, "SELECT component, MAX(testrun) AS testrun FROM tests GROUP BY component ORDER BY component;")
+	if err != nil {
+		log.Printf("Error %s when preparing SQL statement", err)
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx)
+	if err != nil {
+		log.Printf("Error %s when querying context", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+	var tests = []model.Component{}
+	for rows.Next() {
+		t := model.Component{}
+		if err := rows.Scan(&t.Name, &t.TestRun); err != nil {
+			log.Println(err)
+			return tests, err
+		}
+		tests = append(tests, t)
+	}
+	if err := rows.Err(); err != nil {
+		return tests, err
+	}
+	return tests, nil
+}

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import ProductView from '../views/ProductView.vue';
+import ComponentsView from '../views/ComponentsView.vue';
 import CoverageView from '../views/CoverageView.vue';
 import TestView from '../views/TestView.vue';
 import LogInView from '../views/LogInView.vue';
@@ -33,6 +34,12 @@ const routes: Array<RouteRecordRaw> = [
     alias: ['/tests.html'],
     name: 'tests',
     component: TestView
+  },
+  {
+    path: '/components',
+    alias: ['/components.html'],
+    name: 'components',
+    component: ComponentsView
   },
   {
     path: '/login',

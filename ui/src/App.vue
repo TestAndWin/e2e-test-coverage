@@ -24,6 +24,9 @@
           <li v-if="isLoggedIn() && isTester()" class="nav-item">
             <a class="nav-link" href="/tests">Tests</a>
           </li>
+          <li v-if="isLoggedIn() && isTester()" class="nav-item">
+            <a class="nav-link" href="/components">Components</a>
+          </li>
           <li v-if="isLoggedIn() && isAdmin()" class="nav-item">
             <a class="nav-link" href="/admin">Admin</a>
           </li>
