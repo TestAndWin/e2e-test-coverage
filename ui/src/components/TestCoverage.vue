@@ -43,7 +43,7 @@
               <i v-if="test['percent'] >= cloud && test['percent'] <= cloudRain" class="bi bi-cloud-rain"></i>
               <i v-if="test['percent'] > cloudRain" class="bi bi-lightning"></i>
               &nbsp;&nbsp;
-              <i @click="deleteTests(test['component'], test['suite'], test['file-name'])" class="bi bi-trash"/>
+              <i @click="deleteTests(test['component'], test['suite'], test['file-name'])" class="bi bi-trash pointer"/>
             </div>
           </div>
           <div class="row">
