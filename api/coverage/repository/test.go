@@ -43,7 +43,7 @@ const insertTestStmt = "INSERT INTO tests (product_id, area_id, feature_id, suit
 
 const insertTestNoAreaFeatureStmt = "INSERT INTO tests (product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
 
-const deleteTestStmt = "DELETE FROM tests WHERE id = ?"
+const deleteTestStmt = "DELETE FROM tests WHERE component = ? AND suite = ? AND file = ?"
 
 func (r CoverageStore) CreateTestsTable() error {
 	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
@@ -65,8 +65,8 @@ func (r CoverageStore) InsertTestResultWithoutAreaFeature(productId string, comp
 	return r.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
 }
 
-func (r CoverageStore) DeleteTest(id string) (int64, error) {
-	return r.executeSql(deleteTestStmt, id)
+func (r CoverageStore) DeleteTest(component string, suite string, file string) (int64, error) {
+	return r.executeSql(deleteTestStmt, component, suite, file)
 }
 
 // Checks if the test had already been uploaded.

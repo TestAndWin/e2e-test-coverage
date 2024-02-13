@@ -16,16 +16,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// DeleteTest godoc
-// @Summary      Delete the test
-// @Description  Delete the test
+// DeleteTests godoc
+// @Summary      Delete all tests for the specified component, suite and file-name
+// @Description  Delete all tests for the specified component, suite and file-name
 // @Tags         test
 // @Produce      json
-// @Param        id    path      int     true  "Test ID"
+// @Param        component      query      string     true  "Component name"
+// @Param        suite          query      string     true  "Suite name"
+// @Param        file-name      query      string     true  "File name"
 // @Success      204
 // @Router       /api/v1/tests/{id} [DELETE]
-func DeleteTest(c *gin.Context) {
-	_, err := repo.DeleteTest(c.Param("id"))
+func DeleteTests(c *gin.Context) {
+	suite := c.Query("suite")
+	component := c.Query("component")
+	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
+	_, err := repo.DeleteTest(component, suite, file)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
@@ -39,7 +44,7 @@ func DeleteTest(c *gin.Context) {
 // @Description  Get all tests for the specified suite and filename.
 // @Tags         test
 // @Produce      json
-// @Param        componen       query      string     true  "Component name"
+// @Param        component      query      string     true  "Component name"
 // @Param        suite          query      string     true  "Suite name"
 // @Param        file-name      query      string     true  "File name"
 // @Success      200 {array}  model.Test

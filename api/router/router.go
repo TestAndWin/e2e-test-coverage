@@ -84,7 +84,7 @@ func HandleRequest() {
 		v1.DELETE("/features/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteFeature)
 
 		v1.GET("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.GetAllTestForSuiteFile)
-		v1.DELETE("/tests/:id", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteTest)
+		v1.DELETE("/tests", usercontroller.AuthUser(model.MAINTAINER), controller.DeleteTests)
 
 		// Expl Testing
 		v1.POST("/expl-tests", usercontroller.AuthUser(model.TESTER), controller.AddExplTest)

@@ -525,7 +525,7 @@ paths:
       parameters:
       - description: Component name
         in: query
-        name: componen
+        name: component
         required: true
         type: string
       - description: Suite name
@@ -552,19 +552,29 @@ paths:
       - test
   /api/v1/tests/{id}:
     delete:
-      description: Delete the test
+      description: Delete all tests for the specified component, suite and file-name
       parameters:
-      - description: Test ID
-        in: path
-        name: id
+      - description: Component name
+        in: query
+        name: component
         required: true
-        type: integer
+        type: string
+      - description: Suite name
+        in: query
+        name: suite
+        required: true
+        type: string
+      - description: File name
+        in: query
+        name: file-name
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "204":
           description: No Content
-      summary: Delete the test
+      summary: Delete all tests for the specified component, suite and file-name
       tags:
       - test
   /api/v1/users:
@@ -709,6 +719,21 @@ paths:
       summary: Add test results of a mocha summary report
       tags:
       - mocha
+  /coverage/components:
+    get:
+      description: Get all components with their latest test run
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Test'
+            type: array
+      summary: Get all components with their latest test run
+      tags:
+      - coverage
   /coverage/features/:id/tests:
     get:
       description: Get coverage for all tests of a feature for the last 28 days.

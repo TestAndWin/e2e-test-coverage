@@ -578,7 +578,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Component name",
-                        "name": "componen",
+                        "name": "component",
                         "in": "query",
                         "required": true
                     },
@@ -612,20 +612,34 @@ const docTemplate = `{
         },
         "/api/v1/tests/{id}": {
             "delete": {
-                "description": "Delete the test",
+                "description": "Delete all tests for the specified component, suite and file-name",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "test"
                 ],
-                "summary": "Delete the test",
+                "summary": "Delete all tests for the specified component, suite and file-name",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Test ID",
-                        "name": "id",
-                        "in": "path",
+                        "type": "string",
+                        "description": "Component name",
+                        "name": "component",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Suite name",
+                        "name": "suite",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File name",
+                        "name": "file-name",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -845,6 +859,29 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/coverage/components": {
+            "get": {
+                "description": "Get all components with their latest test run",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "coverage"
+                ],
+                "summary": "Get all components with their latest test run",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Test"
+                            }
                         }
                     }
                 }

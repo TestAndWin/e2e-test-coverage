@@ -42,6 +42,8 @@
               <i v-if="test['percent'] > sunCloud && test['percent'] <= cloud" class="bi bi-cloud"></i>
               <i v-if="test['percent'] >= cloud && test['percent'] <= cloudRain" class="bi bi-cloud-rain"></i>
               <i v-if="test['percent'] > cloudRain" class="bi bi-lightning"></i>
+              &nbsp;&nbsp;
+              <i @click="deleteTests(test['component'], test['suite'], test['file-name'])" class="bi bi-trash"/>
             </div>
           </div>
           <div class="row">
@@ -264,6 +266,18 @@ const showTestRuns = async (c: string, s: string, f: string) => {
     });
   loading.value = false;
   new Modal('#showTestRuns_' + props.featureId).show();
+};
+
+const deleteTests = async (c: string, s: string, f: string) => {
+  loading.value = true;
+
+  await http
+    .delete(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`)
+    .catch((err) => {
+      error.value = err;
+    });
+  loading.value = false;
+  location.reload();
 };
 
 const closeAlert = () => {
