@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Modal } from 'bootstrap';
 import http from '@/common-http';
 

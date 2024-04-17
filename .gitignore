@@ -7,3 +7,4 @@ WORKLOG.md
 *.tar.gz
 .DS_Store
 *.sql
+node_modules

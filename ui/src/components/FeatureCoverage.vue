@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import TestCoverage from '@/components/TestCoverage.vue';
 import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';

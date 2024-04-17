@@ -10,15 +10,15 @@
   },
   "dependencies": {
     "@sideway/formula": "^3.0.1",
-    "axios": "^1.6.7",
-    "bootstrap": "^5.3.2",
+    "axios": "^1.6.8",
+    "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "bootstrap-icons-vue": "^1.11.3",
-    "chart.js": "^4.4.1",
-    "core-js": "^3.35.1",
-    "vue": "^3.4.15",
-    "vue-chartjs": "^5.3.0",
-    "vue-router": "^4.2.5",
+    "chart.js": "^4.4.2",
+    "core-js": "^3.37.0",
+    "vue": "^3.4.23",
+    "vue-chartjs": "^5.3.1",
+    "vue-router": "^4.3.1",
     "vue-star-rating": "^2.1.0"
   },
   "devDependencies": {
