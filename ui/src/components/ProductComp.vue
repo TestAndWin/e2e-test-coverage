@@ -39,7 +39,17 @@
                         <i class="bi bi-box-arrow-up-right pointer" style="color: #2c3e50"></i>
                       </a>
                       &nbsp;
-                      <a @click="showUpdateFeatureModal(feature['id'], feature['name'], feature['documentation'], feature['url'], feature['business-value'])">
+                      <a
+                        @click="
+                          showUpdateFeatureModal(
+                            feature['id'],
+                            feature['name'],
+                            feature['documentation'],
+                            feature['url'],
+                            feature['business-value']
+                          )
+                        "
+                      >
                         <i class="bi bi-pencil pointer"></i>
                       </a>
                       &nbsp;
@@ -51,8 +61,20 @@
             </div>
 
             <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="Feature Name" aria-label="Feature Name" aria-describedby="button-add-area" v-model="newFeature[area['id']]" />
-              <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-feature" @click="addFeature(area['id'])" />
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Feature Name"
+                aria-label="Feature Name"
+                aria-describedby="button-add-area"
+                v-model="newFeature[area['id']]"
+              />
+              <button
+                class="btn btn-outline-secondary bi bi-plus-lg pointer"
+                type="button"
+                id="button-add-feature"
+                @click="addFeature(area['id'])"
+              />
             </div>
           </div>
         </div>
@@ -60,13 +82,37 @@
       </div>
 
       <div v-if="products.length > 0" class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Area Name" aria-label="Area Name" aria-describedby="button-add-area" v-model="newArea" />
-        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-area" @click="addArea()"></button>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Area Name"
+          aria-label="Area Name"
+          aria-describedby="button-add-area"
+          v-model="newArea"
+        />
+        <button
+          class="btn btn-outline-secondary bi bi-plus-lg pointer"
+          type="button"
+          id="button-add-area"
+          @click="addArea()"
+        ></button>
       </div>
 
       <div v-if="products.length == 0 && !error" class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Enter Product Name" aria-label="Enter Product Name" aria-describedby="button-add-product" v-model="newProduct" />
-        <button class="btn btn-outline-secondary bi bi-plus-lg pointer" type="button" id="button-add-product" @click="addProduct()" />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Enter Product Name"
+          aria-label="Enter Product Name"
+          aria-describedby="button-add-product"
+          v-model="newProduct"
+        />
+        <button
+          class="btn btn-outline-secondary bi bi-plus-lg pointer"
+          type="button"
+          id="button-add-product"
+          @click="addProduct()"
+        />
       </div>
     </div>
   </div>
@@ -87,7 +133,9 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName">Save changes</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName">
+                Save changes
+              </button>
             </div>
           </form>
         </div>
@@ -106,7 +154,8 @@
         <div class="modal-body">
           <form>
             <div class="mb-3">
-              <label>Name</label><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
+              <label>Name</label
+              ><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
               <label>Please be aware that the name is used to "match" the test results.</label><br /><br />
               <label>Business Value</label><br />
               <select v-model="featureBusinessValue">
@@ -122,7 +171,9 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeature">Save changes</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeature">
+                Save changes
+              </button>
             </div>
           </form>
         </div>
@@ -137,7 +188,7 @@ import { Modal } from 'bootstrap';
 import http from '@/common-http';
 
 const props = defineProps({
-  productId: Number,
+  productId: Number
 });
 
 const loading = ref(true);
@@ -247,9 +298,17 @@ const getFeatures = async (areaId: number) => {
 
 const newFeature = ref(['']);
 const addFeature = async (areaId: number) => {
-  await http.post(`/api/v1/features`, { 'area-id': areaId, name: newFeature.value[areaId], documentation: '', url: '', 'business-value': '' }).catch((err) => {
-    error.value = err + ' | ' + err.response?.data?.error;
-  });
+  await http
+    .post(`/api/v1/features`, {
+      'area-id': areaId,
+      name: newFeature.value[areaId],
+      documentation: '',
+      url: '',
+      'business-value': ''
+    })
+    .catch((err) => {
+      error.value = err + ' | ' + err.response?.data?.error;
+    });
   newFeature.value[areaId] = '';
   getFeatures(areaId);
 };
@@ -263,7 +322,13 @@ const removeFeature = async (areaId: number, featureId: number) => {
 
 const newFeatureName = ref('');
 
-const showUpdateFeatureModal = (featureId: number, name: string, documentation: string, url: string, businessValue: string) => {
+const showUpdateFeatureModal = (
+  featureId: number,
+  name: string,
+  documentation: string,
+  url: string,
+  businessValue: string
+) => {
   newFeatureName.value = name;
   featureIdToChange.value = featureId;
   featureBusinessValue.value = businessValue;
@@ -278,7 +343,7 @@ const changeFeature = async () => {
       name: newFeatureName.value,
       documentation: featureDocumentation.value,
       url: featureUrl.value,
-      'business-value': featureBusinessValue.value,
+      'business-value': featureBusinessValue.value
     })
     .catch((err) => {
       error.value = err + ' | ' + err.response?.data?.error;

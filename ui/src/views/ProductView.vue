@@ -7,12 +7,12 @@
     </div>
   </div>
   <div class="">
-    <ProductComp :productId=1 />
+    <ProductComp :productId="1" />
   </div>
 </template>
 
 <script setup lang="ts">
-import ProductComp from "@/components/ProductComp.vue";
+import ProductComp from '@/components/ProductComp.vue';
 import { onMounted } from 'vue';
 
 onMounted(() => {

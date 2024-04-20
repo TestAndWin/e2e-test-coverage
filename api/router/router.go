@@ -58,6 +58,7 @@ func HandleRequest() {
 	router.GET("/js/*filepath", h)
 	router.GET("/css/*filepath", h)
 	router.GET("/img/*filepath", h)
+	router.GET("/assets/*filepath", h)
 	router.GET("/fonts/*filepath", h)
 	router.NoRoute(HandleIndex())
 

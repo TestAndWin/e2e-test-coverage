@@ -15,7 +15,8 @@
           <div class="col">
             <span class="justify-content-between pointer">{{ u['email'] }}</span>
             {{ u['roles'] }}
-            <a @click="showEditUserModal(u['id'], u['email'], u['roles'])"><i class="bi bi-pencil pointer"></i></a>&nbsp;
+            <a @click="showEditUserModal(u['id'], u['email'], u['roles'])"><i class="bi bi-pencil pointer"></i></a
+            >&nbsp;
             <a @click="deleteUser(u['id'])"><i class="bi bi-trash pointer"></i></a>
           </div>
         </div>
@@ -48,7 +49,9 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal" @click="createUser">Add</button>
+              <button class="btn btn-primary pointer" type="submit" data-bs-dismiss="modal" @click="createUser">
+                Add
+              </button>
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
             </div>
           </form>
@@ -80,7 +83,9 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveUser">Save</button>
+              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveUser">
+                Save
+              </button>
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Cancel</button>
             </div>
           </form>
@@ -145,7 +150,7 @@ const createUser = async () => {
   const newUser = {
     email: email.value,
     password: password.value,
-    roles: selectedRoles.value,
+    roles: selectedRoles.value
   };
 
   await http
@@ -169,7 +174,7 @@ const saveUser = async () => {
   const newUser = {
     email: email.value,
     password: password.value,
-    roles: selectedRoles.value,
+    roles: selectedRoles.value
   };
 
   await http

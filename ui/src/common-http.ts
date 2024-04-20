@@ -1,20 +1,23 @@
-import axios from "axios";
+import axios from 'axios';
 
 const http = axios.create({
-  baseURL: process.env.VUE_APP_API_URL ? process.env.VUE_APP_API_URL : window.location.origin,
+  baseURL: import.meta.env.VITE_APP_API_URL ? import.meta.env.VITE_APP_API_URL : window.location.origin,
   headers: {
-    "Content-type": "application/json",
+    'Content-type': 'application/json'
   },
-  withCredentials: true,
+  withCredentials: true
 });
 
-http.interceptors.response.use(function (response) {
-  return response;
-}, async (error) => {
-  if (error.response.status === 401) {
-    window.location.href = "/login";
+http.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  async (error) => {
+    if (error.response.status === 401) {
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
   }
-  return Promise.reject(error);
-});
+);
 
 export default http;

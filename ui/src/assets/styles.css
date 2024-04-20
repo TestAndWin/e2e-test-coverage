@@ -1,27 +1,29 @@
-body { background: rgb(213, 216, 220) !important; }
+body {
+  background: rgb(213, 216, 220) !important;
+}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
- 
+
   color: #2c3e50;
- }
+}
 
 .user {
-  background-color: #6FA9C6;
+  background-color: #6fa9c6;
 }
 
 .area {
-  background-color: #8FA9C6;
+  background-color: #8fa9c6;
 }
 
 .feature {
-  background-color: #9FC6D5;
+  background-color: #9fc6d5;
 }
 
 .test {
-  background-color: #BEE1E1;
+  background-color: #bee1e1;
 }
 
 .total {
@@ -69,9 +71,11 @@ body { background: rgb(213, 216, 220) !important; }
   cursor: pointer;
 }
 
-.btn-primary, .btn-primary:active, .btn-primary:visited {
-  background-color: #16657A !important;
-  border-color: #16657A !important;
+.btn-primary,
+.btn-primary:active,
+.btn-primary:visited {
+  background-color: #16657a !important;
+  border-color: #16657a !important;
 }
 
 .btn-primary:hover {
@@ -79,5 +83,5 @@ body { background: rgb(213, 216, 220) !important; }
 }
 
 .component-select {
-  background-color:  #BEE1E1;
+  background-color: #bee1e1;
 }

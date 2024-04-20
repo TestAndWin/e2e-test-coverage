@@ -8,3 +8,4 @@ WORKLOG.md
 .DS_Store
 *.sql
 node_modules
+backup

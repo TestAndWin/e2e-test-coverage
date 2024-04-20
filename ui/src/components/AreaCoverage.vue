@@ -16,10 +16,12 @@
           <h4>{{ area['name'] }}</h4>
         </div>
         <div class="col-5 mb-2">
-          <TestResult :test=area />
+          <TestResult :test="area" />
         </div>
         <div class="col mb-2">
-          <span class="result expl-test pointer" @click="showExplTests(area['id'])"> {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }}) </span>
+          <span class="result expl-test pointer" @click="showExplTests(area['id'])">
+            {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }})
+          </span>
           &nbsp;
           <span class="result expl-test pointer" @click="showLogExplTest(area['id'])"> New </span>
         </div>
@@ -42,13 +44,25 @@
             <textarea type="text" class="form-control" id="etSummary" v-model="etSummary" />
             <br />
             <label>Rating</label>
-            <star-rating :show-rating="false" active-color="#2c3e50" v-model:rating="etRating" /><br />
+            <br />
+            <select v-model="etRating">
+              <option disabled value="">Number stars</option>
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+            <br /><br />
             <label>Test Date</label>
             <input id="etDate" class="form-control" type="date" v-model="etDate" />
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveExplTest">Save test</button>
+            <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="saveExplTest">
+              Save test
+            </button>
           </div>
         </form>
       </div>
@@ -73,7 +87,7 @@
                   v-for="n in 5"
                   :class="{
                     'bi-star-fill': n <= et['rating'],
-                    'bi-star': n > et['rating'],
+                    'bi-star': n > et['rating']
                   }"
                   :key="n"
                 ></i>
@@ -97,11 +111,10 @@ import { onMounted, ref } from 'vue';
 import { Modal } from 'bootstrap';
 import FeatureCoverage from './FeatureCoverage.vue';
 import TestResult from './TestResult.vue';
-import StarRating from 'vue-star-rating';
 import http from '@/common-http';
 
 const props = defineProps({
-  productId: Number,
+  productId: Number
 });
 
 const loading = ref(true);
@@ -138,8 +151,8 @@ const saveExplTest = async () => {
     .post(`/api/v1/expl-tests`, {
       'area-id': etAreaId.value,
       summary: etSummary.value,
-      rating: etRating.value,
-      'test-run': etDate.value + 'T00:00:00.000Z',
+      rating: Number(etRating.value),
+      'test-run': etDate.value + 'T00:00:00.000Z'
     })
     .catch((err) => {
       error.value = err + ' | ' + err.response.data.error;

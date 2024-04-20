@@ -2,9 +2,7 @@
   <div class="container mb-3">
     <div class="card">
       <div class="card-body">
-        <p class="card-text">
-          Lists all components with their latest test run date.
-        </p>
+        <p class="card-text">Lists all components with their latest test run date.</p>
       </div>
     </div>
   </div>
@@ -14,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import ComponentsList from "@/components/ComponentsList.vue";
+import ComponentsList from '@/components/ComponentsList.vue';
 import { onMounted } from 'vue';
 
 onMounted(() => {

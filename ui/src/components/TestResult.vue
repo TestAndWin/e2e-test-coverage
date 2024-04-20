@@ -31,6 +31,6 @@
 
 <script setup lang="ts">
 const props = defineProps({
-  test: { type: Object, required: true },
+  test: { type: Object, required: true }
 });
 </script>

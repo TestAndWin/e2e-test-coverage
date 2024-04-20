@@ -2,7 +2,10 @@
   <div class="container mb-3">
     <div class="card">
       <div class="card-body">
-        <p class="card-text">The quantity of test cases and their status over the last 28 days, including the impression of exploratory testing on each product area and feature.</p>
+        <p class="card-text">
+          The quantity of test cases and their status over the last 28 days, including the impression of exploratory
+          testing on each product area and feature.
+        </p>
       </div>
     </div>
   </div>

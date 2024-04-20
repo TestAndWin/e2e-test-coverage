@@ -44,7 +44,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import http from '@/common-http';
-import {isAdmin} from '@/menu';
+import { isAdmin } from '@/menu';
 const router = useRouter();
 
 const loading = ref(false);
@@ -75,7 +75,10 @@ const changePassword = async () => {
   error.value = '';
 
   http
-    .put(`/api/v1/users/change-pwd`, { 'new-password': newPassword.value, password: password.value })
+    .put(`/api/v1/users/change-pwd`, {
+      'new-password': newPassword.value,
+      password: password.value
+    })
     .then(() => {
       router.push('/');
     })
