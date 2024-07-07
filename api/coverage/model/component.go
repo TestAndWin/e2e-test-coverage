@@ -11,6 +11,11 @@ package model
 import "time"
 
 type Component struct {
-	Name    string    `db:"name"        json:"name"`
-	TestRun time.Time `db:"testrun"     json:"test-run"`
+	Name     string    `json:"name"     db:"name"        `
+	TestRun  time.Time `json:"test-run" db:"testrun"     `
+	Total    int64     `json:"total"`
+	Passes   int64     `json:"passes"`
+	Pending  int64     `json:"pending"`
+	Failures int64     `json:"failures"`
+	Skipped  int64     `json:"skipped"`
 }

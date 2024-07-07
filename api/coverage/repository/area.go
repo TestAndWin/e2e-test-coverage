@@ -30,11 +30,11 @@ const updateAreaStmt = "UPDATE areas SET name = ? WHERE id = ?"
 
 const deleteAreaStmt = "DELETE FROM areas WHERE id = ?"
 
-func (r CoverageStore) CreateAreasTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+func (cs CoverageStore) CreateAreasTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	_, err := r.db.ExecContext(ctx, createAreaStmt)
+	_, err := cs.db.ExecContext(ctx, createAreaStmt)
 	if err != nil {
 		log.Printf("Error %s when creating Areas DB table\n", err)
 		return err
@@ -42,29 +42,24 @@ func (r CoverageStore) CreateAreasTable() error {
 	return nil
 }
 
-func (r CoverageStore) InsertArea(a model.Area) (int64, error) {
-	return r.executeSql(insertAreaStmt, a.ProductId, a.Name)
+func (cs CoverageStore) InsertArea(a model.Area) (int64, error) {
+	return cs.executeSql(insertAreaStmt, a.ProductId, a.Name)
 }
 
-func (r CoverageStore) UpdateArea(a model.Area) (int64, error) {
-	return r.executeSql(updateAreaStmt, a.Name, a.Id)
+func (cs CoverageStore) UpdateArea(a model.Area) (int64, error) {
+	return cs.executeSql(updateAreaStmt, a.Name, a.Id)
 }
 
-func (r CoverageStore) DeleteArea(id string) (int64, error) {
-	return r.executeSql(deleteAreaStmt, id)
+func (cs CoverageStore) DeleteArea(id string) (int64, error) {
+	return cs.executeSql(deleteAreaStmt, id)
 }
 
 // Get all areas for the specified product id
-func (r CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, name FROM areas WHERE product_id = ? ORDER BY name;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, pid)
+func (cs CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := cs.db.QueryContext(ctx, "SELECT id, product_id, name FROM areas WHERE product_id = ? ORDER BY name;", pid)
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err
@@ -87,15 +82,12 @@ func (r CoverageStore) GetAllProductAreas(pid string) ([]model.Area, error) {
 }
 
 // Returns the area and feature id for the given area and feature name and the product id.
-func (r CoverageStore) GetAreaAndFeatureId(area string, feature string, productId string) (int64, int64, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT a.id, f.id FROM areas a JOIN features f ON a.id = f.area_id JOIN products p ON p.id = a.product_id WHERE a.name = ? and f.name = ? and p.id=?;")
+func (cs CoverageStore) GetAreaAndFeatureId(area string, feature string, productId string) (int64, int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	var aid int64
 	var fid int64
-	if err == nil {
-		defer stmt.Close()
-		err = stmt.QueryRowContext(ctx, area, feature, productId).Scan(&aid, &fid)
-	}
+	err := cs.db.QueryRowContext(ctx, "SELECT a.id, f.id FROM areas a JOIN features f ON a.id = f.area_id JOIN products p ON p.id = a.product_id WHERE a.name = ? and f.name = ? and p.id=?;", area, feature, productId).Scan(&aid, &fid)
 	return aid, fid, err
 }

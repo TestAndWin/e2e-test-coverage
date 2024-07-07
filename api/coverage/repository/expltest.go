@@ -31,11 +31,11 @@ const insertExplTestStmt = "INSERT INTO expl_tests (area_id, summary, rating, te
 
 const deleteExplTestStmt = "DELETE FROM expl_tests WHERE id = ?"
 
-func (r CoverageStore) CreateExplTestsTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+func (cs CoverageStore) CreateExplTestsTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	_, err := r.db.ExecContext(ctx, createExplTestStmt)
+	_, err := cs.db.ExecContext(ctx, createExplTestStmt)
 	if err != nil {
 		log.Printf("Error %s when creating Expl Tests DB table\n", err)
 		return err
@@ -43,25 +43,20 @@ func (r CoverageStore) CreateExplTestsTable() error {
 	return nil
 }
 
-func (r CoverageStore) InsertExplTest(et model.ExplTest) (int64, error) {
-	return r.executeSql(insertExplTestStmt, et.AreaId, et.Summary, et.Rating, et.TestRun, et.Tester)
+func (cs CoverageStore) InsertExplTest(et model.ExplTest) (int64, error) {
+	return cs.executeSql(insertExplTestStmt, et.AreaId, et.Summary, et.Rating, et.TestRun, et.Tester)
 }
 
-func (r CoverageStore) DeleteExplTest(id string) (int64, error) {
-	return r.executeSql(deleteExplTestStmt, id)
+func (cs CoverageStore) DeleteExplTest(id string) (int64, error) {
+	return cs.executeSql(deleteExplTestStmt, id)
 }
 
 // Get all exploratory tests for the specified area
-func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, summary, rating, testrun, tester FROM expl_tests WHERE area_id = ? AND testrun > ?;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, aid, time.Now().AddDate(0, 0, -28))
+func (cs CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := cs.db.QueryContext(ctx, "SELECT id, area_id, summary, rating, testrun, tester FROM expl_tests WHERE area_id = ? AND testrun > ?;", aid, time.Now().AddDate(0, 0, -28))
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err
@@ -84,14 +79,11 @@ func (r CoverageStore) GetExplTests(aid string) ([]model.ExplTest, error) {
 }
 
 // Returns the number of expl. tests and the average rating for the specified area id
-func (r CoverageStore) GetExplTestOverviewForArea(aid int64) (model.Area, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT count(*), COALESCE(AVG(rating),0) FROM expl_tests WHERE area_id = ? AND testrun > ?;")
+func (cs CoverageStore) GetExplTestOverviewForArea(aid int64) (model.Area, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	var a = model.Area{}
-	if err == nil {
-		defer stmt.Close()
-		err = stmt.QueryRowContext(ctx, aid, time.Now().AddDate(0, 0, -28)).Scan(&a.ExplTests, &a.ExplRating)
-	}
+	err := cs.db.QueryRowContext(ctx, "SELECT count(*), COALESCE(AVG(rating),0) FROM expl_tests WHERE area_id = ? AND testrun > ?;", aid, time.Now().AddDate(0, 0, -28)).Scan(&a.ExplTests, &a.ExplRating)
 	return a, err
 }

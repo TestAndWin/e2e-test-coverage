@@ -33,11 +33,11 @@ const updateFeatureStmt = "UPDATE features SET name = ?, documentation = ?, url 
 
 const deleteFeatureStmt = "DELETE FROM features WHERE id = ?"
 
-func (r CoverageStore) CreateFeaturesTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+func (cs CoverageStore) CreateFeaturesTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	_, err := r.db.ExecContext(ctx, createFeatureStmt)
+	_, err := cs.db.ExecContext(ctx, createFeatureStmt)
 	if err != nil {
 		log.Printf("Error %s when creating Features DB table\n", err)
 		return err
@@ -45,29 +45,24 @@ func (r CoverageStore) CreateFeaturesTable() error {
 	return nil
 }
 
-func (r CoverageStore) InsertFeature(f model.Feature) (int64, error) {
-	return r.executeSql(insertFeatureStmt, f.AreaId, f.Name, f.Documentation, f.Url, f.BusinessValue)
+func (cs CoverageStore) InsertFeature(f model.Feature) (int64, error) {
+	return cs.executeSql(insertFeatureStmt, f.AreaId, f.Name, f.Documentation, f.Url, f.BusinessValue)
 }
 
-func (r CoverageStore) UpdateFeature(f model.Feature) (int64, error) {
-	return r.executeSql(updateFeatureStmt, f.Name, f.Documentation, f.Url, f.BusinessValue, f.Id)
+func (cs CoverageStore) UpdateFeature(f model.Feature) (int64, error) {
+	return cs.executeSql(updateFeatureStmt, f.Name, f.Documentation, f.Url, f.BusinessValue, f.Id)
 }
 
-func (r CoverageStore) DeleteFeature(id string) (int64, error) {
-	return r.executeSql(deleteFeatureStmt, id)
+func (cs CoverageStore) DeleteFeature(id string) (int64, error) {
+	return cs.executeSql(deleteFeatureStmt, id)
 }
 
 // Get all features for the specified area id
-func (r CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ? ORDER BY name;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, aid)
+func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := cs.db.QueryContext(ctx, "SELECT id, area_id, name, documentation, url, business_value FROM features WHERE area_id = ? ORDER BY name;", aid)
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err

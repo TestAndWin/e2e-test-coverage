@@ -32,11 +32,11 @@ func OpenDbConnection() (*CoverageStore, error) {
 }
 
 // Inserts/Deletes a row using the specified statement and params
-func (r CoverageStore) executeSql(statement string, params ...any) (int64, error) {
+func (cs CoverageStore) executeSql(statement string, params ...any) (int64, error) {
 	//log.Printf("statement %s, params: %s", statement, params)
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, statement)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	stmt, err := cs.db.PrepareContext(ctx, statement)
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
 		return 0, err

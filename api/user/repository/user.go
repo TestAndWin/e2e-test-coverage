@@ -49,8 +49,8 @@ func NewUserStore() (*UserStore, error) {
 
 // Create the users table if not existing and create an admin user
 func (s *UserStore) CreateUsersTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	// Create db table
 	_, err := s.db.ExecContext(ctx, createUserTable)
@@ -151,8 +151,8 @@ func (s *UserStore) Login(email string, password string) (model.User, error) {
 // Inserts/Deletes a row using the specified statement and params
 func (s *UserStore) executeSql(statement string, params ...any) (int64, error) {
 	log.Printf("statement %s, params: %s", statement, params)
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	stmt, err := s.db.PrepareContext(ctx, statement)
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)
@@ -175,8 +175,8 @@ func (s *UserStore) executeSql(statement string, params ...any) (int64, error) {
 
 // Returns all user
 func (s UserStore) GetUser() ([]model.User, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	stmt, err := s.db.PrepareContext(ctx, "SELECT id, email, role FROM users;")
 	if err != nil {
 		log.Printf("Error %s when preparing SQL statement", err)

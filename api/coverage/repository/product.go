@@ -28,11 +28,11 @@ const updateProductStmt = "UPDATE products SET name = ? WHERE id = ?"
 
 const deleteProductStmt = "DELETE FROM products WHERE id = ?"
 
-func (r CoverageStore) CreateProductsTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+func (cs CoverageStore) CreateProductsTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	_, err := r.db.ExecContext(ctx, createProductStmt)
+	_, err := cs.db.ExecContext(ctx, createProductStmt)
 	if err != nil {
 		log.Printf("Error %s when creating Products DB table\n", err)
 		return err
@@ -40,29 +40,23 @@ func (r CoverageStore) CreateProductsTable() error {
 	return nil
 }
 
-func (r CoverageStore) InsertProduct(p model.Product) (int64, error) {
-	return r.executeSql(insertProductStmt, p.Name)
+func (cs CoverageStore) InsertProduct(p model.Product) (int64, error) {
+	return cs.executeSql(insertProductStmt, p.Name)
 }
 
-func (r CoverageStore) UpdateProduct(p model.Product) (int64, error) {
-	return r.executeSql(updateProductStmt, p.Name, p.Id)
+func (cs CoverageStore) UpdateProduct(p model.Product) (int64, error) {
+	return cs.executeSql(updateProductStmt, p.Name, p.Id)
 }
 
-func (r CoverageStore) DeleteProduct(id string) (int64, error) {
-	return r.executeSql(deleteProductStmt, id)
+func (cs CoverageStore) DeleteProduct(id string) (int64, error) {
+	return cs.executeSql(deleteProductStmt, id)
 }
 
 // Returns all products
-func (r CoverageStore) GetAllProducts() ([]model.Product, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, name FROM products;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx)
+func (cs CoverageStore) GetAllProducts() ([]model.Product, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	rows, err := cs.db.QueryContext(ctx, "SELECT id, name FROM products;")
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err

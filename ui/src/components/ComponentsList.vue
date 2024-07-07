@@ -11,12 +11,15 @@
       <div class="test shadow p-2 mb-2 rounded">
         <div class="row">
           <div class="col">
-            <h5 class="area-name justify-content-between pointer">
+            <h5 class="area-name justify-content-between">
               {{ c['name'] }}
               &nbsp;
             </h5>
           </div>
           <div class="col">{{ c['test-run'] }}</div>
+          <div class="col-5 mb-2">
+            <TestResult :test="c" />
+          </div>
         </div>
       </div>
     </div>
@@ -26,6 +29,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import http from '@/common-http';
+import TestResult from './TestResult.vue';
 
 const loading = ref(false);
 const error = ref('');

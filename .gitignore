@@ -9,3 +9,4 @@ WORKLOG.md
 *.sql
 node_modules
 backup
+test-data

@@ -38,8 +38,8 @@ func OpenDbConnection(dbName string) (*sql.DB, error) {
 		log.Printf("Error %s when opening DB\n", err)
 		return db, err
 	}
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	_, err = db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS "+dbName)
 	if err != nil {
 		log.Printf("Error %s when creating DB\n", err)
@@ -57,8 +57,8 @@ func OpenDbConnection(dbName string) (*sql.DB, error) {
 	db.SetMaxIdleConns(10)
 	db.SetConnMaxLifetime(time.Minute * 5)
 
-	ctx, cancelfunc = context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+	ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	err = db.PingContext(ctx)
 	if err != nil {
 		log.Printf("Errors %s pinging DB", err)

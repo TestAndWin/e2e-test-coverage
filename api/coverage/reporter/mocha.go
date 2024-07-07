@@ -49,7 +49,7 @@ type Test struct {
 	Skipped bool `json:"skipped"`
 }
 
-// Iterate through the mocha report and get all the needed data. Currently it is only support, that the results section contains only one suite entry.
+// Iterate through the mocha report and get all the needed data. Currently it is only supported, that the results section contains only one suite entry.
 func ReadMochaResultFromContext(c *gin.Context) ([]TestResult, error) {
 	var m Mocha
 	if err := c.BindJSON(&m); err != nil {

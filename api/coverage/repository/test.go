@@ -10,6 +10,8 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -45,11 +47,13 @@ const insertTestNoAreaFeatureStmt = "INSERT INTO tests (product_id, suite, file,
 
 const deleteTestStmt = "DELETE FROM tests WHERE component = ? AND suite = ? AND file = ?"
 
-func (r CoverageStore) CreateTestsTable() error {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+const testQueryPeriodDays = 28
 
-	_, err := r.db.ExecContext(ctx, CREATE_TEST)
+func (cs CoverageStore) CreateTestsTable() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := cs.db.ExecContext(ctx, CREATE_TEST)
 	if err != nil {
 		log.Printf("Error %s when creating Tests DB table\n", err)
 		return err
@@ -57,143 +61,165 @@ func (r CoverageStore) CreateTestsTable() error {
 	return nil
 }
 
-func (r CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
-	return r.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
+func (cs CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
+	return cs.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
 }
 
-func (r CoverageStore) InsertTestResultWithoutAreaFeature(productId string, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
-	return r.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
+func (cs CoverageStore) InsertTestResultWithoutAreaFeature(productId string, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
+	return cs.executeSql(insertTestNoAreaFeatureStmt, productId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
 }
 
-func (r CoverageStore) DeleteTest(component string, suite string, file string) (int64, error) {
-	return r.executeSql(deleteTestStmt, component, suite, file)
+func (cs CoverageStore) DeleteTest(component string, suite string, file string) (int64, error) {
+	return cs.executeSql(deleteTestStmt, component, suite, file)
 }
 
-// Checks if the test had already been uploaded.
-func (r CoverageStore) HasTestBeenUploaded(uuid string) (bool, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT count(*) FROM tests WHERE uuid = ?;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return false, err
-	}
-	defer stmt.Close()
+// HasTestBeenUploaded checks if a test with the given UUID has already been uploaded.
+// It returns true if the test exists, false otherwise, and an error if the database operation fails.
+func (cs CoverageStore) HasTestBeenUploaded(uuid string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	var count int64
-	err = stmt.QueryRowContext(ctx, uuid).Scan(&count)
-	if err != nil {
-		log.Printf("Error %s when querying context", err)
-		return false, err
+	query := "SELECT 1 FROM tests WHERE uuid = ? LIMIT 1"
+
+	var exists bool
+	err := cs.db.QueryRowContext(ctx, query, uuid).Scan(&exists)
+
+	if err == sql.ErrNoRows {
+		return false, nil
 	}
 
-	return count > 0, err
+	if err != nil {
+		log.Printf("Error %s when query context", err)
+		return false, fmt.Errorf("failed to check test existence: %w", err)
+	}
+
+	return exists, nil
 }
 
-// Checks if a test has already been uploaded
-func (r CoverageStore) IsThisTheFirstUpload(pid string, aid int64, fid int64, suite string, file string, component string) (bool, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
+// IsThisTheFirstUpload checks if this is the first upload for the given parameters.
+// It returns true if it's the first upload, false otherwise, and an error if the database operation fails.
+func (cs CoverageStore) IsThisTheFirstUpload(pid string, aid int64, fid int64, suite string, file string, component string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	stmt, err := r.db.PrepareContext(ctx, "SELECT count(*) FROM tests WHERE product_id = ? AND area_id = ? AND feature_id = ? AND suite = ? AND file = ? AND component = ?;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return false, err
+	query := `
+			SELECT 1 FROM tests 
+			WHERE product_id = ? AND area_id = ? AND feature_id = ? AND suite = ? AND file = ? AND component = ? 
+			LIMIT 1
+	`
+
+	var exists bool
+	err := cs.db.QueryRowContext(ctx, query, pid, aid, fid, suite, file, component).Scan(&exists)
+
+	if err == sql.ErrNoRows {
+		return true, nil
 	}
-	defer stmt.Close()
 
-	var count int64
-	err = stmt.QueryRowContext(ctx, pid, aid, fid, suite, file, component).Scan(&count)
 	if err != nil {
-		log.Printf("Error %s when querying context", err)
-		return false, err
+		return false, fmt.Errorf("failed to check if this is the first upload: %w", err)
 	}
 
-	return count < 1, nil
+	return !exists, nil
 }
 
 // Get all tests for the specified feature id
-func (r CoverageStore) GetAllFeatureTests(fid string) ([]model.Test, error) {
-	return getTests(r, fid, "SELECT id, product_id, area_id, feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
+func (cs CoverageStore) GetAllFeatureTests(fid string) ([]model.Test, error) {
+	return cs.GetTests(fid, "SELECT id, product_id, area_id, feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE feature_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
 }
 
 // Get all tests for the specified product id
-func (r CoverageStore) GetAllProductTests(pid string) ([]model.Test, error) {
-	return getTests(r, pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
+func (cs CoverageStore) GetAllProductTests(pid string) ([]model.Test, error) {
+	return cs.GetTests(pid, "SELECT id, product_id, COALESCE(area_id,0) as area_id, COALESCE(feature_id,0) as feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE product_id = ? AND testrun > ? ORDER BY component, suite, file, testrun DESC;")
 }
 
-func getTests(r CoverageStore, id string, query string) ([]model.Test, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, query)
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, id, time.Now().AddDate(0, 0, -28))
-	if err != nil {
-		log.Printf("Error %s when query context", err)
-		return nil, err
-	}
+// GetTests retrieves tests for a given ID within the last 28 days.
+func (cs CoverageStore) GetTests(id string, query string) ([]model.Test, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
+	rows, err := cs.db.QueryContext(ctx, query, id, time.Now().AddDate(0, 0, -testQueryPeriodDays))
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
 	defer rows.Close()
-	// Empty array should be returned when no tests exist
-	var tests = []model.Test{}
-	var prevRow *model.Test
+
+	var tests []model.Test
+	var prevTest *model.Test
+
 	for rows.Next() {
-		t := model.Test{}
-		if err := rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Component, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.IsFirst, &t.TestRun); err != nil {
-			log.Println(err)
-			return tests, err
+		currentTest := model.Test{}
+		if err := scanTest(rows, &currentTest); err != nil {
+			log.Printf("Error %s when query context", err)
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
-		if prevRow == nil || prevRow.Suite != t.Suite || prevRow.Component != t.Component || (prevRow.Component == t.Component && prevRow.FileName != t.FileName) {
-			t.TotalTestRuns = 1
 
-			t.FailedTestRuns = 0
-			if t.Failures > 0 {
-				t.FailedTestRuns = 1
-			}
-
-			if !t.IsFirst {
-				t.FirstTotal = t.Total
-			}
-			tests = append(tests, t)
+		if shouldAddNewTest(prevTest, currentTest) {
+			currentTest = initializeNewTest(currentTest)
+			tests = append(tests, currentTest)
 		} else {
-			p := &tests[len(tests)-1]
-			p.FirstTotal = p.FirstTotal - prevRow.Total + t.Total
-			if t.Failures > 0 {
-				p.FailedTestRuns++
-			}
-			p.TotalTestRuns++
+			updateExistingTest(&tests[len(tests)-1], prevTest, currentTest)
 		}
-		prevRow = &t
+
+		prevTest = &currentTest
 	}
+
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
 	}
+
 	return tests, nil
 }
 
-// Get the test coverage information for all areas of the specified procduct
-func (r CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t JOIN areas a ON a.id = t.area_id WHERE a.product_id = ? and t.testrun > ? ORDER BY t.area_id, t.feature_id, t.component, t.suite, t.file, t.testrun DESC;"
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, statement)
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
+func scanTest(rows *sql.Rows, t *model.Test) error {
+	return rows.Scan(&t.Id, &t.ProductId, &t.AreaId, &t.FeatureId, &t.Suite, &t.FileName, &t.Component,
+		&t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.IsFirst, &t.TestRun)
+}
+
+func shouldAddNewTest(prev *model.Test, current model.Test) bool {
+	return prev == nil || prev.Suite != current.Suite || prev.Component != current.Component ||
+		(prev.Component == current.Component && prev.FileName != current.FileName)
+}
+
+func initializeNewTest(t model.Test) model.Test {
+	t.TotalTestRuns = 1
+	t.FailedTestRuns = 0
+	if t.Failures > 0 {
+		t.FailedTestRuns = 1
 	}
-	defer stmt.Close()
+	if !t.IsFirst {
+		t.FirstTotal = t.Total
+	}
+	return t
+}
+
+func updateExistingTest(existing *model.Test, prev *model.Test, current model.Test) {
+	existing.FirstTotal = existing.FirstTotal - prev.Total + current.Total
+	if current.Failures > 0 {
+		existing.FailedTestRuns++
+	}
+	existing.TotalTestRuns++
+}
+
+// Get the test coverage information for all areas of the specified procduct
+func (cs CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]model.Test, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+			SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun 
+			FROM tests t 
+			JOIN areas a ON a.id = t.area_id 
+			WHERE a.product_id = ? and t.testrun > ? 
+			ORDER BY t.area_id, t.feature_id, t.component, t.suite, t.file, t.testrun DESC;`
 
 	// Only test from the last 28 days
-	rows, err := stmt.QueryContext(ctx, productId, time.Now().AddDate(0, 0, -28))
+	rows, err := cs.db.QueryContext(ctx, query, productId, time.Now().AddDate(0, 0, -testQueryPeriodDays))
 	if err != nil {
 		log.Printf("Error %s when query context", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer rows.Close()
+
 	// Map where the key is the area id
 	coverage := make(map[int64]model.Test)
 	var prevRow *model.Test
@@ -243,22 +269,20 @@ func (r CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]mo
 }
 
 // Get the test coverage information for all features of the specified area
-func (r CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
-	statement := "SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun FROM tests t WHERE t.area_id = ? AND t.testrun > ? ORDER BY t.feature_id, t.component, t.suite, t.file, t.testrun DESC;"
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, statement)
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
+func (cs CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model.Test, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+		SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun 
+		FROM tests t WHERE t.area_id = ? AND t.testrun > ? 
+		ORDER BY t.feature_id, t.component, t.suite, t.file, t.testrun DESC;`
 
 	// Only test from the last 28 days
-	rows, err := stmt.QueryContext(ctx, areaId, time.Now().AddDate(0, 0, -28))
+	rows, err := cs.db.QueryContext(ctx, query, areaId, time.Now().AddDate(0, 0, -testQueryPeriodDays))
 	if err != nil {
 		log.Printf("Error %s when query context", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer rows.Close()
 	coverage := make(map[int64]model.Test)
@@ -304,16 +328,15 @@ func (r CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]model
 }
 
 // Get all tests for the specified suite and file
-func (r CoverageStore) GetAllTestForSuiteFile(component string, suite string, file string) ([]model.Test, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT id, product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun FROM tests WHERE component = ? AND suite = ? AND file = ? AND testrun > ? ORDER BY testrun DESC;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx, component, suite, file, time.Now().AddDate(0, 0, -28))
+func (cs CoverageStore) GetAllTestForSuiteFile(component string, suite string, file string) ([]model.Test, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+			SELECT id, product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun 
+			FROM tests WHERE component = ? AND suite = ? AND file = ? AND testrun > ? 
+			ORDER BY testrun DESC;`
+	rows, err := cs.db.QueryContext(ctx, query, component, suite, file, time.Now().AddDate(0, 0, -testQueryPeriodDays))
 	if err != nil {
 		log.Printf("Error %s when querying context", err)
 		return nil, err
@@ -324,7 +347,7 @@ func (r CoverageStore) GetAllTestForSuiteFile(component string, suite string, fi
 	for rows.Next() {
 		t := model.Test{}
 		if err := rows.Scan(&t.Id, &t.ProductId, &t.Suite, &t.FileName, &t.Component, &t.Url, &t.Total, &t.Passes, &t.Pending, &t.Failures, &t.Skipped, &t.Uuid, &t.IsFirst, &t.TestRun); err != nil {
-			log.Println(err)
+			log.Printf("Error %s when query context", err)
 			return tests, err
 		}
 		tests = append(tests, t)
@@ -335,34 +358,46 @@ func (r CoverageStore) GetAllTestForSuiteFile(component string, suite string, fi
 	return tests, nil
 }
 
-// Get all components
-func (r CoverageStore) GetComponents() ([]model.Component, error) {
-	ctx, cancelfunc := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelfunc()
-	stmt, err := r.db.PrepareContext(ctx, "SELECT component, MAX(testrun) AS testrun FROM tests GROUP BY component ORDER BY component;")
+// GetComponents retrieves all components with their latest test run statistics.
+func (cs CoverageStore) GetComponents() ([]model.Component, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := `
+			SELECT c.component, c.testrun, 
+						SUM(t.total) as total, SUM(t.passes) as passes, 
+						SUM(t.pending) as pending, SUM(t.failures) as failures, 
+						SUM(t.skipped) as skipped
+			FROM (
+				SELECT component, MAX(testrun) AS testrun 
+				FROM tests 
+				GROUP BY component
+			) c
+			JOIN tests t ON c.component = t.component AND c.testrun = t.testrun
+			GROUP BY c.component, c.testrun
+			ORDER BY c.component;
+			`
+
+	rows, err := cs.db.QueryContext(ctx, query)
 	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
+		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx)
-	if err != nil {
-		log.Printf("Error %s when querying context", err)
-		return nil, err
+	defer rows.Close()
+
+	var components []model.Component
+	for rows.Next() {
+		var c model.Component
+		err := rows.Scan(&c.Name, &c.TestRun, &c.Total, &c.Passes, &c.Pending, &c.Failures, &c.Skipped)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		components = append(components, c)
 	}
 
-	defer rows.Close()
-	var tests = []model.Component{}
-	for rows.Next() {
-		t := model.Component{}
-		if err := rows.Scan(&t.Name, &t.TestRun); err != nil {
-			log.Println(err)
-			return tests, err
-		}
-		tests = append(tests, t)
-	}
 	if err := rows.Err(); err != nil {
-		return tests, err
+		log.Printf("Error %s when query context", err)
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
 	}
-	return tests, nil
+
+	return components, nil
 }
