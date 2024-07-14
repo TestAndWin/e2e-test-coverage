@@ -43,44 +43,47 @@ func getJwtKey() []byte {
 // @Produce      json
 // @Param        login  body      model.Credentials  true  "Credentials JSON"
 // @Success      200  {object}  string
+// @Failure      400  {object}  ErrorResponse
+// @Failure      403  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/auth/login [POST]
 func Login(c *gin.Context) {
 	var s model.Credentials
 	if err := c.BindJSON(&s); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	} else {
-		// Check Login and get role
-		user, err := userStore.Login(s.Email, s.Password)
-		if err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"status": "Unauthorized"})
-			return
-		}
-
-		// Create the JWT token
-		claims := createClaims(user, time.Now().Add(24*time.Hour))
-		token, err := createToken(claims, jwtKey)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-			return
-		}
-
-		// Split JWT Token Approach
-		t := strings.Split(token, ".")
-		c.SetCookie(COOKIE_PAYLOAD, t[0]+"."+t[1], 1800, "/", "", true, false)
-
-		// signature - Session live
-		cookie := &http.Cookie{
-			Name:     COOKIE_SIGNATURE,
-			Value:    t[2],
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteStrictMode,
-		}
-		http.SetCookie(c.Writer, cookie)
-		c.JSON(http.StatusOK, gin.H{"roles": strings.Join(user.Roles, ",")})
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+
+	// Check Login and get role
+	user, err := userStore.Login(s.Email, s.Password)
+	if err != nil {
+		handleError(c, err, "Unauthorized", http.StatusForbidden)
+		return
+	}
+
+	// Create the JWT token
+	claims := createClaims(user, time.Now().Add(24*time.Hour))
+	token, err := createToken(claims, jwtKey)
+	if err != nil {
+		handleError(c, err, "Error creating token", http.StatusInternalServerError)
+		return
+	}
+
+	// Split JWT Token Approach
+	t := strings.Split(token, ".")
+	c.SetCookie(COOKIE_PAYLOAD, t[0]+"."+t[1], 1800, "/", "", true, false)
+
+	// signature - Session live
+	cookie := &http.Cookie{
+		Name:     COOKIE_SIGNATURE,
+		Value:    t[2],
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(c.Writer, cookie)
+	c.JSON(http.StatusOK, gin.H{"roles": strings.Join(user.Roles, ",")})
 }
 
 // Create the claims
@@ -133,7 +136,7 @@ func AuthUser(level string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tkn, err := GetToken(c)
 		if tkn == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+			handleError(c, err, "Missing token", http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
@@ -146,12 +149,12 @@ func AuthUser(level string) gin.HandlerFunc {
 				// Set the user id in case it is needed later
 				c.Set(USER_ID, claims.ID)
 			} else {
-				c.JSON(http.StatusForbidden, gin.H{"error": "User has no access to this resource"})
+				handleError(c, err, "No access", http.StatusForbidden)
 				c.Abort()
 				return
 			}
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			handleError(c, err, "Not authorized", http.StatusUnauthorized)
 			c.Abort()
 			return
 		}
@@ -174,7 +177,7 @@ func AuthApi() gin.HandlerFunc {
 		}
 		userId, err := userStore.GetUserIdForApiKey(apiKey)
 		if userId < 1 || err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "wrong apiKey"})
+			handleError(c, err, "Wrong API Key", http.StatusUnauthorized)
 			c.Abort()
 			return
 		}

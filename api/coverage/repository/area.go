@@ -50,7 +50,7 @@ func (cs CoverageStore) UpdateArea(a model.Area) (int64, error) {
 	return cs.executeSql(updateAreaStmt, a.Name, a.Id)
 }
 
-func (cs CoverageStore) DeleteArea(id string) (int64, error) {
+func (cs CoverageStore) DeleteArea(id int64) (int64, error) {
 	return cs.executeSql(deleteAreaStmt, id)
 }
 

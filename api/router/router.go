@@ -48,11 +48,17 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func HandleRequest() {
-	//gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(CORSMiddleware())
 
-	// VUE routes
+	setupVueRoutes(router)
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	setupAPIRoutes(router)
+
+	startServer(router)
+}
+
+func setupVueRoutes(router *gin.Engine) {
 	h := gin.WrapH(http.FileServer(ui.AssetFile()))
 	router.GET("/favicon.ico", h)
 	router.GET("/js/*filepath", h)
@@ -61,14 +67,12 @@ func HandleRequest() {
 	router.GET("/assets/*filepath", h)
 	router.GET("/fonts/*filepath", h)
 	router.NoRoute(HandleIndex())
+}
 
-	// Swagger
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// API
+func setupAPIRoutes(router *gin.Engine) {
 	v1 := router.Group("/api/v1")
 	{
-		// Product ... config
+		// Product
 		v1.POST("/products", usercontroller.AuthUser(model.MAINTAINER), controller.AddProduct)
 		v1.GET("/products", usercontroller.AuthUser(model.MAINTAINER), controller.GetProducts)
 		v1.PUT("/products/:id", usercontroller.AuthUser(model.MAINTAINER), controller.UpdateProduct)
@@ -109,23 +113,31 @@ func HandleRequest() {
 		v1.PUT("/users/change-pwd", usercontroller.AuthUser(""), usercontroller.ChangePassword)
 		v1.POST("users/generate-api-key", usercontroller.AuthUser(model.ADMIN), usercontroller.GenerateApiKey)
 	}
+}
 
-	_, devMode := os.LookupEnv("DEV")
+func startServer(router *gin.Engine) {
+	devMode, _ := os.LookupEnv("DEV")
 	hostName, hostSet := os.LookupEnv("HOST")
-	if devMode || !hostSet {
-		fmt.Println("Start in DEV mode")
+
+	if devMode == "true" || !hostSet {
+		fmt.Println("Starting in DEV mode")
 		router.Run("0.0.0.0:8080")
-	} else {
-		hostNames := strings.Split(hostName, ",")
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(hostNames...),
-			Cache:      autocert.DirCache("/var/www/.cache"),
-		}
-		fmt.Println("Start in Prod mode, host white list: ", hostName)
-		err := autotls.RunWithManager(router, &m)
-		if err != nil {
-			fmt.Println("Could not start in Prod mode: ", err)
-		}
+		return
+	}
+
+	startProdServer(router, hostName)
+}
+
+func startProdServer(router *gin.Engine, hostName string) {
+	hostNames := strings.Split(hostName, ",")
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(hostNames...),
+		Cache:      autocert.DirCache("/var/www/.cache"),
+	}
+	fmt.Println("Starting in Prod mode, host white list:", hostName)
+	err := autotls.RunWithManager(router, &m)
+	if err != nil {
+		fmt.Println("Could not start in Prod mode:", err)
 	}
 }

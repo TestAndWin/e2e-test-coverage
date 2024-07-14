@@ -9,7 +9,6 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
@@ -24,7 +23,8 @@ import (
 // @Param        component      query      string     true  "Component name"
 // @Param        suite          query      string     true  "Suite name"
 // @Param        file-name      query      string     true  "File name"
-// @Success      204
+// @Success      204 {object}  SucccessResponse
+// @Success      500 {object}  ErrorResponse
 // @Router       /api/v1/tests/{id} [DELETE]
 func DeleteTests(c *gin.Context) {
 	suite := c.Query("suite")
@@ -32,11 +32,10 @@ func DeleteTests(c *gin.Context) {
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
 	_, err := repo.DeleteTest(component, suite, file)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+		handleError(c, err, "Error delete tests", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
 }
 
 // GetAllTestForSuiteFile godoc
@@ -48,6 +47,7 @@ func DeleteTests(c *gin.Context) {
 // @Param        suite          query      string     true  "Suite name"
 // @Param        file-name      query      string     true  "File name"
 // @Success      200 {array}  model.Test
+// @Success      500 {object} ErrorResponse
 // @Router       /api/v1/tests [GET]
 func GetAllTestForSuiteFile(c *gin.Context) {
 	suite := c.Query("suite")
@@ -55,9 +55,8 @@ func GetAllTestForSuiteFile(c *gin.Context) {
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
 	tests, err := repo.GetAllTestForSuiteFile(component, suite, file)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, tests)
+		handleError(c, err, "Error getting tests", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, tests)
 }

@@ -42,12 +42,12 @@ func initRepository() repository.UserStore {
 // @Tags         user
 // @Produce      json
 // @Success      200  {array}  model.User
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users [GET]
 func GetUser(c *gin.Context) {
 	user, err := userStore.GetUser()
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
+		handleError(c, err, "Error getting user", http.StatusInternalServerError)
 	} else {
 		c.JSON(http.StatusOK, user)
 	}
@@ -60,22 +60,23 @@ func GetUser(c *gin.Context) {
 // @Produce      json
 // @Param        user  body      model.User  true  "User JSON"
 // @Success      201  {object}  model.User
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users [POST]
 func CreateUser(c *gin.Context) {
 	var user model.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
 		return
 	}
 
 	id, err := userStore.InsertUser(user)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		user.Id = id
-		c.JSON(http.StatusCreated, user)
+		handleError(c, err, "Error creating user", http.StatusInternalServerError)
+		return
 	}
+	user.Id = id
+	c.JSON(http.StatusCreated, user)
 }
 
 // UpdateUser godoc
@@ -85,21 +86,22 @@ func CreateUser(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      int         true  "User ID"
 // @Param        user  body      model.User  true  "User JSON"
-// @Success      200
+// @Success      200  {object}  SuccessResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users/{id} [PUT]
 func UpdateUser(c *gin.Context) {
 	var user model.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
 		return
 	}
 	err := userStore.UpdateUser(c.Param("id"), user)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		handleError(c, err, "Error updating user", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 // ChangePassword godoc
@@ -109,7 +111,9 @@ func UpdateUser(c *gin.Context) {
 // @Produce      json
 // @Param        id           path      int                true  "User ID"
 // @Param        newPassword  body      model.NewPassword  true  "NewPassword JSON"
-// @Success      200
+// @Success      200  {object}  SuccessResponse
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users/change-pwd/{id} [PUT]
 func ChangePassword(c *gin.Context) {
 	var pwd model.NewPassword
@@ -124,13 +128,12 @@ func ChangePassword(c *gin.Context) {
 	if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
 		err := userStore.UpdatePassword(claims.Email, pwd.Password, pwd.NewPassword)
 		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+			handleError(c, err, "Error updating password", http.StatusInternalServerError)
+			return
 		}
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "error getting token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting token"})
 	}
 }
 
@@ -140,16 +143,16 @@ func ChangePassword(c *gin.Context) {
 // @Tags         user
 // @Produce      json
 // @Param        id    path      int     true  "User ID"
-// @Success      200
+// @Success      204  {object}  SuccessResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users/{id} [DELETE]
 func DeleteUser(c *gin.Context) {
 	_, err := userStore.DeleteUser(c.Param("id"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+		handleError(c, err, "Error deleting user", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
 }
 
 // GenerateApiKey godoc
@@ -157,14 +160,14 @@ func DeleteUser(c *gin.Context) {
 // @Description  Generate an API Key
 // @Tags         user
 // @Produce      json
-// @Success      200
+// @Success      200  {object}  SuccessResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/users/generate-api-key [POST]
 func GenerateApiKey(c *gin.Context) {
 	apiKey, err := userStore.GenerateApiKey(c.GetInt64(USER_ID))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"key": apiKey})
+		handleError(c, err, "Error generating API key", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{"key": apiKey})
 }

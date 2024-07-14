@@ -10,6 +10,7 @@ package controller
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,54 +28,71 @@ import (
 // @Param        apiKey        header    string  true   "Api Key"
 // @Param        testReportUrl header    string  false  "Url of the detail test report"
 // @Param        test          body      string  true   "Mocha JSON"
-// @Success      201   object string
+// @Success      201  {object} string
+// @Failure      400  {object}  ErrorResponse
 // @Router       /coverage/:id/upload-mocha-summary-report [POST]
 func UploadMochaSummaryReport(c *gin.Context) {
 	testResults, err := reporter.ReadMochaResultFromContext(c)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		var status []string
-		for _, tr := range testResults {
-			uploaded, err := repo.HasTestBeenUploaded(tr.Uuid)
-			if err != nil {
-				log.Println(err)
-				status = append(status, err.Error())
-			} else {
-				if uploaded {
-					status = append(status, tr.Uuid+" already uploaded")
-				} else {
-					// Check if product, area and feature exist
-					pid := c.Param("id")
-					aid, fid, err := repo.GetAreaAndFeatureId(tr.Area, tr.Feature, pid)
-					if err != nil && err != sql.ErrNoRows {
-						log.Println(err)
-						status = append(status, err.Error())
-					} else {
-						var id int64
-						var err error
-						testReportUrl := c.GetHeader("testReportUrl")
-						component := c.GetHeader("component")
-						isFirst, err := repo.IsThisTheFirstUpload(pid, aid, fid, tr.Suite, tr.File, component)
-						if err != nil {
-							status = append(status, err.Error())
-						} else {
-							if aid != 0 && fid != 0 {
-								id, err = repo.InsertTestResult(pid, aid, fid, component, testReportUrl, isFirst, tr)
-							} else {
-								id, err = repo.InsertTestResultWithoutAreaFeature(pid, component, testReportUrl, isFirst, tr)
-							}
-							if err != nil {
-								status = append(status, err.Error())
-							} else {
-								status = append(status, strconv.FormatInt(id, 10))
-							}
-						}
-					}
-				}
-			}
-		}
-		c.JSON(http.StatusCreated, status)
+		handleError(c, err, "Error reading Mocha result", http.StatusBadRequest)
+		return
 	}
+
+	pid := c.Param("id")
+	testReportUrl := c.GetHeader("testReportUrl")
+	component := c.GetHeader("component")
+
+	status, err := processTestResults(testResults, pid, testReportUrl, component)
+	if err != nil {
+		handleError(c, err, "Error processing test results", http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusCreated, status)
+}
+
+func processTestResults(testResults []reporter.TestResult, pid, testReportUrl, component string) ([]string, error) {
+	var status []string
+	for _, tr := range testResults {
+		resultStatus, err := processTestResult(tr, pid, testReportUrl, component)
+		if err != nil {
+			log.Printf("Error processing test result: %v", err)
+			status = append(status, err.Error())
+		} else {
+			status = append(status, resultStatus)
+		}
+	}
+	return status, nil
+}
+
+func processTestResult(tr reporter.TestResult, pid, testReportUrl, component string) (string, error) {
+	uploaded, err := repo.HasTestBeenUploaded(tr.Uuid)
+	if err != nil {
+		return "", fmt.Errorf("error checking if test was uploaded: %w", err)
+	}
+	if uploaded {
+		return tr.Uuid + " already uploaded", nil
+	}
+
+	aid, fid, err := repo.GetAreaAndFeatureId(tr.Area, tr.Feature, pid)
+	if err != nil && err != sql.ErrNoRows {
+		return "", fmt.Errorf("error getting area and feature ID: %w", err)
+	}
+
+	isFirst, err := repo.IsThisTheFirstUpload(pid, aid, fid, tr.Suite, tr.File, component)
+	if err != nil {
+		return "", fmt.Errorf("error checking if this is the first upload: %w", err)
+	}
+
+	var id int64
+	if aid != 0 && fid != 0 {
+		id, err = repo.InsertTestResult(pid, aid, fid, component, testReportUrl, isFirst, tr)
+	} else {
+		id, err = repo.InsertTestResultWithoutAreaFeature(pid, component, testReportUrl, isFirst, tr)
+	}
+	if err != nil {
+		return "", fmt.Errorf("error inserting test result: %w", err)
+	}
+
+	return strconv.FormatInt(id, 10), nil
 }

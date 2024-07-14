@@ -52,67 +52,76 @@ type Test struct {
 // Iterate through the mocha report and get all the needed data. Currently it is only supported, that the results section contains only one suite entry.
 func ReadMochaResultFromContext(c *gin.Context) ([]TestResult, error) {
 	var m Mocha
-	if err := c.BindJSON(&m); err != nil {
-		fmt.Println("Error during BindJSON(): ", err)
-		return []TestResult{}, err
+	err := c.BindJSON(&m)
+	if err != nil {
+		return nil, fmt.Errorf("error during BindJSON(): %w", err)
 	}
-	return getTestResultFromMocha(m), nil
+	return getTestResultFromMocha(m)
 }
 
-func getTestResultFromMocha(m Mocha) []TestResult {
-	t, _ := time.Parse("2006-01-02T15:04:05.000Z", m.Stats.End)
+func getTestResultFromMocha(m Mocha) ([]TestResult, error) {
+	parsedEndTime, err := time.Parse("2006-01-02T15:04:05.000Z", m.Stats.End)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing end time: %w", err)
+	}
 
-	tests := []TestResult{}
+	var results []TestResult
 	for _, result := range m.Results {
-		tr := TestResult{}
-		if strings.Count(result.Suites[0].Title, "|") > 1 {
-			tr.Area = strings.Split(result.Suites[0].Title, "|")[0]
-			tr.Feature = strings.Split(result.Suites[0].Title, "|")[1]
-			tr.Suite = strings.Split(result.Suites[0].Title, "|")[2]
-		} else {
-			tr.Suite = result.Suites[0].Title
-		}
+		tr := extractSuiteDetails(result.Suites)
 		tr.File = result.File
 		tr.Uuid = result.Uuid
-		tr.TestRun = t
+		tr.TestRun = parsedEndTime
 
-		// We have to iterate through the suites/tests to get the numbers
-		total := 0
-		passes := 0
-		pending := 0
-		failures := 0
-		skipped := 0
-
-		for _, suite := range result.Suites {
-			allTests := suite.Tests
-			// Check if a suite is inside a suite (but only one level down)
-			for _, subSuite := range suite.Suites {
-				st := subSuite.Tests
-				allTests = append(allTests, st...)
-			}
-
-			for _, test := range allTests {
-				total += 1
-				if test.Pass {
-					passes += 1
-				}
-				if test.Fail {
-					failures += 1
-				}
-				if test.Skipped {
-					skipped += 1
-				}
-				if test.Pending {
-					pending += 1
-				}
-			}
-		}
+		total, passes, pending, failures, skipped := countTests(result.Suites)
 		tr.Total = total
 		tr.Passes = passes
 		tr.Pending = pending
 		tr.Failures = failures
 		tr.Skipped = skipped
-		tests = append(tests, tr)
+		results = append(results, tr)
+	}
+	return results, nil
+}
+
+func extractSuiteDetails(suites []Suite) TestResult {
+	tr := TestResult{}
+	if len(suites) > 0 {
+		if parts := strings.Split(suites[0].Title, "|"); len(parts) > 2 {
+			tr.Area = parts[0]
+			tr.Feature = parts[1]
+			tr.Suite = parts[2]
+		} else {
+			tr.Suite = suites[0].Title
+		}
+	}
+	return tr
+}
+
+func countTests(suites []Suite) (total, passes, pending, failures, skipped int) {
+	for _, suite := range suites {
+		tests := appendSuiteTests(suite)
+
+		for _, test := range tests {
+			total++
+			switch {
+			case test.Pass:
+				passes++
+			case test.Fail:
+				failures++
+			case test.Skipped:
+				skipped++
+			case test.Pending:
+				pending++
+			}
+		}
+	}
+	return
+}
+
+func appendSuiteTests(suite Suite) []Test {
+	tests := suite.Tests
+	for _, subSuite := range suite.Suites {
+		tests = append(tests, subSuite.Tests...)
 	}
 	return tests
 }

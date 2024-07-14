@@ -24,22 +24,22 @@ import (
 // @Produce      json
 // @Param        product  body      model.Product  true  "Product JSON"
 // @Success      201  {object}  model.Product
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/products [POST]
 func AddProduct(c *gin.Context) {
 	var p model.Product
 	if err := c.BindJSON(&p); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		id, err := repo.InsertProduct(p)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			p.Id = id
-			c.JSON(http.StatusCreated, p)
-		}
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+	id, err := repo.InsertProduct(p)
+	if err != nil {
+		handleError(c, err, "Error insert product", http.StatusInternalServerError)
+		return
+	}
+	p.Id = id
+	c.JSON(http.StatusCreated, p)
 }
 
 // GetProducts godoc
@@ -48,15 +48,15 @@ func AddProduct(c *gin.Context) {
 // @Tags         product
 // @Produce      json
 // @Success      200  {array}  model.Product
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/products [get]
 func GetProducts(c *gin.Context) {
 	p, err := repo.GetAllProducts()
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, p)
+		handleError(c, err, "Error get products", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, p)
 }
 
 // UpdateProduct godoc
@@ -67,22 +67,23 @@ func GetProducts(c *gin.Context) {
 // @Param        product  body      model.Product  true  "Product JSON"
 // @Produce      json
 // @Success      200  {object}  model.Product
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/products/{id} [PUT]
 func UpdateProduct(c *gin.Context) {
 	var p model.Product
 	if err := c.BindJSON(&p); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		p.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.UpdateProduct(p)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			c.JSON(http.StatusOK, p)
-		}
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+	p.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
+	_, err := repo.UpdateProduct(p)
+	if err != nil {
+		log.Println(err)
+		handleError(c, err, "Error update product", http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, p)
 }
 
 // DeleteProduct godoc
@@ -91,14 +92,14 @@ func UpdateProduct(c *gin.Context) {
 // @Tags         product
 // @Produce      json
 // @Param        id    path      int     true  "Product ID"
-// @Success      200
+// @Success      204 {object}  SuccessResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/products/{id} [DELETE]
 func DeleteProduct(c *gin.Context) {
 	_, err := repo.DeleteProduct(c.Param("id"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		handleError(c, err, "Error delete product", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
 }

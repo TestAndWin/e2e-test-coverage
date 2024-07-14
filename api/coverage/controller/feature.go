@@ -9,7 +9,6 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -24,21 +23,21 @@ import (
 // @Produce      json
 // @Param        feature  body      model.Feature  true  "Feature JSON"
 // @Success      201  {object}  model.Feature
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/features [POST]
 func AddFeature(c *gin.Context) {
 	var f model.Feature
 	if err := c.BindJSON(&f); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		id, err := repo.InsertFeature(f)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			f.Id = id
-			c.JSON(http.StatusCreated, f)
-		}
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+	id, err := repo.InsertFeature(f)
+	if err != nil {
+		handleError(c, err, "Error insert feature", http.StatusInternalServerError)
+		return
+	}
+	f.Id = id
+	c.JSON(http.StatusCreated, f)
 }
 
 // GetAreaFeatures godoc
@@ -48,15 +47,15 @@ func AddFeature(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      string     true  "Area ID"
 // @Success      200  {array}  model.Feature
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/areas/{id}/features [get]
 func GetAreaFeatures(c *gin.Context) {
 	f, err := repo.GetAllAreaFeatures(c.Param("id"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, f)
+		handleError(c, err, "Error getting area featues", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, f)
 }
 
 // UpdateFeature godoc
@@ -67,21 +66,22 @@ func GetAreaFeatures(c *gin.Context) {
 // @Param        feature  body      model.Feature  true  "Feature JSON"
 // @Produce      json
 // @Success      200  {object}  model.Feature
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/features [PUT]
 func UpdateFeature(c *gin.Context) {
 	var f model.Feature
 	if err := c.BindJSON(&f); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-		_, err := repo.UpdateFeature(f)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-		} else {
-			c.JSON(http.StatusOK, f)
-		}
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+
+	f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
+	_, err := repo.UpdateFeature(f)
+	if err != nil {
+		handleError(c, err, "Error updating feature", http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, f)
 }
 
 // DeleteFeature godoc
@@ -90,14 +90,14 @@ func UpdateFeature(c *gin.Context) {
 // @Tags         feature
 // @Produce      json
 // @Param        id    path      int     true  "Feature ID"
-// @Success      200
+// @Success      204  {object}  SuccessResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/features/{id} [DELETE]
 func DeleteFeature(c *gin.Context) {
 	_, err := repo.DeleteFeature(c.Param("id"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		handleError(c, err, "Error deleting feature", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
 }

@@ -150,26 +150,21 @@ func (s *UserStore) Login(email string, password string) (model.User, error) {
 
 // Inserts/Deletes a row using the specified statement and params
 func (s *UserStore) executeSql(statement string, params ...any) (int64, error) {
-	log.Printf("statement %s, params: %s", statement, params)
+	log.Printf("statement: %s, params: %v", statement, params)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	stmt, err := s.db.PrepareContext(ctx, statement)
+
+	res, err := s.db.ExecContext(ctx, statement, params...)
 	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return 0, err
+		return 0, fmt.Errorf("error executing statement: %w", err)
 	}
-	defer stmt.Close()
-	res, err := stmt.ExecContext(ctx, params...)
-	if err != nil {
-		log.Printf("Error %s when executing statement", err)
-		return 0, err
-	}
+
 	rows, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("Error %s when finding rows affected", err)
-		return 0, err
+		return 0, fmt.Errorf("error finding rows affected: %w", err)
 	}
-	log.Printf("%d row inserted/deleted/updated ", rows)
+
+	log.Printf("%d rows affected", rows)
 	return res.LastInsertId()
 }
 
@@ -177,13 +172,8 @@ func (s *UserStore) executeSql(statement string, params ...any) (int64, error) {
 func (s UserStore) GetUser() ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	stmt, err := s.db.PrepareContext(ctx, "SELECT id, email, role FROM users;")
-	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return nil, err
-	}
-	defer stmt.Close()
-	rows, err := stmt.QueryContext(ctx)
+
+	rows, err := s.db.QueryContext(ctx, "SELECT id, email, role FROM users;")
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, err

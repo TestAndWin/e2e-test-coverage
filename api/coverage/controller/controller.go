@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/repository"
+	"github.com/gin-gonic/gin"
 )
 
 var repo = initRepository()
@@ -52,4 +53,13 @@ func initRepository() *repository.CoverageStore {
 	}
 
 	return repository
+}
+
+func handleError(c *gin.Context, err error, message string, status int) {
+	log.Printf("%s: %v", message, err)
+	c.JSON(status, gin.H{
+		"error":   message,
+		"details": err.Error(),
+		"status":  status,
+	})
 }

@@ -9,7 +9,6 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
@@ -24,23 +23,24 @@ import (
 // @Produce      json
 // @Param        expl-test  body      model.ExplTest  true  "Expl Test JSON"
 // @Success      201  {object}  model.ExplTest
+// @Failure      400  {object}  ErrorResponse
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/expl-tests [POST]
 func AddExplTest(c *gin.Context) {
 	var et model.ExplTest
 	if err := c.BindJSON(&et); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		et.Tester = c.GetInt64(controller.USER_ID)
-		id, err := repo.InsertExplTest(et)
-		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"status": err})
-		} else {
-			et.Id = id
-			c.JSON(http.StatusCreated, et)
-		}
+		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		return
 	}
+	et.Tester = c.GetInt64(controller.USER_ID)
+	id, err := repo.InsertExplTest(et)
+	if err != nil {
+		handleError(c, err, "Error adding expl test", http.StatusInternalServerError)
+		return
+	}
+
+	et.Id = id
+	c.JSON(http.StatusCreated, et)
 }
 
 // DeleteTest godoc
@@ -49,16 +49,16 @@ func AddExplTest(c *gin.Context) {
 // @Tags         expl-test
 // @Produce      json
 // @Param        id    path      int     true  "Test ID"
-// @Success      200
+// @Success      204  {object} SuccesResponse
+// @Failure      500  {object} ErrorResponse
 // @Router       /api/v1/expl-tests/{id} [DELETE]
 func DeleteExplTest(c *gin.Context) {
 	_, err := repo.DeleteExplTest(c.Param("id"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+		handleError(c, err, "Error deleting expl test", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
 }
 
 // GetExplTestsForArea godoc
@@ -68,13 +68,13 @@ func DeleteExplTest(c *gin.Context) {
 // @Produce      json
 // @Param        areaid    path      int     true  "Area ID"
 // @Success      200  {array}  model.ExplTest
+// @Failure      500  {object}  ErrorResponse
 // @Router       /api/v1/expl-tests/area/{areaid} [POST]
 func GetExplTestsForArea(c *gin.Context) {
 	et, err := repo.GetExplTests(c.Param("areaid"))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error(), "status": http.StatusBadRequest})
-	} else {
-		c.JSON(http.StatusOK, et)
+		handleError(c, err, "Error getting expl test", http.StatusInternalServerError)
+		return
 	}
+	c.JSON(http.StatusOK, et)
 }
