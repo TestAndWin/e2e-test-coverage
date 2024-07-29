@@ -23,7 +23,7 @@ import (
 // @Produce      json
 // @Param        product    path      int     true  "Product ID"
 // @Success      200  {array}  model.Area
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /api/v1/coverage/{id}/areas [GET]
 func GetAreaCoverage(c *gin.Context) {
 	pId := c.Param("id")
@@ -79,7 +79,7 @@ func processAreaCoverage(areas []model.Area, tests map[int64]model.Test) ([]mode
 // @Produce      json
 // @Param        product    path      int     true  "Area ID"
 // @Success      200  {array}  model.Feature
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /api/v1/coverage/areas/{id}/features [get]
 func GetFeatureCoverage(c *gin.Context) {
 	features, err := repo.GetAllAreaFeatures(c.Param("id"))
@@ -116,7 +116,7 @@ func GetFeatureCoverage(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      int     true  "Feature ID"
 // @Success      200  {array}  model.Test
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/features/:id/tests [get]
 func GetTestsCoverage(c *gin.Context) {
 	t, err := repo.GetAllFeatureTests(c.Param("id"))
@@ -135,7 +135,7 @@ func GetTestsCoverage(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      int     true  "Product ID"
 // @Success      200  {array}  model.Test
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/products/:id/tests [get]
 func GetProductTestsCoverage(c *gin.Context) {
 	t, err := repo.GetAllProductTests(c.Param("id"))
@@ -153,7 +153,7 @@ func GetProductTestsCoverage(c *gin.Context) {
 // @Tags         coverage
 // @Produce      json
 // @Success      200  {array}  model.Test
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/components [get]
 func GetComponents(c *gin.Context) {
 	t, err := repo.GetComponents()

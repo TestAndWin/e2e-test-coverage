@@ -29,7 +29,7 @@ import (
 // @Param        testReportUrl header    string  false  "Url of the detail test report"
 // @Param        test          body      string  true   "Mocha JSON"
 // @Success      201  {object} string
-// @Failure      400  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/:id/upload-mocha-summary-report [POST]
 func UploadMochaSummaryReport(c *gin.Context) {
 	testResults, err := reporter.ReadMochaResultFromContext(c)

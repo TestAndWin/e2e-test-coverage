@@ -41,8 +41,8 @@ func initRepository() repository.UserStore {
 // @Description  Get all user
 // @Tags         user
 // @Produce      json
-// @Success      200  {array}  model.User
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {object}  model.User
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users [GET]
 func GetUser(c *gin.Context) {
 	user, err := userStore.GetUser()
@@ -60,8 +60,8 @@ func GetUser(c *gin.Context) {
 // @Produce      json
 // @Param        user  body      model.User  true  "User JSON"
 // @Success      201  {object}  model.User
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users [POST]
 func CreateUser(c *gin.Context) {
 	var user model.User
@@ -86,9 +86,9 @@ func CreateUser(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      int         true  "User ID"
 // @Param        user  body      model.User  true  "User JSON"
-// @Success      200  {object}  SuccessResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {string}  SuccessResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/{id} [PUT]
 func UpdateUser(c *gin.Context) {
 	var user model.User
@@ -111,9 +111,9 @@ func UpdateUser(c *gin.Context) {
 // @Produce      json
 // @Param        id           path      int                true  "User ID"
 // @Param        newPassword  body      model.NewPassword  true  "NewPassword JSON"
-// @Success      200  {object}  SuccessResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {string}  SuccessResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/change-pwd/{id} [PUT]
 func ChangePassword(c *gin.Context) {
 	var pwd model.NewPassword
@@ -143,8 +143,8 @@ func ChangePassword(c *gin.Context) {
 // @Tags         user
 // @Produce      json
 // @Param        id    path      int     true  "User ID"
-// @Success      204  {object}  SuccessResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      204  {string}  SuccessResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/{id} [DELETE]
 func DeleteUser(c *gin.Context) {
 	_, err := userStore.DeleteUser(c.Param("id"))
@@ -160,8 +160,8 @@ func DeleteUser(c *gin.Context) {
 // @Description  Generate an API Key
 // @Tags         user
 // @Produce      json
-// @Success      200  {object}  SuccessResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {string}  SuccessResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/generate-api-key [POST]
 func GenerateApiKey(c *gin.Context) {
 	apiKey, err := userStore.GenerateApiKey(c.GetInt64(USER_ID))

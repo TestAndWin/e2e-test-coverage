@@ -42,10 +42,10 @@ func getJwtKey() []byte {
 // @Tags         user
 // @Produce      json
 // @Param        login  body      model.Credentials  true  "Credentials JSON"
-// @Success      200  {object}  string
-// @Failure      400  {object}  ErrorResponse
-// @Failure      403  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      200  {string}  string
+// @Failure      400  {string}  ErrorResponse
+// @Failure      403  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/auth/login [POST]
 func Login(c *gin.Context) {
 	var s model.Credentials

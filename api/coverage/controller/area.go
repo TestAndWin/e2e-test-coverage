@@ -23,8 +23,8 @@ import (
 // @Produce      json
 // @Param        area  body     model.Area  true  "Area JSON"
 // @Success      201  {object}  model.Area
-// @Failure      400  {object}  Invalid JSON
-// @Failure      500  {object}  Internal Error
+// @Failure      400  {string}  Invalid JSON
+// @Failure      500  {string}  Internal Error
 // @Router       /api/v1/areas [POST]
 func AddArea(c *gin.Context) {
 	var a model.Area
@@ -50,7 +50,7 @@ func AddArea(c *gin.Context) {
 // @Produce      json
 // @Param        id    path    string     true  "Product ID"
 // @Success      200  {array}  model.Area
-// @Failure      500  {object} Internal Error
+// @Failure      500  {string} Internal Error
 // @Router       /api/v1/products/{id}/areas [get]
 func GetProductAreas(c *gin.Context) {
 	a, err := repo.GetAllProductAreas(c.Param("id"))
@@ -69,8 +69,8 @@ func GetProductAreas(c *gin.Context) {
 // @Param        id    path     int         true  "Area ID"
 // @Param        area  body     model.Area  true  "Area JSON"
 // @Success      200  {object}  model.Area
-// @Failure      400  {object}  Invalid JSON or ID
-// @Failure      500  {object}  Internal Error
+// @Failure      400  {string}  Invalid JSON or ID
+// @Failure      500  {string}  Internal Error
 // @Router       /api/v1/areas [PUT]
 func UpdateArea(c *gin.Context) {
 	var a model.Area
@@ -100,9 +100,9 @@ func UpdateArea(c *gin.Context) {
 // @Tags         area
 // @Produce      json
 // @Param        id    path      int     true  "Area ID"
-// @Success      204  {object}  SuccessResponse
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      204  {string}  SuccessResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/areas/{id} [DELETE]
 func DeleteArea(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)

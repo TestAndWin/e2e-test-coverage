@@ -23,8 +23,8 @@ import (
 // @Produce      json
 // @Param        expl-test  body      model.ExplTest  true  "Expl Test JSON"
 // @Success      201  {object}  model.ExplTest
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/expl-tests [POST]
 func AddExplTest(c *gin.Context) {
 	var et model.ExplTest
@@ -49,8 +49,8 @@ func AddExplTest(c *gin.Context) {
 // @Tags         expl-test
 // @Produce      json
 // @Param        id    path      int     true  "Test ID"
-// @Success      204  {object} SuccesResponse
-// @Failure      500  {object} ErrorResponse
+// @Success      204  {string} SuccesResponse
+// @Failure      500  {string} ErrorResponse
 // @Router       /api/v1/expl-tests/{id} [DELETE]
 func DeleteExplTest(c *gin.Context) {
 	_, err := repo.DeleteExplTest(c.Param("id"))
@@ -68,7 +68,7 @@ func DeleteExplTest(c *gin.Context) {
 // @Produce      json
 // @Param        areaid    path      int     true  "Area ID"
 // @Success      200  {array}  model.ExplTest
-// @Failure      500  {object}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/expl-tests/area/{areaid} [POST]
 func GetExplTestsForArea(c *gin.Context) {
 	et, err := repo.GetExplTests(c.Param("areaid"))

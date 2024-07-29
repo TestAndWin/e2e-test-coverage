@@ -24,8 +24,8 @@ import (
 // @Produce      json
 // @Param        product  body      model.Product  true  "Product JSON"
 // @Success      201  {object}  model.Product
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products [POST]
 func AddProduct(c *gin.Context) {
 	var p model.Product
@@ -48,7 +48,7 @@ func AddProduct(c *gin.Context) {
 // @Tags         product
 // @Produce      json
 // @Success      200  {array}  model.Product
-// @Failure      500  {object}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products [get]
 func GetProducts(c *gin.Context) {
 	p, err := repo.GetAllProducts()
@@ -67,8 +67,8 @@ func GetProducts(c *gin.Context) {
 // @Param        product  body      model.Product  true  "Product JSON"
 // @Produce      json
 // @Success      200  {object}  model.Product
-// @Failure      400  {object}  ErrorResponse
-// @Failure      500  {object}  ErrorResponse
+// @Failure      400  {string}  ErrorResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products/{id} [PUT]
 func UpdateProduct(c *gin.Context) {
 	var p model.Product
@@ -92,8 +92,8 @@ func UpdateProduct(c *gin.Context) {
 // @Tags         product
 // @Produce      json
 // @Param        id    path      int     true  "Product ID"
-// @Success      204 {object}  SuccessResponse
-// @Failure      500  {object}  ErrorResponse
+// @Success      204 {string}  SuccessResponse
+// @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products/{id} [DELETE]
 func DeleteProduct(c *gin.Context) {
 	_, err := repo.DeleteProduct(c.Param("id"))

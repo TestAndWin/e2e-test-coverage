@@ -23,8 +23,8 @@ import (
 // @Param        component      query      string     true  "Component name"
 // @Param        suite          query      string     true  "Suite name"
 // @Param        file-name      query      string     true  "File name"
-// @Success      204 {object}  SucccessResponse
-// @Success      500 {object}  ErrorResponse
+// @Success      204 {string}  SucccessResponse
+// @Success      500 {string}  ErrorResponse
 // @Router       /api/v1/tests/{id} [DELETE]
 func DeleteTests(c *gin.Context) {
 	suite := c.Query("suite")
@@ -47,7 +47,7 @@ func DeleteTests(c *gin.Context) {
 // @Param        suite          query      string     true  "Suite name"
 // @Param        file-name      query      string     true  "File name"
 // @Success      200 {array}  model.Test
-// @Success      500 {object} ErrorResponse
+// @Success      500 {string} ErrorResponse
 // @Router       /api/v1/tests [GET]
 func GetAllTestForSuiteFile(c *gin.Context) {
 	suite := c.Query("suite")
