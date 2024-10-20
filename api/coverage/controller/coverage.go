@@ -41,7 +41,7 @@ func GetAreaCoverage(c *gin.Context) {
 
 	areasCoverage, err := processAreaCoverage(areas, tests)
 	if err != nil {
-		handleError(c, err, "Unable to get process area coverage", http.StatusBadRequest)
+		handleError(c, err, "Unable to process area coverage", http.StatusBadRequest)
 		return
 	}
 	c.JSON(http.StatusOK, areasCoverage)
