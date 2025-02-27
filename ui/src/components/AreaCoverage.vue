@@ -12,21 +12,21 @@
     <h4 class="">Coverage</h4>
     <div v-for="area in areas" :key="area['id']" :id="`area-${area['id']}`" class="area shadow p-2 mb-2 rounded">
       <div class="row">
-        <div @click="showFeatures(area['id'])" class="col-5 pointer">
+        <div @click="showFeatures(area.id ?? 0)" class="col-5 pointer">
           <h4>{{ area['name'] }}</h4>
         </div>
         <div class="col-5 mb-2">
           <TestResult :test="area" />
         </div>
         <div class="col mb-2">
-          <span class="result expl-test pointer" @click="showExplTests(area['id'])">
-            {{ parseFloat(area['expl-rating']).toFixed(1) }} ({{ area['expl-tests'] }})
+          <span class="result expl-test pointer" @click="showExplTests(area.id ?? 0)">
+            {{ parseFloat(area['expl-rating']?.toString() || '0').toFixed(1) }} ({{ area['expl-tests'] || 0 }})
           </span>
           &nbsp;
-          <span class="result expl-test pointer" @click="showLogExplTest(area['id'])"> New </span>
+          <span class="result expl-test pointer" @click="showLogExplTest(area.id ?? 0)"> New </span>
         </div>
       </div>
-      <FeatureCoverage @show-alert="showAlert" v-if="areaToggle[area['id']]" :areaId="area['id']" />
+      <FeatureCoverage @show-alert="showAlert" v-if="areaToggle[area.id ?? 0]" :areaId="area.id ?? 0" />
     </div>
   </div>
 
@@ -112,6 +112,7 @@ import { Modal } from 'bootstrap';
 import FeatureCoverage from './FeatureCoverage.vue';
 import TestResult from './TestResult.vue';
 import http from '@/common-http';
+import type { Area } from '@/types';
 
 const props = defineProps({
   productId: Number
@@ -121,18 +122,41 @@ const loading = ref(true);
 const error = ref('');
 
 const areaToggle = ref([false]);
-const areas = ref([]);
+const areas = ref<Area[]>([]);
 const getAreas = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/coverage/${props.productId}/areas`)
-    .then((response) => {
-      areas.value = response.data;
-      areaToggle.value = new Array(areas.value.length).fill(false);
-    })
-    .catch((err) => {
-      error.value = err + ' | ' + err.response.data.error;
-    });
+  try {
+    console.log(`Fetching areas for product ID ${props.productId}`);
+    const response = await http.get(`/api/v1/coverage/${props.productId}/areas`);
+    console.log('Areas coverage response:', response.data);
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      areas.value = response.data.data;
+    } else {
+      console.warn('Unexpected areas response format:', response.data);
+      areas.value = [];
+    }
+
+    // Ensure all required properties have default values
+    areas.value = areas.value.map((area: Area) => ({
+      ...area,
+      total: area.total || 0,
+      passes: area.passes || 0,
+      failures: area.failures || 0,
+      pending: area.pending || 0,
+      skipped: area.skipped || 0,
+      'first-total': area['first-total'] || 0,
+      'expl-tests': area['expl-tests'] || 0,
+      'expl-rating': area['expl-rating'] || 0
+    }));
+
+    console.log('Processed areas:', areas.value);
+    areaToggle.value = new Array(areas.value.length).fill(false);
+  } catch (err) {
+    console.error('Error fetching areas:', err);
+    error.value = `Error loading coverage data: ${err}`;
+  }
 
   loading.value = false;
 };

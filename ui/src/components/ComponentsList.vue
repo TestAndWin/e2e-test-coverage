@@ -42,8 +42,16 @@ const getComponents = async () => {
   http
     .get(`/api/v1/coverage/components`, {})
     .then((response) => {
-      if (response.data) {
+      // Check for different response formats
+      if (response.data && response.data.data) {
+        // Response is in StandardResponse format with { success, data, ... }
+        components.value = response.data.data;
+      } else if (Array.isArray(response.data)) {
+        // Response is a direct array
         components.value = response.data;
+      } else {
+        console.error('Unexpected response format:', response.data);
+        error.value = 'Unexpected response format';
       }
     })
     .catch((err) => {

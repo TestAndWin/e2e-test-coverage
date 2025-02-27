@@ -40,14 +40,18 @@
     <div v-for="test in tests" :key="test['id']">
       <template
         v-if="
-          ((!filterLastFailed && test['percent'] >= filterCriteria) || (filterLastFailed && test['failures'] > 0)) &&
+          ((!filterLastFailed && (test.percent ?? 0) >= filterCriteria) ||
+            (filterLastFailed && (test.failures ?? 0) > 0)) &&
           (selectedComponent == 'all' || selectedComponent == test['component'])
         "
       >
         <div class="test shadow p-2 mb-2 rounded">
           <div class="row">
             <div class="col-5">
-              <h6 @click="showTestRuns(test['component'], test['suite'], test['file-name'])" class="pointer">
+              <h6
+                @click="showTestRuns(test.component ?? '', test.suite ?? '', test['file-name'] ?? '')"
+                class="pointer"
+              >
                 {{ test['suite'] }}
               </h6>
             </div>
@@ -55,14 +59,13 @@
               <TestResult :test="test" />
             </div>
             <div class="col">
-              <i v-if="test['percent'] == sun" class="bi bi-sun"></i>
-              <i v-if="test['percent'] > sun && test['percent'] <= sunCloud" class="bi bi-cloud-sun"></i>
-              <i v-if="test['percent'] > sunCloud && test['percent'] <= cloud" class="bi bi-cloud"></i>
-              <i v-if="test['percent'] >= cloud && test['percent'] <= cloudRain" class="bi bi-cloud-rain"></i>
-              <i v-if="test['percent'] > cloudRain" class="bi bi-lightning"></i>
+              <i v-if="(test.percent ?? 0) > sun && (test.percent ?? 0) <= sunCloud" class="bi bi-cloud-sun"></i>
+              <i v-if="(test.percent ?? 0) > sunCloud && (test.percent ?? 0) <= cloud" class="bi bi-cloud"></i>
+              <i v-if="(test.percent ?? 0) >= cloud && (test.percent ?? 0) <= cloudRain" class="bi bi-cloud-rain"></i>
+              <i v-if="(test.percent ?? 0) > cloudRain" class="bi bi-lightning"></i>
               &nbsp;&nbsp;
               <i
-                @click="deleteTests(test['component'], test['suite'], test['file-name'])"
+                @click="deleteTests(test.component ?? '', test.suite ?? '', test['file-name'] ?? '')"
                 class="bi bi-trash pointer"
               />
             </div>
@@ -144,6 +147,7 @@ import { ref, onMounted } from 'vue';
 import { Modal } from 'bootstrap';
 import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';
+import type { Test } from '@/types';
 
 import {
   Chart as ChartJS,
@@ -222,47 +226,112 @@ const chartOptions = ref({
   }
 });
 
-const tests = ref([]);
+const tests = ref<Test[]>([]);
 const getTestsForProduct = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/coverage/products/${props.productId}/tests`)
-    .then((response) => {
-      if (response.data) {
-        tests.value = response.data;
-        calculatePercentage();
-        setComponentsList();
-      }
-    })
-    .catch((err) => {
-      error.value = err;
-    });
+  try {
+    console.log(`Fetching tests for product ID ${props.productId}`);
+    const response = await http.get(`/api/v1/coverage/products/${props.productId}/tests`);
+    console.log('Tests response:', response.data);
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      tests.value = response.data.data;
+    } else {
+      console.warn('Unexpected tests response format:', response.data);
+      tests.value = [];
+    }
+
+    // Ensure tests.value is always an array
+    if (!Array.isArray(tests.value)) {
+      console.error('tests.value is not an array:', tests.value);
+      tests.value = [];
+    }
+
+    console.log('Processed tests:', tests.value);
+
+    if (tests.value.length > 0) {
+      calculatePercentage();
+      setComponentsList();
+    } else {
+      components.value = ['all']; // Default component list
+    }
+  } catch (err) {
+    console.error('Error fetching tests:', err);
+    error.value = `Error loading tests: ${err}`;
+    tests.value = []; // Initialize as empty array on error
+  }
   loading.value = false;
 };
 
 const getTestsForFeature = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/coverage/features/${props.featureId}/tests`)
-    .then((response) => {
-      if (response.data) {
-        tests.value = response.data;
-        calculatePercentage();
-        setComponentsList();
-      }
-    })
-    .catch((err) => {
-      error.value = err;
-    });
+  try {
+    console.log(`Fetching tests for feature ID ${props.featureId}`);
+    const response = await http.get(`/api/v1/coverage/features/${props.featureId}/tests`);
+    console.log('Tests response:', response.data);
 
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      tests.value = response.data.data;
+    } else {
+      console.warn('Unexpected tests response format:', response.data);
+      tests.value = [];
+    }
+
+    // Ensure tests.value is always an array
+    if (!Array.isArray(tests.value)) {
+      console.error('tests.value is not an array:', tests.value);
+      tests.value = [];
+    }
+
+    console.log('Processed tests:', tests.value);
+
+    if (tests.value.length > 0) {
+      calculatePercentage();
+      setComponentsList();
+    } else {
+      components.value = ['all']; // Default component list
+    }
+  } catch (err) {
+    console.error('Error fetching tests:', err);
+    error.value = `Error loading tests: ${err}`;
+    tests.value = []; // Initialize as empty array on error
+  }
   loading.value = false;
 };
 
 // Calculate the percentage of the failed tests
 const calculatePercentage = () => {
+  if (!Array.isArray(tests.value)) {
+    console.error('Cannot calculate percentage: tests.value is not an array');
+    return;
+  }
+
   for (const test of tests.value) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (test as any)['percent'] = test['failed-test-runs'] / test['total-test-runs'];
+    if (!test) continue;
+
+    // Ensure values are present and valid numbers
+    const failedRuns = typeof test['failed-test-runs'] === 'number' ? test['failed-test-runs'] : 0;
+    const totalRuns = typeof test['total-test-runs'] === 'number' ? test['total-test-runs'] : 1;
+
+    // Avoid division by zero
+    if (totalRuns === 0) {
+      test.percent = 0;
+    } else {
+      test.percent = failedRuns / totalRuns;
+    }
+
+    // Ensure other required properties exist with defaults
+    test.component = test.component || 'Unknown';
+    test.suite = test.suite || '';
+    test['file-name'] = test['file-name'] || '';
+    test['test-run'] = test['test-run'] || '';
+    test.failures = test.failures || 0;
+    test.passes = test.passes || 0;
+    test.pending = test.pending || 0;
+    test.skipped = test.skipped || 0;
+    test.total = test.total || 0;
   }
 };
 
@@ -270,7 +339,24 @@ const components = ref<string[]>([]);
 const selectedComponent = ref('all');
 // Get list of components from the test results
 const setComponentsList = () => {
-  components.value = ['all', ...new Set(tests.value.map((item) => item['component']))];
+  if (!Array.isArray(tests.value)) {
+    console.error('Cannot set components list: tests.value is not an array');
+    components.value = ['all'];
+    return;
+  }
+
+  try {
+    // Extract component names from tests, filter out any undefined/null values
+    const componentSet = new Set(tests.value.filter((item) => item?.component).map((item) => item.component ?? ''));
+
+    // Add 'all' as the first option
+    components.value = ['all', ...componentSet];
+
+    console.log('Components list set to:', components.value);
+  } catch (err) {
+    console.error('Error creating components list:', err);
+    components.value = ['all']; // Default value
+  }
 };
 
 const testRuns = ref([]);
@@ -281,27 +367,56 @@ const showTestRuns = async (c: string, s: string, f: string) => {
   suite.value = s;
   file.value = f;
 
-  await http
-    .get(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`)
-    .then((response) => {
-      // We use only the lastest 10
-      testRuns.value = response.data.slice(0, 10);
+  try {
+    console.log(`Fetching test runs for component ${c}, suite ${s}, file ${f}`);
+    const response = await http.get(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`);
+    console.log('Test runs response:', response.data);
 
-      chartData.value.labels = [];
-      for (let i = 0; i < testRuns.value.length; i++) {
-        // different order
-        const r = testRuns.value.length - 1 - i;
-        chartData.value.labels[i] = testRuns.value[r]['test-run'];
-        //chartData.value.datasets[0].data[i] = testRuns.value[r]['total'];
-        chartData.value.datasets[0].data[i] = testRuns.value[r]['passes'];
-        chartData.value.datasets[1].data[i] = testRuns.value[r]['failures'];
-        chartData.value.datasets[2].data[i] = testRuns.value[r]['pending'];
-        chartData.value.datasets[3].data[i] = testRuns.value[r]['skipped'];
-      }
-    })
-    .catch((err) => {
-      error.value = err;
+    let testRunsData = [];
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      testRunsData = response.data.data;
+    } else {
+      console.warn('Unexpected test runs response format:', response.data);
+      testRunsData = [];
+    }
+
+    // We use only the latest 10
+    testRuns.value = testRunsData.slice(0, 10);
+    console.log('Using test runs:', testRuns.value);
+
+    // Prepare chart data
+    chartData.value.labels = [];
+    chartData.value.datasets.forEach((dataset) => {
+      dataset.data = [];
     });
+
+    if (testRuns.value.length > 0) {
+      for (let i = 0; i < testRuns.value.length; i++) {
+        // different order (reverse chronological)
+        const r = testRuns.value.length - 1 - i;
+        const run = testRuns.value[r];
+
+        if (!run) continue;
+
+        // Format the date for the label
+        chartData.value.labels[i] = run['test-run'] || `Run ${i + 1}`;
+
+        // Set data points with safe access
+        // chartData.value.datasets[0].data[i] = run['total'] || 0;
+        chartData.value.datasets[0].data[i] = run['passes'] || 0;
+        chartData.value.datasets[1].data[i] = run['failures'] || 0;
+        chartData.value.datasets[2].data[i] = run['pending'] || 0;
+        chartData.value.datasets[3].data[i] = run['skipped'] || 0;
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching test runs:', err);
+    error.value = `Error loading test history: ${err}`;
+    testRuns.value = [];
+  }
+
   loading.value = false;
   new Modal('#showTestRuns_' + props.featureId).show();
 };
@@ -309,11 +424,19 @@ const showTestRuns = async (c: string, s: string, f: string) => {
 const deleteTests = async (c: string, s: string, f: string) => {
   loading.value = true;
 
-  await http.delete(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`).catch((err) => {
-    error.value = err;
-  });
-  loading.value = false;
-  location.reload();
+  try {
+    console.log(`Deleting tests for component ${c}, suite ${s}, file ${f}`);
+    await http.delete(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`);
+    console.log('Tests deleted successfully');
+
+    // Refresh the page to show updated data
+    loading.value = false;
+    location.reload();
+  } catch (err) {
+    console.error('Error deleting tests:', err);
+    error.value = `Error deleting tests: ${err}`;
+    loading.value = false;
+  }
 };
 
 const closeAlert = () => {

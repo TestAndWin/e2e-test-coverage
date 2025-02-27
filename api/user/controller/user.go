@@ -9,32 +9,16 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
 	"net/http"
-	"os"
+	"strconv"
 
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/TestAndWin/e2e-coverage/user/model"
-	"github.com/TestAndWin/e2e-coverage/user/repository"
 	"github.com/gin-gonic/gin"
 )
 
-var userStore = initRepository()
-
-// Set-up the db connection and create the db tables if needed
-func initRepository() repository.UserStore {
-	userStore, err := repository.NewUserStore()
-	if err != nil {
-		log.Fatalf("Error connecting to DB: %s", err)
-		os.Exit(1)
-	}
-
-	err = userStore.CreateUsersTable()
-	if err != nil {
-		log.Fatalf("Error creating tables: %s", err)
-		os.Exit(1)
-	}
-	return *userStore
-}
+const USER_ID = "userId"
 
 // GetUser godoc
 // @Summary      Get all user
@@ -45,11 +29,12 @@ func initRepository() repository.UserStore {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users [GET]
 func GetUser(c *gin.Context) {
-	user, err := userStore.GetUser()
+	userStore := getUserRepository()
+	users, err := userStore.GetUser()
 	if err != nil {
-		handleError(c, err, "Error getting user", http.StatusInternalServerError)
+		errors.HandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, user)
+		response.OK(c, users)
 	}
 }
 
@@ -66,17 +51,18 @@ func GetUser(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var user model.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user data", err))
 		return
 	}
 
-	id, err := userStore.InsertUser(user)
+	userStore := getUserRepository()
+	id, err := userStore.CreateUser(user)
 	if err != nil {
-		handleError(c, err, "Error creating user", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 	user.Id = id
-	c.JSON(http.StatusCreated, user)
+	response.Created(c, user)
 }
 
 // UpdateUser godoc
@@ -93,15 +79,24 @@ func CreateUser(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	var user model.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user data", err))
 		return
 	}
-	err := userStore.UpdateUser(c.Param("id"), user)
+	
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		handleError(c, err, "Error updating user", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID", err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	
+	user.Id = id
+	userStore := getUserRepository()
+	err = userStore.UpdateUser(user)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	response.ResponseWithMessage(c, http.StatusOK, "User updated successfully")
 }
 
 // ChangePassword godoc
@@ -109,32 +104,47 @@ func UpdateUser(c *gin.Context) {
 // @Description  Takes the NewPassword JSON and updates the password. Only possible for the current user to change his own password.
 // @Tags         user
 // @Produce      json
-// @Param        id           path      int                true  "User ID"
 // @Param        newPassword  body      model.NewPassword  true  "NewPassword JSON"
 // @Success      200  {string}  SuccessResponse
 // @Failure      400  {string}  ErrorResponse
 // @Failure      500  {string}  ErrorResponse
-// @Router       /api/v1/users/change-pwd/{id} [PUT]
+// @Router       /api/v1/users/change-pwd [PUT]
 func ChangePassword(c *gin.Context) {
 	var pwd model.NewPassword
 
 	if err := c.ShouldBindJSON(&pwd); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		errors.HandleError(c, errors.NewBadRequestError("Invalid password data", err))
 		return
 	}
 
-	// Token is already checked before. We need the token to get the email
-	tkn, _ := GetToken(c)
-	if claims, ok := tkn.Claims.(*model.Claims); ok && tkn.Valid {
-		err := userStore.UpdatePassword(claims.Email, pwd.Password, pwd.NewPassword)
-		if err != nil {
-			handleError(c, err, "Error updating password", http.StatusInternalServerError)
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error getting token"})
+	// Get user ID from the context (set by AuthUser middleware)
+	id, exists := c.Get(USER_ID)
+	if !exists {
+		errors.HandleError(c, errors.NewBadRequestError("User ID not found in context", nil))
+		return
 	}
+
+	// Convert to int64 if needed
+	var userId int64
+	switch v := id.(type) {
+	case int64:
+		userId = v
+	case float64:
+		userId = int64(v)
+	case int:
+		userId = int64(v)
+	default:
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID type", nil))
+		return
+	}
+
+	userStore := getUserRepository()
+	err := userStore.ChangePassword(userId, pwd.Password, pwd.NewPassword)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	response.ResponseWithMessage(c, http.StatusOK, "Password updated successfully")
 }
 
 // DeleteUser godoc
@@ -147,12 +157,19 @@ func ChangePassword(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/{id} [DELETE]
 func DeleteUser(c *gin.Context) {
-	_, err := userStore.DeleteUser(c.Param("id"))
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		handleError(c, err, "Error deleting user", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID", err))
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	
+	userStore := getUserRepository()
+	err = userStore.DeleteUser(id)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 // GenerateApiKey godoc
@@ -164,10 +181,12 @@ func DeleteUser(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users/generate-api-key [POST]
 func GenerateApiKey(c *gin.Context) {
-	apiKey, err := userStore.GenerateApiKey(c.GetInt64(USER_ID))
+	userId := c.GetInt64(USER_ID)
+	userStore := getUserRepository()
+	apiKey, err := userStore.GenerateApiKey(userId)
 	if err != nil {
-		handleError(c, err, "Error generating API key", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"key": apiKey})
+	response.OK(c, gin.H{"key": apiKey})
 }

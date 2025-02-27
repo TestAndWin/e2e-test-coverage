@@ -7,7 +7,7 @@
     <div v-for="feature in features" :key="feature['id']" class="feature shadow p-2 mb-2 rounded">
       <div :id="`feature-${feature['id']}`" class="row">
         <div class="col-5 mb-2">
-          <h5 @click="showTests(feature['id'])" class="pointer">{{ feature['name'] }}</h5>
+          <h5 @click="showTests(feature['id'] ?? 0)" class="pointer">{{ feature['name'] }}</h5>
           <span v-if="feature['business-value'] == 'low'">&dollar;</span>
           <span v-if="feature['business-value'] == 'medium'">&dollar;&dollar;</span>
           <span v-if="feature['business-value'] == 'high'">&dollar;&dollar;&dollar;</span>&nbsp;
@@ -23,7 +23,7 @@
         </div>
         <div class="col">&nbsp;</div>
       </div>
-      <TestCoverage v-if="featureToggle[feature['id']]" :featureId="feature['id']" />
+      <TestCoverage v-if="featureToggle[feature['id'] ?? 0]" :featureId="feature['id'] ?? 0" />
     </div>
   </div>
 </template>
@@ -33,6 +33,7 @@ import { ref, onMounted } from 'vue';
 import TestCoverage from '@/components/TestCoverage.vue';
 import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';
+import type { Feature } from '@/types';
 
 const props = defineProps({
   areaId: Number
@@ -40,19 +41,43 @@ const props = defineProps({
 const emit = defineEmits(['showAlert']);
 const loading = ref(true);
 
-const features = ref([]);
+const features = ref<Feature[]>([]);
 const featureToggle = ref([false]);
 const getFeatures = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/coverage/areas/${props.areaId}/features`)
-    .then((response) => {
-      features.value = response.data;
-      featureToggle.value = new Array(features.value.length).fill(false);
-    })
-    .catch((err) => {
-      emit('showAlert', err + ' | ' + err.response.data.error);
-    });
+  try {
+    console.log(`Fetching features for area ID ${props.areaId}`);
+    const response = await http.get(`/api/v1/coverage/areas/${props.areaId}/features`);
+    console.log('Feature coverage response:', response.data);
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      features.value = response.data.data;
+    } else {
+      console.warn('Unexpected features response format:', response.data);
+      features.value = [];
+    }
+
+    // Ensure all required properties have default values
+    features.value = features.value.map((feature) => ({
+      ...feature,
+      'business-value': feature['business-value'] || 'low',
+      total: feature.total || 0,
+      passes: feature.passes || 0,
+      failures: feature.failures || 0,
+      pending: feature.pending || 0,
+      skipped: feature.skipped || 0,
+      'first-total': feature['first-total'] || 0,
+      documentation: feature.documentation || '',
+      url: feature.url || ''
+    })) as Feature[];
+
+    console.log('Processed features:', features.value);
+    featureToggle.value = new Array(features.value.length).fill(false);
+  } catch (err) {
+    console.error('Error fetching features:', err);
+    emit('showAlert', `Error loading feature data: ${err}`);
+  }
   loading.value = false;
 };
 

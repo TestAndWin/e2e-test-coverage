@@ -55,17 +55,26 @@ const generateApiKey = async () => {
   loading.value = true;
   error.value = '';
 
-  http
-    .post(`/api/v1/users/generate-api-key`, {})
-    .then((response) => {
-      apiKey.value = response.data.key;
-    })
-    .catch((err) => {
-      error.value = err + ' | ' + err.response?.data?.error;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+  try {
+    console.log('Generating API key');
+    const response = await http.post(`/api/v1/users/generate-api-key`, {});
+    console.log('API key response:', response.data);
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && response.data.data.key) {
+      apiKey.value = response.data.data.key;
+    } else {
+      console.warn('Unexpected API key response format:', response.data);
+      error.value = 'Could not extract API key from response';
+    }
+
+    console.log('API key set to:', apiKey.value);
+  } catch (err) {
+    console.error('Error generating API key:', err);
+    error.value = `Error generating API key: ${err}`;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const newPassword = ref('');

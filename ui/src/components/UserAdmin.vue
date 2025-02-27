@@ -14,10 +14,11 @@
         <div class="row">
           <div class="col">
             <span class="justify-content-between pointer">{{ u['email'] }}</span>
-            {{ u['roles'] }}
-            <a @click="showEditUserModal(u['id'], u['email'], u['roles'])"><i class="bi bi-pencil pointer"></i></a
+            {{ u.roles }}
+            <a @click="showEditUserModal(u.id ?? 0, u.email ?? '', u.roles ?? [])"
+              ><i class="bi bi-pencil pointer"></i></a
             >&nbsp;
-            <a @click="deleteUser(u['id'])"><i class="bi bi-trash pointer"></i></a>
+            <a @click="deleteUser(u.id ?? 0)"><i class="bi bi-trash pointer"></i></a>
           </div>
         </div>
         <hr />
@@ -99,6 +100,7 @@
 import { ref, onMounted } from 'vue';
 import http from '@/common-http';
 import { Modal } from 'bootstrap';
+import type { User } from '@/types';
 
 const roles = ref(['Admin', 'Maintainer', 'Tester']);
 const error = ref('');
@@ -106,7 +108,7 @@ const loading = ref(false);
 const email = ref('');
 const password = ref('');
 const selectedRoles = ref(['']);
-const user = ref([]);
+const user = ref<User[]>([]);
 
 const showAddUserModal = () => {
   email.value = '';
@@ -117,79 +119,149 @@ const showAddUserModal = () => {
 
 const getUser = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/users`)
-    .then((response) => {
-      user.value = response.data;
-    })
-    .catch((err) => {
-      error.value = err + ' | ' + err.response.data.error;
-    });
-  loading.value = false;
+  try {
+    console.log('Fetching users');
+    const response = await http.get(`/api/v1/users`);
+    console.log('Users API response:', response.data);
+
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      user.value = response.data.data;
+    } else {
+      console.warn('Unexpected users response format:', response.data);
+      user.value = [];
+    }
+
+    console.log('Users data processed:', user.value);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    error.value = `Error loading users: ${err}`;
+    user.value = []; // Initialize as empty array on error
+  } finally {
+    loading.value = false;
+  }
 };
 
 const userId = ref(0);
-const showEditUserModal = (uId: number, e: string, r: string) => {
+const showEditUserModal = (uId: number, e: string, r: string | string[]) => {
+  console.log('Edit user modal for:', { id: uId, email: e, roles: r });
   userId.value = uId;
   email.value = e;
-  selectedRoles.value = Array.from(r);
+
+  // Handle roles based on type
+  if (Array.isArray(r)) {
+    // If it's already an array, use it directly
+    selectedRoles.value = r;
+  } else if (typeof r === 'string') {
+    // If it's a comma-separated string, split it
+    selectedRoles.value = r.split(',').map((role) => role.trim());
+  } else {
+    // Default to empty if undefined or other type
+    selectedRoles.value = [];
+  }
+
+  console.log('Selected roles set to:', selectedRoles.value);
+
+  // Show modal
   new Modal('#editUser').show();
 };
 
 const deleteUser = async (userId: number) => {
-  await http.delete(`/api/v1/users/${userId}`).catch((err) => {
-    error.value = err + ' | ' + err.response.data.error;
-  });
-  getUser();
+  try {
+    loading.value = true;
+    console.log(`Deleting user with ID ${userId}`);
+
+    const response = await http.delete(`/api/v1/users/${userId}`);
+    console.log('Delete user response:', response.data);
+
+    // Refresh user list
+    await getUser();
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    error.value = `Error deleting user: ${err}`;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const createUser = async () => {
   loading.value = true;
   error.value = '';
 
-  const newUser = {
-    email: email.value,
-    password: password.value,
-    roles: selectedRoles.value
-  };
+  try {
+    // Validate inputs
+    if (!email.value || !password.value || selectedRoles.value.length === 0) {
+      error.value = 'Email, password, and at least one role are required';
+      return;
+    }
 
-  await http
-    .post('/api/v1/users', newUser)
-    .catch((err) => {
-      error.value = err + ' | ' + err.response?.data?.error;
-    })
-    .finally(() => {
-      loading.value = false;
-      email.value = '';
-      password.value = '';
-      selectedRoles.value = [];
-    });
-  await getUser();
+    const newUser = {
+      email: email.value,
+      password: password.value,
+      roles: selectedRoles.value
+    };
+
+    console.log('Creating new user:', { email: email.value, roles: selectedRoles.value });
+
+    const response = await http.post('/api/v1/users', newUser);
+    console.log('Create user response:', response.data);
+
+    // Clear form
+    email.value = '';
+    password.value = '';
+    selectedRoles.value = [];
+
+    // Refresh user list
+    await getUser();
+  } catch (err) {
+    console.error('Error creating user:', err);
+    error.value = `Error creating user: ${err}`;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const saveUser = async () => {
   loading.value = true;
   error.value = '';
 
-  const newUser = {
-    email: email.value,
-    password: password.value,
-    roles: selectedRoles.value
-  };
+  try {
+    // Validate inputs
+    if (!email.value || selectedRoles.value.length === 0) {
+      error.value = 'Email and at least one role are required';
+      return;
+    }
 
-  await http
-    .put(`/api/v1/users/${userId.value}`, newUser)
-    .catch((err) => {
-      error.value = err + ' | ' + err.response?.data?.error;
-    })
-    .finally(() => {
-      userId.value = 0;
-      loading.value = false;
-      email.value = '';
-      password.value = '';
-      selectedRoles.value = [];
+    // Prepare user data (password can be empty for updates)
+    const userData = {
+      email: email.value,
+      password: password.value,
+      roles: selectedRoles.value
+    };
+
+    console.log(`Updating user ${userId.value}:`, {
+      email: email.value,
+      roles: selectedRoles.value,
+      hasPassword: !!password.value
     });
-  await getUser();
+
+    const response = await http.put(`/api/v1/users/${userId.value}`, userData);
+    console.log('Update user response:', response.data);
+
+    // Clear form
+    userId.value = 0;
+    email.value = '';
+    password.value = '';
+    selectedRoles.value = [];
+
+    // Refresh user list
+    await getUser();
+  } catch (err) {
+    console.error('Error updating user:', err);
+    error.value = `Error updating user: ${err}`;
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(() => {
