@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,15 +29,17 @@ import (
 // @Success      500 {string}  ErrorResponse
 // @Router       /api/v1/tests/{id} [DELETE]
 func DeleteTests(c *gin.Context) {
+	repo := getRepository()
 	suite := c.Query("suite")
 	component := c.Query("component")
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
+	
 	_, err := repo.DeleteTest(component, suite, file)
 	if err != nil {
-		handleError(c, err, "Error delete tests", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	c.Status(http.StatusNoContent)
 }
 
 // GetAllTestForSuiteFile godoc
@@ -50,13 +54,15 @@ func DeleteTests(c *gin.Context) {
 // @Success      500 {string} ErrorResponse
 // @Router       /api/v1/tests [GET]
 func GetAllTestForSuiteFile(c *gin.Context) {
+	repo := getRepository()
 	suite := c.Query("suite")
 	component := c.Query("component")
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
+	
 	tests, err := repo.GetAllTestForSuiteFile(component, suite, file)
 	if err != nil {
-		handleError(c, err, "Error getting tests", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, tests)
+	response.OK(c, tests)
 }

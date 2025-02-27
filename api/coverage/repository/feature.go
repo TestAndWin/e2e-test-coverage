@@ -59,6 +59,8 @@ func (cs CoverageStore) DeleteFeature(id string) (int64, error) {
 
 // Get all features for the specified area id
 func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
+	log.Printf("GetAllAreaFeatures: Looking for features with area_id = %s", aid)
+	
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -70,16 +72,46 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 
 	defer rows.Close()
 	var features = []model.Feature{}
+	rowCount := 0
+	
 	for rows.Next() {
+		rowCount++
 		f := model.Feature{}
 		if err := rows.Scan(&f.Id, &f.AreaId, &f.Name, &f.Documentation, &f.Url, &f.BusinessValue); err != nil {
-			log.Println(err)
+			log.Printf("Error scanning feature row: %v", err)
 			return features, err
 		}
+		log.Printf("Found feature: id=%d, area_id=%d, name=%s", f.Id, f.AreaId, f.Name)
 		features = append(features, f)
 	}
+	
+	log.Printf("GetAllAreaFeatures: Found %d features for area_id %s", rowCount, aid)
+	
 	if err := rows.Err(); err != nil {
+		log.Printf("Error after iterating rows: %v", err)
 		return nil, err
 	}
+	
+	// Additional debug for empty result
+	if len(features) == 0 {
+		// Check if area exists
+		var areaExists bool
+		err := cs.db.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM areas WHERE id = ?)", aid).Scan(&areaExists)
+		if err != nil {
+			log.Printf("Error checking if area exists: %v", err)
+		} else {
+			log.Printf("Area with id %s exists: %v", aid, areaExists)
+		}
+		
+		// Count features in the database
+		var totalFeatures int
+		err = cs.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM features").Scan(&totalFeatures)
+		if err != nil {
+			log.Printf("Error counting features: %v", err)
+		} else {
+			log.Printf("Total features in database: %d", totalFeatures)
+		}
+	}
+	
 	return features, nil
 }

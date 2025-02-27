@@ -11,6 +11,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -18,40 +19,90 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// CoverageStore handles all database operations for coverage data
 type CoverageStore struct {
 	db *sql.DB
 }
 
-// Creates a new CoverageStore connecting to a MySQL database and creates a database with the name "e2ecoverage"
-func OpenDbConnection() (*CoverageStore, error) {
-	db, err := db.OpenDbConnection("e2ecoverage")
+// Interface for CoverageStore to enable mocking in tests
+type CoverageRepository interface {
+	// Tables
+	CreateProductsTable() error
+	CreateAreasTable() error
+	CreateExplTestsTable() error
+	CreateFeaturesTable() error
+	CreateTestsTable() error
+	CreateAllTables() error
+}
+
+// NewCoverageStore creates a new CoverageStore instance
+func NewCoverageStore() (*CoverageStore, error) {
+	database, err := db.OpenDbConnection("e2ecoverage")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open DB connection: %w", err)
 	}
-	return &CoverageStore{db: db}, nil
+
+	log.Println("Connected successfully to coverage database")
+	return &CoverageStore{
+		db: database,
+	}, nil
+}
+
+// WithDB creates a new CoverageStore with a provided DB connection
+func WithDB(database *sql.DB) *CoverageStore {
+	return &CoverageStore{
+		db: database,
+	}
+}
+
+// CreateAllTables creates all required tables for the application
+func (store *CoverageStore) CreateAllTables() error {
+	tables := []struct {
+		name string
+		fn   func() error
+	}{
+		{"Products", store.CreateProductsTable},
+		{"Areas", store.CreateAreasTable},
+		{"ExplTests", store.CreateExplTestsTable},
+		{"Features", store.CreateFeaturesTable},
+		{"Tests", store.CreateTestsTable},
+	}
+
+	for _, table := range tables {
+		if err := table.fn(); err != nil {
+			return fmt.Errorf("failed to create %s table: %w", table.name, err)
+		}
+	}
+	
+	return nil
 }
 
 // Inserts/Deletes a row using the specified statement and params
 func (cs CoverageStore) executeSql(statement string, params ...any) (int64, error) {
-	//log.Printf("statement %s, params: %s", statement, params)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	
 	stmt, err := cs.db.PrepareContext(ctx, statement)
 	if err != nil {
-		log.Printf("Error %s when preparing SQL statement", err)
-		return 0, err
+		return 0, fmt.Errorf("error preparing SQL statement: %w", err)
 	}
 	defer stmt.Close()
+	
 	res, err := stmt.ExecContext(ctx, params...)
 	if err != nil {
-		log.Printf("Error %s when executing statement", err)
-		return 0, err
+		return 0, fmt.Errorf("error executing statement: %w", err)
 	}
+	
 	rows, err := res.RowsAffected()
 	if err != nil {
-		log.Printf("Error %s when finding rows affected", err)
-		return 0, err
+		return 0, fmt.Errorf("error finding rows affected: %w", err)
 	}
-	log.Printf("%d row inserted/deleted/updated ", rows)
-	return res.LastInsertId()
+	
+	lastID, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("error getting last insert ID: %w", err)
+	}
+	
+	log.Printf("%d row(s) affected, last ID: %d", rows, lastID)
+	return lastID, nil
 }

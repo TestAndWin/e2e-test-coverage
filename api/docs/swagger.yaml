@@ -1,5 +1,18 @@
 basePath: /
 definitions:
+  errors.ErrorResponse:
+    properties:
+      code:
+        type: string
+      details:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+    type: object
   model.Area:
     properties:
       expl-rating:
@@ -146,6 +159,17 @@ definitions:
           type: string
         type: array
     type: object
+  response.StandardResponse:
+    properties:
+      count:
+        type: integer
+      data: {}
+      message:
+        type: string
+      meta: {}
+      success:
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -173,11 +197,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
       summary: Add a new area to a product
       tags:
       - area
@@ -205,11 +229,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
       summary: Update an area
       tags:
       - area
@@ -232,11 +260,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
       summary: Delete the product area
       tags:
       - area
@@ -282,20 +314,58 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/response.StandardResponse'
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "403":
           description: Forbidden
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
       summary: Log in of a user
+      tags:
+      - user
+  /api/v1/auth/logout:
+    post:
+      description: Clear auth cookies to log out the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.StandardResponse'
+      summary: Log out a user
+      tags:
+      - user
+  /api/v1/auth/refresh:
+    post:
+      description: Use a refresh token to get a new access token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.StandardResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Refresh access token
       tags:
       - user
   /api/v1/coverage/{id}/areas:
@@ -624,10 +694,14 @@ paths:
             items:
               $ref: '#/definitions/model.Area'
             type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/errors.ErrorResponse'
       summary: Get all product areas
       tags:
       - area
@@ -798,16 +872,11 @@ paths:
       summary: Change the role, name and password of a user
       tags:
       - user
-  /api/v1/users/change-pwd/{id}:
+  /api/v1/users/change-pwd:
     put:
       description: Takes the NewPassword JSON and updates the password. Only possible
         for the current user to change his own password.
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: NewPassword JSON
         in: body
         name: newPassword

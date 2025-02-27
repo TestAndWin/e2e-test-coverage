@@ -10,9 +10,10 @@ package controller
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,27 +28,34 @@ import (
 // @Router       /api/v1/coverage/{id}/areas [GET]
 func GetAreaCoverage(c *gin.Context) {
 	pId := c.Param("id")
+	repo := getRepository()
 	areas, err := repo.GetAllProductAreas(pId)
 	if err != nil {
-		handleError(c, err, "Unable to get all product areas", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Unable to get all product areas", err))
 		return
 	}
 
 	tests, err := repo.GetAreaCoverageForProduct(pId)
 	if err != nil {
-		handleError(c, err, "Unable to get area coverage for product", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Unable to get area coverage for product", err))
 		return
 	}
 
 	areasCoverage, err := processAreaCoverage(areas, tests)
 	if err != nil {
-		handleError(c, err, "Unable to process area coverage", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Unable to process area coverage", err))
 		return
 	}
-	c.JSON(http.StatusOK, areasCoverage)
+	// Return consistent response format
+	if len(areasCoverage) == 0 {
+		response.EmptyList(c)
+	} else {
+		response.ResponseWithDataAndCount(c, 200, areasCoverage, int64(len(areasCoverage)))
+	}
 }
 
 func processAreaCoverage(areas []model.Area, tests map[int64]model.Test) ([]model.Area, error) {
+	repo := getRepository()
 	areasCoverage := []model.Area{}
 	for _, a := range areas {
 		// Iterate through all areas and check if there is coverage data for that area
@@ -82,15 +90,16 @@ func processAreaCoverage(areas []model.Area, tests map[int64]model.Test) ([]mode
 // @Failure      400  {string}  ErrorResponse
 // @Router       /api/v1/coverage/areas/{id}/features [get]
 func GetFeatureCoverage(c *gin.Context) {
+	repo := getRepository()
 	features, err := repo.GetAllAreaFeatures(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error getting area features", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error getting area features", err))
 		return
 	}
 
 	tests, err := repo.GetFeatureCoverageForArea(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error getting feature coverage", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error getting feature coverage", err))
 		return
 	}
 
@@ -106,7 +115,7 @@ func GetFeatureCoverage(c *gin.Context) {
 		}
 		featuresCoverage = append(featuresCoverage, f)
 	}
-	c.JSON(http.StatusOK, featuresCoverage)
+	response.OK(c, featuresCoverage)
 }
 
 // GetTestsCoverage godoc
@@ -119,13 +128,13 @@ func GetFeatureCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/features/:id/tests [get]
 func GetTestsCoverage(c *gin.Context) {
+	repo := getRepository()
 	t, err := repo.GetAllFeatureTests(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error getting feature tests", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error getting feature tests", err))
 		return
 	}
-	c.JSON(http.StatusOK, t)
-
+	response.OK(c, t)
 }
 
 // GetProductTestsCoverage godoc
@@ -138,13 +147,13 @@ func GetTestsCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/products/:id/tests [get]
 func GetProductTestsCoverage(c *gin.Context) {
+	repo := getRepository()
 	t, err := repo.GetAllProductTests(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error getting product tests", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error getting product tests", err))
 		return
 	}
-	c.JSON(http.StatusOK, t)
-
+	response.OK(c, t)
 }
 
 // GetComponents godoc
@@ -156,10 +165,11 @@ func GetProductTestsCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/components [get]
 func GetComponents(c *gin.Context) {
+	repo := getRepository()
 	t, err := repo.GetComponents()
 	if err != nil {
-		handleError(c, err, "Error getting components", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error getting components", err))
 		return
 	}
-	c.JSON(http.StatusOK, t)
+	response.OK(c, t)
 }

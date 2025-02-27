@@ -14,7 +14,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/TestAndWin/e2e-coverage/config"
 	"github.com/TestAndWin/e2e-coverage/coverage/controller"
 	"github.com/TestAndWin/e2e-coverage/ui"
 	usercontroller "github.com/TestAndWin/e2e-coverage/user/controller"
@@ -109,7 +108,7 @@ func setupAPIRoutes(router *gin.Engine) {
 		v1.POST("/auth/login", usercontroller.Login)
 		v1.POST("/auth/refresh", usercontroller.RefreshToken)
 		v1.POST("/auth/logout", usercontroller.Logout)
-		
+
 		// User management endpoints
 		v1.GET("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.GetUser)
 		v1.POST("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.CreateUser)
@@ -117,9 +116,6 @@ func setupAPIRoutes(router *gin.Engine) {
 		v1.DELETE("/users/:id", usercontroller.AuthUser(model.ADMIN), usercontroller.DeleteUser)
 		v1.PUT("/users/change-pwd", usercontroller.AuthUser(""), usercontroller.ChangePassword)
 		v1.POST("users/generate-api-key", usercontroller.AuthUser(model.ADMIN), usercontroller.GenerateApiKey)
-
-		// Feature flag test
-		v1.GET("/feature-flag", usercontroller.AuthUser(model.TESTER), handleFeatureFlagTest)
 	}
 }
 
@@ -148,12 +144,4 @@ func startProdServer(router *gin.Engine, hostName string) {
 	if err != nil {
 		fmt.Println("Could not start in Prod mode:", err)
 	}
-}
-
-func handleFeatureFlagTest(c *gin.Context) {
-	// Simplified placeholder response without LaunchDarkly
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Feature flag testing endpoint",
-		"enabled": false,
-	})
 }

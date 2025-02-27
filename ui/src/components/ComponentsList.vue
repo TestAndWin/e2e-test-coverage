@@ -30,11 +30,12 @@
 import { ref, onMounted } from 'vue';
 import http from '@/common-http';
 import TestResult from './TestResult.vue';
+import type { Component } from '@/types';
 
 const loading = ref(false);
 const error = ref('');
 
-const components = ref([]);
+const components = ref<Component[]>([]);
 const getComponents = async () => {
   loading.value = true;
   error.value = '';

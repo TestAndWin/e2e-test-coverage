@@ -9,10 +9,13 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,24 +26,24 @@ import (
 // @Produce      json
 // @Param        area  body     model.Area  true  "Area JSON"
 // @Success      201  {object}  model.Area
-// @Failure      400  {string}  Invalid JSON
-// @Failure      500  {string}  Internal Error
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Router       /api/v1/areas [POST]
 func AddArea(c *gin.Context) {
 	var a model.Area
 	if err := c.BindJSON(&a); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding area JSON", err))
 		return
 	}
 
-	id, err := repo.InsertArea(a)
+	id, err := getRepository().InsertArea(a)
 	if err != nil {
-		handleError(c, err, "Error insert area", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to insert area: %w", err)))
 		return
 	}
 
 	a.Id = id
-	c.JSON(http.StatusCreated, a)
+	response.Created(c, a)
 }
 
 // GetProductAreas godoc
@@ -50,15 +53,31 @@ func AddArea(c *gin.Context) {
 // @Produce      json
 // @Param        id    path    string     true  "Product ID"
 // @Success      200  {array}  model.Area
-// @Failure      500  {string} Internal Error
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Router       /api/v1/products/{id}/areas [get]
 func GetProductAreas(c *gin.Context) {
-	a, err := repo.GetAllProductAreas(c.Param("id"))
+	productID := c.Param("id")
+	
+	a, err := getRepository().GetAllProductAreas(productID)
 	if err != nil {
-		handleError(c, err, "Error getting areas", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewAppError(
+			err,
+			fmt.Sprintf("Error retrieving areas for product %s", productID),
+			"AREAS_RETRIEVAL_ERROR",
+			http.StatusInternalServerError,
+		))
 		return
 	}
-	c.JSON(http.StatusOK, a)
+	
+	if len(a) == 0 {
+		// Return empty list with consistent format
+		response.EmptyList(c)
+		return
+	}
+	
+	// Return areas with count
+	response.ResponseWithDataAndCount(c, http.StatusOK, a, int64(len(a)))
 }
 
 // UpdateArea godoc
@@ -69,29 +88,37 @@ func GetProductAreas(c *gin.Context) {
 // @Param        id    path     int         true  "Area ID"
 // @Param        area  body     model.Area  true  "Area JSON"
 // @Success      200  {object}  model.Area
-// @Failure      400  {string}  Invalid JSON or ID
-// @Failure      500  {string}  Internal Error
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Router       /api/v1/areas [PUT]
 func UpdateArea(c *gin.Context) {
 	var a model.Area
 	if err := c.BindJSON(&a); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding area JSON", err))
 		return
 	}
 
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
 	if err != nil {
-		handleError(c, err, "Invalid Area ID", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid area ID", err))
 		return
 	}
 	a.Id = id
 
-	_, err = repo.UpdateArea(a)
+	affected, err := getRepository().UpdateArea(a)
 	if err != nil {
-		handleError(c, err, "Error updating area", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to update area %d: %w", id, err)))
 		return
 	}
-	c.JSON(http.StatusOK, a)
+	
+	// Check if the area was found
+	if affected == 0 {
+		errors.HandleError(c, errors.NewNotFoundError(fmt.Sprintf("Area with ID %d", id)))
+		return
+	}
+	
+	response.ResponseWithDataAndMessage(c, http.StatusOK, a, "Area updated successfully")
 }
 
 // DeleteArea godoc
@@ -101,21 +128,28 @@ func UpdateArea(c *gin.Context) {
 // @Produce      json
 // @Param        id    path      int     true  "Area ID"
 // @Success      204  {string}  SuccessResponse
-// @Failure      400  {string}  ErrorResponse
-// @Failure      500  {string}  ErrorResponse
+// @Failure      400  {object}  errors.ErrorResponse
+// @Failure      404  {object}  errors.ErrorResponse
+// @Failure      500  {object}  errors.ErrorResponse
 // @Router       /api/v1/areas/{id} [DELETE]
 func DeleteArea(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 0, 64)
 	if err != nil {
-		handleError(c, err, "Invalid Area ID", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Invalid area ID", err))
 		return
 	}
 
-	_, err = repo.DeleteArea(id)
+	affected, err := getRepository().DeleteArea(id)
 	if err != nil {
-		handleError(c, err, "Error deleting area", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to delete area %d: %w", id, err)))
+		return
+	}
+	
+	// Check if the area was found
+	if affected == 0 {
+		errors.HandleError(c, errors.NewNotFoundError(fmt.Sprintf("Area with ID %d", id)))
 		return
 	}
 
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	response.NoContent(c)
 }

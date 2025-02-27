@@ -12,6 +12,8 @@ import (
 	"net/http"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/TestAndWin/e2e-coverage/user/controller"
 	"github.com/gin-gonic/gin"
 )
@@ -29,18 +31,20 @@ import (
 func AddExplTest(c *gin.Context) {
 	var et model.ExplTest
 	if err := c.BindJSON(&et); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
+	
 	et.Tester = c.GetInt64(controller.USER_ID)
+	repo := getRepository()
 	id, err := repo.InsertExplTest(et)
 	if err != nil {
-		handleError(c, err, "Error adding expl test", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 
 	et.Id = id
-	c.JSON(http.StatusCreated, et)
+	response.Created(c, et)
 }
 
 // DeleteTest godoc
@@ -53,12 +57,13 @@ func AddExplTest(c *gin.Context) {
 // @Failure      500  {string} ErrorResponse
 // @Router       /api/v1/expl-tests/{id} [DELETE]
 func DeleteExplTest(c *gin.Context) {
+	repo := getRepository()
 	_, err := repo.DeleteExplTest(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error deleting expl test", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	c.Status(http.StatusNoContent)
 }
 
 // GetExplTestsForArea godoc
@@ -71,10 +76,11 @@ func DeleteExplTest(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/expl-tests/area/{areaid} [POST]
 func GetExplTestsForArea(c *gin.Context) {
+	repo := getRepository()
 	et, err := repo.GetExplTests(c.Param("areaid"))
 	if err != nil {
-		handleError(c, err, "Error getting expl test", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, et)
+	response.OK(c, et)
 }

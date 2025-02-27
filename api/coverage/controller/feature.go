@@ -13,6 +13,8 @@ import (
 	"strconv"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,16 +30,18 @@ import (
 func AddFeature(c *gin.Context) {
 	var f model.Feature
 	if err := c.BindJSON(&f); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
+	
+	repo := getRepository()
 	id, err := repo.InsertFeature(f)
 	if err != nil {
-		handleError(c, err, "Error insert feature", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 	f.Id = id
-	c.JSON(http.StatusCreated, f)
+	response.Created(c, f)
 }
 
 // GetAreaFeatures godoc
@@ -50,12 +54,24 @@ func AddFeature(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/areas/{id}/features [get]
 func GetAreaFeatures(c *gin.Context) {
-	f, err := repo.GetAllAreaFeatures(c.Param("id"))
+	areaID := c.Param("id")
+	
+	repo := getRepository()
+	features, err := repo.GetAllAreaFeatures(areaID)
 	if err != nil {
-		handleError(c, err, "Error getting area featues", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, f)
+	
+	// Use ResponseWithDataAndCount to ensure consistent format
+	// even for empty arrays
+	if len(features) == 0 {
+		// Return empty list with consistent format
+		response.EmptyList(c)
+	} else {
+		// Return features with count
+		response.ResponseWithDataAndCount(c, http.StatusOK, features, int64(len(features)))
+	}
 }
 
 // UpdateFeature godoc
@@ -71,17 +87,18 @@ func GetAreaFeatures(c *gin.Context) {
 func UpdateFeature(c *gin.Context) {
 	var f model.Feature
 	if err := c.BindJSON(&f); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
 
+	repo := getRepository()
 	f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
 	_, err := repo.UpdateFeature(f)
 	if err != nil {
-		handleError(c, err, "Error updating feature", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, f)
+	response.OK(c, f)
 }
 
 // DeleteFeature godoc
@@ -94,10 +111,11 @@ func UpdateFeature(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/features/{id} [DELETE]
 func DeleteFeature(c *gin.Context) {
+	repo := getRepository()
 	_, err := repo.DeleteFeature(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error deleting feature", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	c.Status(http.StatusNoContent)
 }

@@ -9,57 +9,16 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
-	"os"
-
 	"github.com/TestAndWin/e2e-coverage/coverage/repository"
-	"github.com/gin-gonic/gin"
+	"github.com/TestAndWin/e2e-coverage/dependency"
 )
 
-var repo = initRepository()
-
-// Set-up the db connection and create the db tables if needed
-func initRepository() *repository.CoverageStore {
-	repository, err := repository.OpenDbConnection()
+// getRepository returns the coverage repository from the dependency container
+func getRepository() *repository.CoverageStore {
+	container := dependency.GetContainer()
+	repo, err := container.GetCoverageStore()
 	if err != nil {
-		log.Fatalf("Error connecting to DB: %s", err)
-		os.Exit(1)
+		panic(err) // This should never happen as the container handles initialization errors
 	}
-
-	err = repository.CreateProductsTable()
-	if err != nil {
-		log.Fatalf("Error creating DB tables: %s", err)
-		os.Exit(1)
-	}
-	err = repository.CreateAreasTable()
-	if err != nil {
-		log.Fatalf("Error creating DB tables: %s", err)
-		os.Exit(1)
-	}
-	err = repository.CreateExplTestsTable()
-	if err != nil {
-		log.Fatalf("Error creating DB tables: %s", err)
-		os.Exit(1)
-	}
-	err = repository.CreateFeaturesTable()
-	if err != nil {
-		log.Fatalf("Error creating DB tables: %s", err)
-		os.Exit(1)
-	}
-	err = repository.CreateTestsTable()
-	if err != nil {
-		log.Fatalf("Error creating DB tables: %s", err)
-		os.Exit(1)
-	}
-
-	return repository
-}
-
-func handleError(c *gin.Context, err error, message string, status int) {
-	log.Printf("%s: %v", message, err)
-	c.JSON(status, gin.H{
-		"error":   message,
-		"details": err.Error(),
-		"status":  status,
-	})
+	return repo
 }

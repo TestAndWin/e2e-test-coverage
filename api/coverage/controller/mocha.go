@@ -12,10 +12,11 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/reporter"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -34,7 +35,7 @@ import (
 func UploadMochaSummaryReport(c *gin.Context) {
 	testResults, err := reporter.ReadMochaResultFromContext(c)
 	if err != nil {
-		handleError(c, err, "Error reading Mocha result", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error reading Mocha result", err))
 		return
 	}
 
@@ -44,11 +45,11 @@ func UploadMochaSummaryReport(c *gin.Context) {
 
 	status, err := processTestResults(testResults, pid, testReportUrl, component)
 	if err != nil {
-		handleError(c, err, "Error processing test results", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 
-	c.JSON(http.StatusCreated, status)
+	response.Created(c, status)
 }
 
 func processTestResults(testResults []reporter.TestResult, pid, testReportUrl, component string) ([]string, error) {
@@ -66,6 +67,8 @@ func processTestResults(testResults []reporter.TestResult, pid, testReportUrl, c
 }
 
 func processTestResult(tr reporter.TestResult, pid, testReportUrl, component string) (string, error) {
+	repo := getRepository()
+	
 	uploaded, err := repo.HasTestBeenUploaded(tr.Uuid)
 	if err != nil {
 		return "", fmt.Errorf("error checking if test was uploaded: %w", err)

@@ -9,11 +9,12 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
+	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,16 +31,18 @@ import (
 func AddProduct(c *gin.Context) {
 	var p model.Product
 	if err := c.BindJSON(&p); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
+	
+	repo := getRepository()
 	id, err := repo.InsertProduct(p)
 	if err != nil {
-		handleError(c, err, "Error insert product", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 	p.Id = id
-	c.JSON(http.StatusCreated, p)
+	response.Created(c, p)
 }
 
 // GetProducts godoc
@@ -51,12 +54,13 @@ func AddProduct(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products [get]
 func GetProducts(c *gin.Context) {
+	repo := getRepository()
 	p, err := repo.GetAllProducts()
 	if err != nil {
-		handleError(c, err, "Error get products", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, p)
+	response.OK(c, p)
 }
 
 // UpdateProduct godoc
@@ -73,17 +77,18 @@ func GetProducts(c *gin.Context) {
 func UpdateProduct(c *gin.Context) {
 	var p model.Product
 	if err := c.BindJSON(&p); err != nil {
-		handleError(c, err, "Error binding JSON", http.StatusBadRequest)
+		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
+	
 	p.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
+	repo := getRepository()
 	_, err := repo.UpdateProduct(p)
 	if err != nil {
-		log.Println(err)
-		handleError(c, err, "Error update product", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusOK, p)
+	response.OK(c, p)
 }
 
 // DeleteProduct godoc
@@ -96,10 +101,11 @@ func UpdateProduct(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products/{id} [DELETE]
 func DeleteProduct(c *gin.Context) {
+	repo := getRepository()
 	_, err := repo.DeleteProduct(c.Param("id"))
 	if err != nil {
-		handleError(c, err, "Error delete product", http.StatusInternalServerError)
+		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	c.JSON(http.StatusNoContent, gin.H{"status": "ok"})
+	c.Status(http.StatusNoContent)
 }

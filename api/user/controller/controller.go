@@ -1,16 +1,16 @@
 package controller
 
 import (
-	"log"
-
-	"github.com/gin-gonic/gin"
+	"github.com/TestAndWin/e2e-coverage/dependency"
+	"github.com/TestAndWin/e2e-coverage/user/repository"
 )
 
-func handleError(c *gin.Context, err error, message string, status int) {
-	log.Printf("%s: %v", message, err)
-	c.JSON(status, gin.H{
-		"error":   message,
-		"details": err.Error(),
-		"status":  status,
-	})
+// getUserRepository returns the user repository from the dependency container
+func getUserRepository() *repository.UserStore {
+	container := dependency.GetContainer()
+	store, err := container.GetUserStore()
+	if err != nil {
+		panic(err) // This should never happen as the container handles initialization errors
+	}
+	return store
 }

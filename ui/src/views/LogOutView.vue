@@ -6,6 +6,7 @@
 import { onMounted } from 'vue';
 onMounted(() => {
   sessionStorage.clear();
+  localStorage.removeItem('roles_backup'); // Clear the backup roles from localStorage
   deleteAllCookies();
 
   // Reload page to update the menu
