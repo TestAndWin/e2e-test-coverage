@@ -120,21 +120,15 @@ const showAddUserModal = () => {
 const getUser = async () => {
   loading.value = true;
   try {
-    console.log('Fetching users');
     const response = await http.get(`/api/v1/users`);
-    console.log('Users API response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       user.value = response.data.data;
     } else {
-      console.warn('Unexpected users response format:', response.data);
       user.value = [];
     }
-
-    console.log('Users data processed:', user.value);
   } catch (err) {
-    console.error('Error fetching users:', err);
     error.value = `Error loading users: ${err}`;
     user.value = []; // Initialize as empty array on error
   } finally {
@@ -144,7 +138,6 @@ const getUser = async () => {
 
 const userId = ref(0);
 const showEditUserModal = (uId: number, e: string, r: string | string[]) => {
-  console.log('Edit user modal for:', { id: uId, email: e, roles: r });
   userId.value = uId;
   email.value = e;
 
@@ -169,15 +162,12 @@ const showEditUserModal = (uId: number, e: string, r: string | string[]) => {
 const deleteUser = async (userId: number) => {
   try {
     loading.value = true;
-    console.log(`Deleting user with ID ${userId}`);
-
-    const response = await http.delete(`/api/v1/users/${userId}`);
-    console.log('Delete user response:', response.data);
+    
+    await http.delete(`/api/v1/users/${userId}`);
 
     // Refresh user list
     await getUser();
   } catch (err) {
-    console.error('Error deleting user:', err);
     error.value = `Error deleting user: ${err}`;
   } finally {
     loading.value = false;
@@ -201,10 +191,7 @@ const createUser = async () => {
       roles: selectedRoles.value
     };
 
-    console.log('Creating new user:', { email: email.value, roles: selectedRoles.value });
-
-    const response = await http.post('/api/v1/users', newUser);
-    console.log('Create user response:', response.data);
+    await http.post('/api/v1/users', newUser);
 
     // Clear form
     email.value = '';
@@ -214,7 +201,6 @@ const createUser = async () => {
     // Refresh user list
     await getUser();
   } catch (err) {
-    console.error('Error creating user:', err);
     error.value = `Error creating user: ${err}`;
   } finally {
     loading.value = false;
@@ -239,14 +225,7 @@ const saveUser = async () => {
       roles: selectedRoles.value
     };
 
-    console.log(`Updating user ${userId.value}:`, {
-      email: email.value,
-      roles: selectedRoles.value,
-      hasPassword: !!password.value
-    });
-
-    const response = await http.put(`/api/v1/users/${userId.value}`, userData);
-    console.log('Update user response:', response.data);
+    await http.put(`/api/v1/users/${userId.value}`, userData);
 
     // Clear form
     userId.value = 0;
@@ -257,7 +236,6 @@ const saveUser = async () => {
     // Refresh user list
     await getUser();
   } catch (err) {
-    console.error('Error updating user:', err);
     error.value = `Error updating user: ${err}`;
   } finally {
     loading.value = false;

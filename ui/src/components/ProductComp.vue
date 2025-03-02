@@ -25,7 +25,7 @@
               </h5>
             </div>
           </div>
-          <div v-if="areaToggle[area['id'] ?? 0]">
+          <div v-if="areaToggleMap.get(area['id'] ?? 0)">
             <div
               v-for="feature in features[area['id'] ?? 0] || []"
               :key="feature['id']"
@@ -136,14 +136,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form @submit.prevent>
             <div class="mb-3">
               <label>Name</label><input type="text" class="form-control" id="newAreaName" v-model="newAreaName" />
               <label>Please be aware that the name is used to "match" the test results.</label>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName">
+              <button type="button" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeAreaName">
                 Save changes
               </button>
             </div>
@@ -162,7 +162,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form @submit.prevent>
             <div class="mb-3">
               <label>Name</label
               ><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
@@ -181,7 +181,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary pointer" data-bs-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary pointer" data-bs-dismiss="modal" @click="changeFeature">
+              <button type="button" class="btn btn-primary pointer" @click="changeFeatureAndCloseModal">
                 Save changes
               </button>
             </div>
@@ -215,21 +215,15 @@ const products = ref<Product[]>([]);
 const getProducts = async () => {
   loading.value = true;
   try {
-    console.log('Fetching products');
     const response = await http.get(`/api/v1/products`);
-    console.log('Products API response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       products.value = response.data.data;
     } else {
-      console.warn('Unexpected products response format:', response.data);
       products.value = [];
     }
-
-    console.log('Processed products:', products.value);
   } catch (err) {
-    console.error('Error fetching products:', err);
     error.value = `Error loading products: ${err}`;
     products.value = []; // Initialize as empty array on error
   }
@@ -239,8 +233,6 @@ const getProducts = async () => {
 const newProduct = ref('');
 const addProduct = async () => {
   try {
-    console.log(`Adding product: ${newProduct.value}`);
-
     // Check if we have a valid name
     if (!newProduct.value || newProduct.value.trim() === '') {
       error.value = 'Product name cannot be empty';
@@ -248,11 +240,9 @@ const addProduct = async () => {
     }
 
     // Make the API call
-    const response = await http.post(`/api/v1/products`, {
+    await http.post(`/api/v1/products`, {
       name: newProduct.value
     });
-
-    console.log('Add product response:', response.data);
 
     // Clear input
     newProduct.value = '';
@@ -260,54 +250,52 @@ const addProduct = async () => {
     // Refresh product list
     await getProducts();
   } catch (err) {
-    console.error('Error adding product:', err);
     error.value = `Error adding product: ${err}`;
   }
 };
 
 // Areas
 const areas = ref<Area[]>([]);
-const areaToggle = ref([false]);
+// Use a Map instead of an array to store toggle states by area ID
+const areaToggleMap = ref(new Map<number, boolean>());
 const getAreas = async () => {
   loading.value = true;
-  await http
-    .get(`/api/v1/products/${props.productId}/areas`)
-    .then((response) => {
-      // Check the API response structure
-      console.log('Areas API response:', response.data);
+  
+  try {
+    const response = await http.get(`/api/v1/products/${props.productId}/areas`);
 
-      // Extract data from StandardResponse format
-      if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        areas.value = response.data.data;
-      } else {
-        console.warn('Unexpected areas response format:', response.data);
-        areas.value = [];
-      }
+    // Extract data from StandardResponse format
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      areas.value = response.data.data;
+    } else {
+      areas.value = [];
+    }
 
-      // Safely iterate over areas if it's an array
-      if (Array.isArray(areas.value)) {
-        areas.value.forEach((a) => {
-          getFeatures(a['id'] ?? 0);
-        });
-        areaToggle.value = new Array(areas.value.length).fill(false);
-      } else {
-        console.error('areas.value is not an array:', areas.value);
-        areas.value = []; // Ensure it's always an array
-      }
-    })
-    .catch((err) => {
-      console.error('Error fetching areas:', err);
-      error.value = err + ' | ' + err.response?.data?.error;
-      areas.value = []; // Initialize as empty array on error
-    });
+    // Safely iterate over areas if it's an array
+    if (Array.isArray(areas.value)) {
+      areas.value.forEach((a) => {
+        const areaId = a['id'] ?? 0;
+        getFeatures(areaId);
+        
+        // Initialize toggle state for new areas if not already set
+        if (!areaToggleMap.value.has(areaId)) {
+          areaToggleMap.value.set(areaId, false);
+        }
+      });
+    } else {
+      areas.value = []; // Ensure it's always an array
+    }
+  } catch (err) {
+    error.value = err + ' | ' + err.response?.data?.error;
+    areas.value = []; // Initialize as empty array on error
+  }
+  
   loading.value = false;
 };
 
 const newArea = ref('');
 const addArea = async () => {
   try {
-    console.log(`Adding area to product ${props.productId}: ${newArea.value}`);
-
     // Check if we have a valid name
     if (!newArea.value || newArea.value.trim() === '') {
       error.value = 'Area name cannot be empty';
@@ -315,12 +303,10 @@ const addArea = async () => {
     }
 
     // Make the API call
-    const response = await http.post(`/api/v1/areas`, {
+    await http.post(`/api/v1/areas`, {
       'product-id': props.productId,
       name: newArea.value
     });
-
-    console.log('Add area response:', response.data);
 
     // Clear input
     newArea.value = '';
@@ -328,7 +314,6 @@ const addArea = async () => {
     // Refresh area list
     await getAreas();
   } catch (err) {
-    console.error('Error adding area:', err);
     error.value = `Error adding area: ${err}`;
   }
 };
@@ -361,16 +346,17 @@ const showChangeAreaModal = (areaId: number, name: string) => {
 };
 
 const showFeatures = (areaId: number) => {
-  areaToggle.value[areaId] = !areaToggle.value[areaId];
+  // Get current state (default to false if not set)
+  const currentState = areaToggleMap.value.get(areaId) || false;
+  // Toggle the state
+  areaToggleMap.value.set(areaId, !currentState);
 };
 
 // Features
 const features = ref([[]]);
 const getFeatures = async (areaId: number) => {
   try {
-    console.log(`Fetching features for area ID ${areaId}`);
     const response = await http.get(`/api/v1/areas/${areaId}/features`);
-    console.log(`Features API response for area ${areaId}:`, response.data);
 
     // Extract data from StandardResponse format
     let featureData = [];
@@ -378,15 +364,12 @@ const getFeatures = async (areaId: number) => {
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       featureData = response.data.data;
     } else {
-      console.warn(`Unexpected features response format for area ${areaId}:`, response.data);
       featureData = []; // Empty array as fallback
     }
 
     // Update the features array
     features.value[areaId] = featureData;
-    console.log(`Features for area ${areaId} set to:`, features.value[areaId]);
   } catch (err) {
-    console.error(`Error fetching features for area ${areaId}:`, err);
     error.value = `Error loading features: ${err}`;
     features.value[areaId] = []; // Empty array on error
   }
@@ -395,8 +378,7 @@ const getFeatures = async (areaId: number) => {
 const newFeature = ref(['']);
 const addFeature = async (areaId: number) => {
   try {
-    console.log(`Adding feature to area ${areaId}: ${newFeature.value[areaId]}`);
-    const response = await http.post(`/api/v1/features`, {
+    await http.post(`/api/v1/features`, {
       'area-id': areaId,
       name: newFeature.value[areaId],
       documentation: '',
@@ -404,31 +386,29 @@ const addFeature = async (areaId: number) => {
       'business-value': ''
     });
 
-    console.log(`Feature added response:`, response.data);
     newFeature.value[areaId] = '';
 
     // Refresh features for this area
     await getFeatures(areaId);
   } catch (err) {
-    console.error(`Error adding feature to area ${areaId}:`, err);
     error.value = `Error adding feature: ${err}`;
   }
 };
 
 const removeFeature = async (areaId: number, featureId: number) => {
   try {
-    console.log(`Removing feature ${featureId} from area ${areaId}`);
     await http.delete(`/api/v1/features/${featureId}`);
 
     // Refresh features for this area
     await getFeatures(areaId);
   } catch (err) {
-    console.error(`Error removing feature ${featureId} from area ${areaId}:`, err);
     error.value = `Error removing feature: ${err}`;
   }
 };
 
 const newFeatureName = ref('');
+// Need to track which area a feature belongs to
+const featureAreaId = ref(0);
 
 const showUpdateFeatureModal = (
   featureId: number,
@@ -442,12 +422,25 @@ const showUpdateFeatureModal = (
   featureBusinessValue.value = businessValue;
   featureDocumentation.value = documentation;
   featureUrl.value = url;
-  new Modal('#updateFeature').show();
+  
+  // Find which area this feature belongs to
+  for (let areaId in features.value) {
+    if (!features.value[areaId]) continue;
+    
+    const featureIndex = features.value[areaId].findIndex(f => f.id === featureId);
+    if (featureIndex !== -1) {
+      featureAreaId.value = parseInt(areaId);
+      break;
+    }
+  }
+  
+  // Store the modal instance so we can close it programmatically
+  updateFeatureModal = new Modal('#updateFeature');
+  updateFeatureModal.show();
 };
 
 const changeFeature = async () => {
   try {
-    console.log(`Updating feature ${featureIdToChange.value} with name ${newFeatureName.value}`);
     const response = await http.put(`/api/v1/features/${featureIdToChange.value}`, {
       name: newFeatureName.value,
       documentation: featureDocumentation.value,
@@ -455,7 +448,19 @@ const changeFeature = async () => {
       'business-value': featureBusinessValue.value
     });
 
-    console.log('Feature update response:', response.data);
+    // Only refresh features for the specific area that contains this feature
+    if (featureAreaId.value > 0) {
+      // Ensure the area stays open
+      if (!areaToggleMap.value.has(featureAreaId.value)) {
+        areaToggleMap.value.set(featureAreaId.value, true);
+      } else if (!areaToggleMap.value.get(featureAreaId.value)) {
+        // If area is closed, force it open as the user was working on a feature inside it
+        areaToggleMap.value.set(featureAreaId.value, true);
+      }
+      
+      // Refresh just the features for this area
+      await getFeatures(featureAreaId.value);
+    }
 
     // Reset form fields
     newFeatureName.value = '';
@@ -463,11 +468,8 @@ const changeFeature = async () => {
     featureDocumentation.value = '';
     featureUrl.value = '';
     featureIdToChange.value = 0;
-
-    // Refresh areas and features
-    await getAreas();
+    featureAreaId.value = 0;
   } catch (err) {
-    console.error(`Error updating feature ${featureIdToChange.value}:`, err);
     error.value = `Error updating feature: ${err}`;
   }
 };
@@ -476,7 +478,29 @@ const closeAlert = () => {
   error.value = '';
 };
 
+// Reference to the feature update modal
+let updateFeatureModal: any = null;
+
+// Function to handle both changing feature and closing modal
+const changeFeatureAndCloseModal = async () => {
+  // First ensure the area toggle is explicitly set to open
+  if (featureAreaId.value > 0) {
+    areaToggleMap.value.set(featureAreaId.value, true);
+  }
+  
+  // Change the feature
+  await changeFeature();
+  
+  // Close the modal programmatically
+  if (updateFeatureModal) {
+    updateFeatureModal.hide();
+  }
+};
+
 onMounted(() => {
+  // Initialize the map
+  areaToggleMap.value = new Map<number, boolean>();
+  
   getProducts();
   getAreas();
 });

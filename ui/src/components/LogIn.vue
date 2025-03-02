@@ -40,10 +40,8 @@ function storeUserRoles(roles: string) {
 
     // Store in localStorage as backup (will persist between sessions)
     localStorage.setItem('roles_backup', roles);
-
-    console.log('Roles stored successfully in both session and local storage');
   } catch (error) {
-    console.error('Error storing roles:', error);
+    // Handle error silently or use error.value if needed
   }
 }
 
@@ -61,25 +59,6 @@ const login = async () => {
       email: email.value,
       password: password.value
     });
-
-    console.log('Login response:', response.data);
-
-    // Trace the entire response structure for debugging
-    const traceObject = (obj: any, path = '') => {
-      if (!obj || typeof obj !== 'object') return;
-
-      Object.entries(obj).forEach(([key, value]) => {
-        const currentPath = path ? `${path}.${key}` : key;
-        console.log(`${currentPath}:`, value);
-
-        if (typeof value === 'object' && value !== null) {
-          traceObject(value, currentPath);
-        }
-      });
-    };
-
-    console.log('FULL RESPONSE TRACE:');
-    traceObject(response.data);
 
     // Try all possible locations where roles might be
     let rolesValue = null;
@@ -101,19 +80,13 @@ const login = async () => {
     }
 
     if (rolesValue) {
-      console.log('Found roles in response:', rolesValue);
-
       // Store roles in both sessionStorage and localStorage
       storeUserRoles(rolesValue);
 
       // Also store userId if available
       if (response.data && response.data.data && response.data.data.userId) {
-        console.log('Storing user ID:', response.data.data.userId);
         localStorage.setItem('userId', response.data.data.userId);
       }
-
-      // Log to verify it was set correctly
-      console.log('Roles after setting:', sessionStorage.getItem('roles'));
 
       // Redirect to home page to refresh the menu
       location.assign('/');
@@ -121,10 +94,8 @@ const login = async () => {
     }
 
     // If we get here, we couldn't find the roles
-    console.error('Login response missing roles:', response.data);
     error.value = 'Login successful, but the system returned incomplete data. Please try again.';
   } catch (err) {
-    console.error('Login error:', err);
     error.value = 'Login failed. Please check your credentials and try again.';
   } finally {
     // Clear form fields and loading state

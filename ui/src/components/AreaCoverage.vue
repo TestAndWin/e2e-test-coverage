@@ -126,15 +126,12 @@ const areas = ref<Area[]>([]);
 const getAreas = async () => {
   loading.value = true;
   try {
-    console.log(`Fetching areas for product ID ${props.productId}`);
     const response = await http.get(`/api/v1/coverage/${props.productId}/areas`);
-    console.log('Areas coverage response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       areas.value = response.data.data;
     } else {
-      console.warn('Unexpected areas response format:', response.data);
       areas.value = [];
     }
 
@@ -151,10 +148,8 @@ const getAreas = async () => {
       'expl-rating': area['expl-rating'] || 0
     }));
 
-    console.log('Processed areas:', areas.value);
     areaToggle.value = new Array(areas.value.length).fill(false);
   } catch (err) {
-    console.error('Error fetching areas:', err);
     error.value = `Error loading coverage data: ${err}`;
   }
 

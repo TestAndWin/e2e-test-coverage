@@ -11,15 +11,25 @@
     </div>
   </div>
   <div class="">
-    <TestCoverage :productId="1" />
+    <TestCoverage :productId="1" :selectedComponentProp="selectedComponent" />
   </div>
 </template>
 
 <script setup lang="ts">
 import TestCoverage from '@/components/TestCoverage.vue';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const selectedComponent = ref<string | null>(null);
 
 onMounted(() => {
   document.title = 'e2e coverage - Tests';
+  
+  // Check for component query parameter
+  const componentParam = route.query.component;
+  if (componentParam && typeof componentParam === 'string') {
+    selectedComponent.value = componentParam;
+  }
 });
 </script>

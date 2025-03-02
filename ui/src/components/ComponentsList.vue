@@ -11,7 +11,7 @@
       <div class="test shadow p-2 mb-2 rounded">
         <div class="row">
           <div class="col">
-            <h5 class="area-name justify-content-between">
+            <h5 class="area-name justify-content-between pointer" @click="navigateToTests(c['name'])">
               {{ c['name'] }}
               &nbsp;
             </h5>
@@ -31,11 +31,22 @@ import { ref, onMounted } from 'vue';
 import http from '@/common-http';
 import TestResult from './TestResult.vue';
 import type { Component } from '@/types';
+import { useRouter } from 'vue-router';
 
 const loading = ref(false);
 const error = ref('');
+const router = useRouter();
 
 const components = ref<Component[]>([]);
+
+const navigateToTests = (componentName: string | undefined) => {
+  if (componentName) {
+    router.push({ 
+      name: 'tests',
+      query: { component: componentName } 
+    });
+  }
+};
 const getComponents = async () => {
   loading.value = true;
   error.value = '';
@@ -51,7 +62,6 @@ const getComponents = async () => {
         // Response is a direct array
         components.value = response.data;
       } else {
-        console.error('Unexpected response format:', response.data);
         error.value = 'Unexpected response format';
       }
     })

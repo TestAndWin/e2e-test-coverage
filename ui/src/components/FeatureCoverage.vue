@@ -46,15 +46,12 @@ const featureToggle = ref([false]);
 const getFeatures = async () => {
   loading.value = true;
   try {
-    console.log(`Fetching features for area ID ${props.areaId}`);
     const response = await http.get(`/api/v1/coverage/areas/${props.areaId}/features`);
-    console.log('Feature coverage response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       features.value = response.data.data;
     } else {
-      console.warn('Unexpected features response format:', response.data);
       features.value = [];
     }
 
@@ -72,10 +69,8 @@ const getFeatures = async () => {
       url: feature.url || ''
     })) as Feature[];
 
-    console.log('Processed features:', features.value);
     featureToggle.value = new Array(features.value.length).fill(false);
   } catch (err) {
-    console.error('Error fetching features:', err);
     emit('showAlert', `Error loading feature data: ${err}`);
   }
   loading.value = false;

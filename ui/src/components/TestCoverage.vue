@@ -143,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { Modal } from 'bootstrap';
 import TestResult from '@/components/TestResult.vue';
 import http from '@/common-http';
@@ -164,8 +164,10 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const props = defineProps({
   productId: Number,
-  featureId: Number
+  featureId: Number,
+  selectedComponentProp: String
 });
+
 
 const loading = ref(true);
 const error = ref('');
@@ -230,25 +232,19 @@ const tests = ref<Test[]>([]);
 const getTestsForProduct = async () => {
   loading.value = true;
   try {
-    console.log(`Fetching tests for product ID ${props.productId}`);
     const response = await http.get(`/api/v1/coverage/products/${props.productId}/tests`);
-    console.log('Tests response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       tests.value = response.data.data;
     } else {
-      console.warn('Unexpected tests response format:', response.data);
       tests.value = [];
     }
 
     // Ensure tests.value is always an array
     if (!Array.isArray(tests.value)) {
-      console.error('tests.value is not an array:', tests.value);
       tests.value = [];
     }
-
-    console.log('Processed tests:', tests.value);
 
     if (tests.value.length > 0) {
       calculatePercentage();
@@ -257,7 +253,6 @@ const getTestsForProduct = async () => {
       components.value = ['all']; // Default component list
     }
   } catch (err) {
-    console.error('Error fetching tests:', err);
     error.value = `Error loading tests: ${err}`;
     tests.value = []; // Initialize as empty array on error
   }
@@ -267,25 +262,19 @@ const getTestsForProduct = async () => {
 const getTestsForFeature = async () => {
   loading.value = true;
   try {
-    console.log(`Fetching tests for feature ID ${props.featureId}`);
     const response = await http.get(`/api/v1/coverage/features/${props.featureId}/tests`);
-    console.log('Tests response:', response.data);
 
     // Extract data from StandardResponse format
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       tests.value = response.data.data;
     } else {
-      console.warn('Unexpected tests response format:', response.data);
       tests.value = [];
     }
 
     // Ensure tests.value is always an array
     if (!Array.isArray(tests.value)) {
-      console.error('tests.value is not an array:', tests.value);
       tests.value = [];
     }
-
-    console.log('Processed tests:', tests.value);
 
     if (tests.value.length > 0) {
       calculatePercentage();
@@ -294,7 +283,6 @@ const getTestsForFeature = async () => {
       components.value = ['all']; // Default component list
     }
   } catch (err) {
-    console.error('Error fetching tests:', err);
     error.value = `Error loading tests: ${err}`;
     tests.value = []; // Initialize as empty array on error
   }
@@ -304,7 +292,6 @@ const getTestsForFeature = async () => {
 // Calculate the percentage of the failed tests
 const calculatePercentage = () => {
   if (!Array.isArray(tests.value)) {
-    console.error('Cannot calculate percentage: tests.value is not an array');
     return;
   }
 
@@ -340,21 +327,29 @@ const selectedComponent = ref('all');
 // Get list of components from the test results
 const setComponentsList = () => {
   if (!Array.isArray(tests.value)) {
-    console.error('Cannot set components list: tests.value is not an array');
     components.value = ['all'];
     return;
   }
 
   try {
+    // Store current selection to restore it if it exists in the new list
+    const currentSelection = selectedComponent.value;
+    
     // Extract component names from tests, filter out any undefined/null values
     const componentSet = new Set(tests.value.filter((item) => item?.component).map((item) => item.component ?? ''));
 
     // Add 'all' as the first option
     components.value = ['all', ...componentSet];
-
-    console.log('Components list set to:', components.value);
+    
+    // Apply selectedComponentProp if available and exists in the list
+    if (props.selectedComponentProp && componentSet.has(props.selectedComponentProp)) {
+      selectedComponent.value = props.selectedComponentProp;
+    } 
+    // Otherwise restore previous selection if it still exists in the list
+    else if (currentSelection !== 'all' && componentSet.has(currentSelection)) {
+      selectedComponent.value = currentSelection;
+    }
   } catch (err) {
-    console.error('Error creating components list:', err);
     components.value = ['all']; // Default value
   }
 };
@@ -368,9 +363,7 @@ const showTestRuns = async (c: string, s: string, f: string) => {
   file.value = f;
 
   try {
-    console.log(`Fetching test runs for component ${c}, suite ${s}, file ${f}`);
     const response = await http.get(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`);
-    console.log('Test runs response:', response.data);
 
     let testRunsData = [];
 
@@ -378,13 +371,11 @@ const showTestRuns = async (c: string, s: string, f: string) => {
     if (response.data && response.data.data && Array.isArray(response.data.data)) {
       testRunsData = response.data.data;
     } else {
-      console.warn('Unexpected test runs response format:', response.data);
       testRunsData = [];
     }
 
     // We use only the latest 10
     testRuns.value = testRunsData.slice(0, 10);
-    console.log('Using test runs:', testRuns.value);
 
     // Prepare chart data
     chartData.value.labels = [];
@@ -412,7 +403,6 @@ const showTestRuns = async (c: string, s: string, f: string) => {
       }
     }
   } catch (err) {
-    console.error('Error fetching test runs:', err);
     error.value = `Error loading test history: ${err}`;
     testRuns.value = [];
   }
@@ -425,15 +415,12 @@ const deleteTests = async (c: string, s: string, f: string) => {
   loading.value = true;
 
   try {
-    console.log(`Deleting tests for component ${c}, suite ${s}, file ${f}`);
     await http.delete(`/api/v1/tests?component=${c}&suite=${s}&file-name=${f}`);
-    console.log('Tests deleted successfully');
 
     // Refresh the page to show updated data
     loading.value = false;
     location.reload();
   } catch (err) {
-    console.error('Error deleting tests:', err);
     error.value = `Error deleting tests: ${err}`;
     loading.value = false;
   }
@@ -452,6 +439,18 @@ const filterCriteria = ref(0);
 const filter = (f: number) => {
   filterCriteria.value = f;
 };
+
+// Watch for changes in the selectedComponentProp
+watch(() => props.selectedComponentProp, (newValue) => {
+  if (newValue) {
+    // Check if this component exists in our list
+    const componentExists = components.value.includes(newValue);
+    if (componentExists) {
+      selectedComponent.value = newValue;
+    }
+    // If component doesn't exist in list yet, it will be handled in setComponentsList when data loads
+  }
+}, { immediate: true });
 
 onMounted(() => {
   if (props.featureId) {
