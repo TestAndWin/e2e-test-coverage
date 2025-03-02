@@ -41,9 +41,9 @@ const components = ref<Component[]>([]);
 
 const navigateToTests = (componentName: string | undefined) => {
   if (componentName) {
-    router.push({ 
+    router.push({
       name: 'tests',
-      query: { component: componentName } 
+      query: { component: componentName }
     });
   }
 };

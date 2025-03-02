@@ -11,7 +11,7 @@
     </div>
   </div>
   <div class="">
-    <TestCoverage :productId="1" :selectedComponentProp="selectedComponent" />
+    <TestCoverage :productId="1" :selectedComponentProp="selectedComponent || undefined" />
   </div>
 </template>
 
@@ -25,7 +25,7 @@ const selectedComponent = ref<string | null>(null);
 
 onMounted(() => {
   document.title = 'e2e coverage - Tests';
-  
+
   // Check for component query parameter
   const componentParam = route.query.component;
   if (componentParam && typeof componentParam === 'string') {

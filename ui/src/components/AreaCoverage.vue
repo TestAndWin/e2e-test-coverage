@@ -164,7 +164,7 @@ const etAreaId = ref(0);
 const etSummary = ref('');
 const etRating = ref(0);
 const etDate = ref('');
-const explTests = ref([]);
+const explTests = ref<any[]>([]);
 const saveExplTest = async () => {
   await http
     .post(`/api/v1/expl-tests`, {
@@ -193,7 +193,7 @@ const showLogExplTest = (areaId: number) => {
 const showExplTests = async (areaId: number) => {
   try {
     const response = await http.get(`/api/v1/expl-tests/area/${areaId}`);
-    
+
     // Handle standardized response format
     if (response.data && response.data.data) {
       explTests.value = response.data.data;
@@ -202,7 +202,7 @@ const showExplTests = async (areaId: number) => {
     } else {
       explTests.value = [];
     }
-    
+
     new Modal('#showExplTest').show();
   } catch (err: any) {
     if (err.response && err.response.status === 404) {

@@ -168,7 +168,6 @@ const props = defineProps({
   selectedComponentProp: String
 });
 
-
 const loading = ref(true);
 const error = ref('');
 const sun = ref(0);
@@ -334,17 +333,17 @@ const setComponentsList = () => {
   try {
     // Store current selection to restore it if it exists in the new list
     const currentSelection = selectedComponent.value;
-    
+
     // Extract component names from tests, filter out any undefined/null values
     const componentSet = new Set(tests.value.filter((item) => item?.component).map((item) => item.component ?? ''));
 
     // Add 'all' as the first option
     components.value = ['all', ...componentSet];
-    
+
     // Apply selectedComponentProp if available and exists in the list
     if (props.selectedComponentProp && componentSet.has(props.selectedComponentProp)) {
       selectedComponent.value = props.selectedComponentProp;
-    } 
+    }
     // Otherwise restore previous selection if it still exists in the list
     else if (currentSelection !== 'all' && componentSet.has(currentSelection)) {
       selectedComponent.value = currentSelection;
@@ -441,16 +440,20 @@ const filter = (f: number) => {
 };
 
 // Watch for changes in the selectedComponentProp
-watch(() => props.selectedComponentProp, (newValue) => {
-  if (newValue) {
-    // Check if this component exists in our list
-    const componentExists = components.value.includes(newValue);
-    if (componentExists) {
-      selectedComponent.value = newValue;
+watch(
+  () => props.selectedComponentProp,
+  (newValue) => {
+    if (newValue) {
+      // Check if this component exists in our list
+      const componentExists = components.value.includes(newValue);
+      if (componentExists) {
+        selectedComponent.value = newValue;
+      }
+      // If component doesn't exist in list yet, it will be handled in setComponentsList when data loads
     }
-    // If component doesn't exist in list yet, it will be handled in setComponentsList when data loads
-  }
-}, { immediate: true });
+  },
+  { immediate: true }
+);
 
 onMounted(() => {
   if (props.featureId) {

@@ -260,7 +260,7 @@ const areas = ref<Area[]>([]);
 const areaToggleMap = ref(new Map<number, boolean>());
 const getAreas = async () => {
   loading.value = true;
-  
+
   try {
     const response = await http.get(`/api/v1/products/${props.productId}/areas`);
 
@@ -273,8 +273,8 @@ const getAreas = async () => {
 
     // Clean up stale entries from areaToggleMap
     // Get a set of current area IDs
-    const currentAreaIds = new Set(areas.value.map(a => a['id'] ?? 0));
-    
+    const currentAreaIds = new Set(areas.value.map((a) => a['id'] ?? 0));
+
     // Remove any areas from the toggle map that no longer exist
     for (const areaId of areaToggleMap.value.keys()) {
       if (!currentAreaIds.has(areaId)) {
@@ -287,7 +287,7 @@ const getAreas = async () => {
       areas.value.forEach((a) => {
         const areaId = a['id'] ?? 0;
         getFeatures(areaId);
-        
+
         // Initialize toggle state for new areas if not already set
         if (!areaToggleMap.value.has(areaId)) {
           areaToggleMap.value.set(areaId, false);
@@ -301,7 +301,7 @@ const getAreas = async () => {
     error.value = `Error loading areas: ${errorMsg}`;
     areas.value = []; // Initialize as empty array on error
   }
-  
+
   loading.value = false;
 };
 
@@ -334,11 +334,10 @@ const removeArea = async (areaId: number) => {
   try {
     // Make the API call to delete from database
     await http.delete(`/api/v1/areas/${areaId}`);
-    
+
     // On successful deletion, reload the current page to ensure all components are properly reset
     // This forces a complete refresh of the UI state, clearing any stale references
     window.location.reload();
-    
   } catch (err: any) {
     // Only show error for the actual deletion operation
     const errorMsg = err.response?.data?.error || err.message || String(err);
@@ -450,18 +449,18 @@ const showUpdateFeatureModal = (
   featureBusinessValue.value = businessValue;
   featureDocumentation.value = documentation;
   featureUrl.value = url;
-  
+
   // Find which area this feature belongs to
   for (let areaId in features.value) {
     if (!features.value[areaId]) continue;
-    
-    const featureIndex = features.value[areaId].findIndex(f => f.id === featureId);
+
+    const featureIndex = features.value[areaId].findIndex((f: any) => f.id === featureId);
     if (featureIndex !== -1) {
       featureAreaId.value = parseInt(areaId);
       break;
     }
   }
-  
+
   // Store the modal instance so we can close it programmatically
   updateFeatureModal = new Modal('#updateFeature');
   updateFeatureModal.show();
@@ -485,7 +484,7 @@ const changeFeature = async () => {
         // If area is closed, force it open as the user was working on a feature inside it
         areaToggleMap.value.set(featureAreaId.value, true);
       }
-      
+
       // Refresh just the features for this area
       await getFeatures(featureAreaId.value);
     }
@@ -515,10 +514,10 @@ const changeFeatureAndCloseModal = async () => {
   if (featureAreaId.value > 0) {
     areaToggleMap.value.set(featureAreaId.value, true);
   }
-  
+
   // Change the feature
   await changeFeature();
-  
+
   // Close the modal programmatically
   if (updateFeatureModal) {
     updateFeatureModal.hide();
@@ -528,7 +527,7 @@ const changeFeatureAndCloseModal = async () => {
 onMounted(() => {
   // Initialize the map
   areaToggleMap.value = new Map<number, boolean>();
-  
+
   getProducts();
   getAreas();
 });

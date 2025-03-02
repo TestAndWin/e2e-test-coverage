@@ -162,7 +162,7 @@ const showEditUserModal = (uId: number, e: string, r: string | string[]) => {
 const deleteUser = async (userId: number) => {
   try {
     loading.value = true;
-    
+
     await http.delete(`/api/v1/users/${userId}`);
 
     // Refresh user list
