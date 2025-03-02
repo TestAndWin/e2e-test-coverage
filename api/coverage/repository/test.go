@@ -401,3 +401,11 @@ func (cs CoverageStore) GetComponents() ([]model.Component, error) {
 
 	return components, nil
 }
+
+// DeleteTestsByFeatureId removes all tests associated with a specific feature
+const deleteTestsByFeatureIdStmt = "DELETE FROM tests WHERE feature_id = ?"
+
+func (cs CoverageStore) DeleteTestsByFeatureId(featureId string) (int64, error) {
+	log.Printf("Deleting all tests for feature ID: %s", featureId)
+	return cs.executeSql(deleteTestsByFeatureIdStmt, featureId)
+}

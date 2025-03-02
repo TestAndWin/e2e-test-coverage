@@ -111,8 +111,18 @@ func UpdateFeature(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/features/{id} [DELETE]
 func DeleteFeature(c *gin.Context) {
+	featureId := c.Param("id")
 	repo := getRepository()
-	_, err := repo.DeleteFeature(c.Param("id"))
+	
+	// First delete all tests associated with this feature
+	_, err := repo.DeleteTestsByFeatureId(featureId)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	
+	// Then delete the feature itself
+	_, err = repo.DeleteFeature(featureId)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return

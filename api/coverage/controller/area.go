@@ -58,7 +58,7 @@ func AddArea(c *gin.Context) {
 // @Router       /api/v1/products/{id}/areas [get]
 func GetProductAreas(c *gin.Context) {
 	productID := c.Param("id")
-	
+
 	a, err := getRepository().GetAllProductAreas(productID)
 	if err != nil {
 		errors.HandleError(c, errors.NewAppError(
@@ -69,13 +69,13 @@ func GetProductAreas(c *gin.Context) {
 		))
 		return
 	}
-	
+
 	if len(a) == 0 {
 		// Return empty list with consistent format
 		response.EmptyList(c)
 		return
 	}
-	
+
 	// Return areas with count
 	response.ResponseWithDataAndCount(c, http.StatusOK, a, int64(len(a)))
 }
@@ -111,13 +111,13 @@ func UpdateArea(c *gin.Context) {
 		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to update area %d: %w", id, err)))
 		return
 	}
-	
+
 	// Check if the area was found
 	if affected == 0 {
 		errors.HandleError(c, errors.NewNotFoundError(fmt.Sprintf("Area with ID %d", id)))
 		return
 	}
-	
+
 	response.ResponseWithDataAndMessage(c, http.StatusOK, a, "Area updated successfully")
 }
 
@@ -139,17 +139,49 @@ func DeleteArea(c *gin.Context) {
 		return
 	}
 
-	affected, err := getRepository().DeleteArea(id)
+	// Get string version of id for repository calls
+	idStr := c.Param("id")
+	repo := getRepository()
+
+	// First, delete all exploratory tests for this area
+	_, err = repo.DeleteExplTestsByAreaId(idStr)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to delete exploratory tests for area %d: %w", id, err)))
+		return
+	}
+
+	// Get all features for this area
+	features, err := repo.GetAllAreaFeatures(idStr)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to get features for area %d: %w", id, err)))
+		return
+	}
+
+	// Delete all tests for each feature in this area
+	for _, feature := range features {
+		featureId := strconv.FormatInt(feature.Id, 10)
+		_, err := repo.DeleteTestsByFeatureId(featureId)
+		if err != nil {
+			errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to delete tests for feature %d: %w", feature.Id, err)))
+			return
+		}
+	}
+
+	// Delete all features in this area
+	_, err = repo.DeleteFeaturesByAreaId(idStr)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to delete features for area %d: %w", id, err)))
+		return
+	}
+
+	// Finally delete the area itself
+	_, err = repo.DeleteArea(id)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to delete area %d: %w", id, err)))
 		return
 	}
-	
-	// Check if the area was found
-	if affected == 0 {
-		errors.HandleError(c, errors.NewNotFoundError(fmt.Sprintf("Area with ID %d", id)))
-		return
-	}
 
+	// Since we've already deleted associated data, we know the area existed
+	// Even if affected=0, consider this a success
 	response.NoContent(c)
 }

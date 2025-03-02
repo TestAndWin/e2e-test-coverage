@@ -191,16 +191,29 @@ const showLogExplTest = (areaId: number) => {
 };
 
 const showExplTests = async (areaId: number) => {
-  await http
-    .get(`/api/v1/expl-tests/area/${areaId}`)
-    .then((response) => {
+  try {
+    const response = await http.get(`/api/v1/expl-tests/area/${areaId}`);
+    
+    // Handle standardized response format
+    if (response.data && response.data.data) {
+      explTests.value = response.data.data;
+    } else if (Array.isArray(response.data)) {
       explTests.value = response.data;
-    })
-    .catch((err) => {
-      error.value = err + ' | ' + err.response.data.error;
-    });
-
-  new Modal('#showExplTest').show();
+    } else {
+      explTests.value = [];
+    }
+    
+    new Modal('#showExplTest').show();
+  } catch (err: any) {
+    if (err.response && err.response.status === 404) {
+      // For 404, just show empty tests rather than error
+      explTests.value = [];
+      new Modal('#showExplTest').show();
+    } else {
+      const errorMsg = err.response?.data?.error || err.message || String(err);
+      error.value = `Error: ${errorMsg}`;
+    }
+  }
 };
 
 const closeAlert = () => {

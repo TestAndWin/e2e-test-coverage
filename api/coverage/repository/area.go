@@ -10,6 +10,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
@@ -90,4 +91,26 @@ func (cs CoverageStore) GetAreaAndFeatureId(area string, feature string, product
 	var fid int64
 	err := cs.db.QueryRowContext(ctx, "SELECT a.id, f.id FROM areas a JOIN features f ON a.id = f.area_id JOIN products p ON p.id = a.product_id WHERE a.name = ? and f.name = ? and p.id=?;", area, feature, productId).Scan(&aid, &fid)
 	return aid, fid, err
+}
+
+// GetAreaIdByNameAndProductId returns the area ID for an area with the given name in the specified product.
+// Returns 0 and sql.ErrNoRows if no matching area is found.
+func (cs CoverageStore) GetAreaIdByNameAndProductId(areaName string, productId string) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var areaId int64
+	err := cs.db.QueryRowContext(ctx, 
+		"SELECT id FROM areas WHERE name = ? AND product_id = ?", 
+		areaName, productId).Scan(&areaId)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, err
+		}
+		log.Printf("Error getting area ID: %v", err)
+		return 0, err
+	}
+	
+	return areaId, nil
 }

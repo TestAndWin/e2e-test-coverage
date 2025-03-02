@@ -271,6 +271,17 @@ const getAreas = async () => {
       areas.value = [];
     }
 
+    // Clean up stale entries from areaToggleMap
+    // Get a set of current area IDs
+    const currentAreaIds = new Set(areas.value.map(a => a['id'] ?? 0));
+    
+    // Remove any areas from the toggle map that no longer exist
+    for (const areaId of areaToggleMap.value.keys()) {
+      if (!currentAreaIds.has(areaId)) {
+        areaToggleMap.value.delete(areaId);
+      }
+    }
+
     // Safely iterate over areas if it's an array
     if (Array.isArray(areas.value)) {
       areas.value.forEach((a) => {
@@ -285,8 +296,9 @@ const getAreas = async () => {
     } else {
       areas.value = []; // Ensure it's always an array
     }
-  } catch (err) {
-    error.value = err + ' | ' + err.response?.data?.error;
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.error || err.message || String(err);
+    error.value = `Error loading areas: ${errorMsg}`;
     areas.value = []; // Initialize as empty array on error
   }
   
@@ -319,10 +331,19 @@ const addArea = async () => {
 };
 
 const removeArea = async (areaId: number) => {
-  await http.delete(`/api/v1/areas/${areaId}`).catch((err) => {
-    error.value = err + ' | ' + err.response?.data?.error;
-  });
-  getAreas();
+  try {
+    // Make the API call to delete from database
+    await http.delete(`/api/v1/areas/${areaId}`);
+    
+    // On successful deletion, reload the current page to ensure all components are properly reset
+    // This forces a complete refresh of the UI state, clearing any stale references
+    window.location.reload();
+    
+  } catch (err: any) {
+    // Only show error for the actual deletion operation
+    const errorMsg = err.response?.data?.error || err.message || String(err);
+    error.value = `Error deleting area: ${errorMsg}`;
+  }
 };
 
 const newAreaName = ref('');
@@ -369,9 +390,16 @@ const getFeatures = async (areaId: number) => {
 
     // Update the features array
     features.value[areaId] = featureData;
-  } catch (err) {
-    error.value = `Error loading features: ${err}`;
-    features.value[areaId] = []; // Empty array on error
+  } catch (err: any) {
+    // Don't show error for 404 responses after deletion
+    if (err.response && err.response.status === 404) {
+      // Area was likely deleted, just clear the features
+      features.value[areaId] = [];
+    } else {
+      const errorMsg = err.response?.data?.error || err.message || String(err);
+      error.value = `Error loading features: ${errorMsg}`;
+      features.value[areaId] = []; // Empty array on error
+    }
   }
 };
 

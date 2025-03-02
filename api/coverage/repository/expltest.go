@@ -31,6 +31,8 @@ const insertExplTestStmt = "INSERT INTO expl_tests (area_id, summary, rating, te
 
 const deleteExplTestStmt = "DELETE FROM expl_tests WHERE id = ?"
 
+const deleteExplTestsByAreaIdStmt = "DELETE FROM expl_tests WHERE area_id = ?"
+
 func (cs CoverageStore) CreateExplTestsTable() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -49,6 +51,11 @@ func (cs CoverageStore) InsertExplTest(et model.ExplTest) (int64, error) {
 
 func (cs CoverageStore) DeleteExplTest(id string) (int64, error) {
 	return cs.executeSql(deleteExplTestStmt, id)
+}
+
+func (cs CoverageStore) DeleteExplTestsByAreaId(areaId string) (int64, error) {
+	log.Printf("Deleting all exploratory tests for area ID: %s", areaId)
+	return cs.executeSql(deleteExplTestsByAreaIdStmt, areaId)
 }
 
 // Get all exploratory tests for the specified area

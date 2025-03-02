@@ -10,6 +10,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"time"
 
@@ -33,6 +34,8 @@ const updateFeatureStmt = "UPDATE features SET name = ?, documentation = ?, url 
 
 const deleteFeatureStmt = "DELETE FROM features WHERE id = ?"
 
+const deleteFeaturesByAreaIdStmt = "DELETE FROM features WHERE area_id = ?"
+
 func (cs CoverageStore) CreateFeaturesTable() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -55,6 +58,11 @@ func (cs CoverageStore) UpdateFeature(f model.Feature) (int64, error) {
 
 func (cs CoverageStore) DeleteFeature(id string) (int64, error) {
 	return cs.executeSql(deleteFeatureStmt, id)
+}
+
+func (cs CoverageStore) DeleteFeaturesByAreaId(areaId string) (int64, error) {
+	log.Printf("Deleting all features for area ID: %s", areaId)
+	return cs.executeSql(deleteFeaturesByAreaIdStmt, areaId)
 }
 
 // Get all features for the specified area id
@@ -114,4 +122,26 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 	}
 	
 	return features, nil
+}
+
+// GetFeatureIdByNameAndAreaId returns the feature ID for a feature with the given name in the specified area.
+// Returns 0 and sql.ErrNoRows if no matching feature is found.
+func (cs CoverageStore) GetFeatureIdByNameAndAreaId(featureName string, areaId int64) (int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var featureId int64
+	err := cs.db.QueryRowContext(ctx, 
+		"SELECT id FROM features WHERE name = ? AND area_id = ?", 
+		featureName, areaId).Scan(&featureId)
+	
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, err
+		}
+		log.Printf("Error getting feature ID: %v", err)
+		return 0, err
+	}
+	
+	return featureId, nil
 }

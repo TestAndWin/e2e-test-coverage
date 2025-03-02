@@ -83,8 +83,5 @@ By running the command ```make help```, you can obtain a comprehensive overview 
 - Add forgot password feature
 
 # Further Ideas
-- Allow to re-order areas and features
-- Create area + feature automatically when uploading reports
 - Allow to add bugs in production (Ticket Number, Short Desc, severity). Or better: get this automatically
-- Allow to use more than one product / maintain products
 - Include SLA data, e.g. from Datadog
