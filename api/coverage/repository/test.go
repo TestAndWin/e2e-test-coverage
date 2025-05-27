@@ -37,9 +37,9 @@ const CREATE_TEST = `CREATE TABLE IF NOT EXISTS tests (
 	uuid VARCHAR(255),
 	is_first BOOLEAN,
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	FOREIGN KEY (feature_id) REFERENCES features(id),
-	FOREIGN KEY (feature_id) REFERENCES features(id)
-	)`
+       FOREIGN KEY (feature_id) REFERENCES features(id),
+       FOREIGN KEY (area_id) REFERENCES areas(id)
+       )`
 
 const insertTestStmt = "INSERT INTO tests (product_id, area_id, feature_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 
@@ -61,8 +61,8 @@ func (cs CoverageStore) CreateTestsTable() error {
 	return nil
 }
 
-func (cs CoverageStore) InsertTestResult(productId string, areadId int64, featureId int64, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
-	return cs.executeSql(insertTestStmt, productId, areadId, featureId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
+func (cs CoverageStore) InsertTestResult(productId string, areaId int64, featureId int64, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
+	return cs.executeSql(insertTestStmt, productId, areaId, featureId, tr.Suite, tr.File, component, url, tr.Total, tr.Passes, tr.Pending, tr.Failures, tr.Skipped, tr.Uuid, isFirst, tr.TestRun)
 }
 
 func (cs CoverageStore) InsertTestResultWithoutAreaFeature(productId string, component string, url string, isFirst bool, tr reporter.TestResult) (int64, error) {
