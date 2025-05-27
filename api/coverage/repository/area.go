@@ -14,6 +14,7 @@ import (
 	"log"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
 )
 
@@ -89,7 +90,18 @@ func (cs CoverageStore) GetAreaAndFeatureId(area string, feature string, product
 
 	var aid int64
 	var fid int64
-	err := cs.db.QueryRowContext(ctx, "SELECT a.id, f.id FROM areas a JOIN features f ON a.id = f.area_id JOIN products p ON p.id = a.product_id WHERE a.name = ? and f.name = ? and p.id=?;", area, feature, productId).Scan(&aid, &fid)
+	builder := sq.Select("a.id", "f.id").
+		From("areas a").
+		Join("features f ON a.id = f.area_id").
+		Join("products p ON p.id = a.product_id").
+		Where("a.name = ?", area).
+		Where("f.name = ?", feature).
+		Where("p.id = ?", productId)
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return 0, 0, err
+	}
+	err = cs.db.QueryRowContext(ctx, query, args...).Scan(&aid, &fid)
 	return aid, fid, err
 }
 
@@ -100,10 +112,10 @@ func (cs CoverageStore) GetAreaIdByNameAndProductId(areaName string, productId s
 	defer cancel()
 
 	var areaId int64
-	err := cs.db.QueryRowContext(ctx, 
-		"SELECT id FROM areas WHERE name = ? AND product_id = ?", 
+	err := cs.db.QueryRowContext(ctx,
+		"SELECT id FROM areas WHERE name = ? AND product_id = ?",
 		areaName, productId).Scan(&areaId)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return 0, err
@@ -111,6 +123,6 @@ func (cs CoverageStore) GetAreaIdByNameAndProductId(areaName string, productId s
 		log.Printf("Error getting area ID: %v", err)
 		return 0, err
 	}
-	
+
 	return areaId, nil
 }
