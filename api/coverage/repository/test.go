@@ -15,6 +15,7 @@ import (
 	"log"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
 	"github.com/TestAndWin/e2e-coverage/coverage/reporter"
 )
@@ -205,15 +206,19 @@ func (cs CoverageStore) GetAreaCoverageForProduct(productId string) (map[int64]m
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	query := `
-			SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun 
-			FROM tests t 
-			JOIN areas a ON a.id = t.area_id 
-			WHERE a.product_id = ? and t.testrun > ? 
-			ORDER BY t.area_id, t.feature_id, t.component, t.suite, t.file, t.testrun DESC;`
+	builder := sq.Select("t.id", "t.product_id", "t.area_id", "t.feature_id", "t.suite", "t.file", "t.component", "t.url",
+		"t.total", "t.passes", "t.pending", "t.failures", "t.skipped", "t.uuid", "t.is_first", "t.testrun").
+		From("tests t").
+		Join("areas a ON a.id = t.area_id").
+		Where("a.product_id = ?", productId).
+		Where("t.testrun > ?", time.Now().AddDate(0, 0, -testQueryPeriodDays)).
+		OrderBy("t.area_id", "t.feature_id", "t.component", "t.suite", "t.file", "t.testrun DESC")
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
 
-	// Only test from the last 28 days
-	rows, err := cs.db.QueryContext(ctx, query, productId, time.Now().AddDate(0, 0, -testQueryPeriodDays))
+	rows, err := cs.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, fmt.Errorf("failed to execute query: %w", err)
@@ -273,13 +278,18 @@ func (cs CoverageStore) GetFeatureCoverageForArea(areaId string) (map[int64]mode
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	query := `
-		SELECT t.id, t.product_id, t.area_id, t.feature_id, t.suite, t.file, t.component, t.url, t.total, t.passes, t.pending, t.failures, t.skipped, t.uuid, t.is_first, t.testrun 
-		FROM tests t WHERE t.area_id = ? AND t.testrun > ? 
-		ORDER BY t.feature_id, t.component, t.suite, t.file, t.testrun DESC;`
+	builder := sq.Select("t.id", "t.product_id", "t.area_id", "t.feature_id", "t.suite", "t.file", "t.component", "t.url",
+		"t.total", "t.passes", "t.pending", "t.failures", "t.skipped", "t.uuid", "t.is_first", "t.testrun").
+		From("tests t").
+		Where("t.area_id = ?", areaId).
+		Where("t.testrun > ?", time.Now().AddDate(0, 0, -testQueryPeriodDays)).
+		OrderBy("t.feature_id", "t.component", "t.suite", "t.file", "t.testrun DESC")
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
 
-	// Only test from the last 28 days
-	rows, err := cs.db.QueryContext(ctx, query, areaId, time.Now().AddDate(0, 0, -testQueryPeriodDays))
+	rows, err := cs.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		log.Printf("Error %s when query context", err)
 		return nil, fmt.Errorf("failed to execute query: %w", err)
@@ -332,11 +342,19 @@ func (cs CoverageStore) GetAllTestForSuiteFile(component string, suite string, f
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	query := `
-			SELECT id, product_id, suite, file, component, url, total, passes, pending, failures, skipped, uuid, is_first, testrun 
-			FROM tests WHERE component = ? AND suite = ? AND file = ? AND testrun > ? 
-			ORDER BY testrun DESC;`
-	rows, err := cs.db.QueryContext(ctx, query, component, suite, file, time.Now().AddDate(0, 0, -testQueryPeriodDays))
+	builder := sq.Select("id", "product_id", "suite", "file", "component", "url", "total", "passes", "pending",
+		"failures", "skipped", "uuid", "is_first", "testrun").
+		From("tests").
+		Where("component = ?", component).
+		Where("suite = ?", suite).
+		Where("file = ?", file).
+		Where("testrun > ?", time.Now().AddDate(0, 0, -testQueryPeriodDays)).
+		OrderBy("testrun DESC")
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := cs.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		log.Printf("Error %s when querying context", err)
 		return nil, err
@@ -363,22 +381,23 @@ func (cs CoverageStore) GetComponents() ([]model.Component, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	query := `
-			SELECT c.component, c.testrun, 
-						SUM(t.total) as total, SUM(t.passes) as passes, 
-						SUM(t.pending) as pending, SUM(t.failures) as failures, 
-						SUM(t.skipped) as skipped
-			FROM (
-				SELECT component, MAX(testrun) AS testrun 
-				FROM tests 
-				GROUP BY component
-			) c
-			JOIN tests t ON c.component = t.component AND c.testrun = t.testrun
-			GROUP BY c.component, c.testrun
-			ORDER BY c.component;
-			`
+	subquery := sq.Select("component", "MAX(testrun) AS testrun").
+		From("tests").
+		GroupBy("component")
+	builder := sq.Select("c.component", "c.testrun",
+		"SUM(t.total) as total", "SUM(t.passes) as passes",
+		"SUM(t.pending) as pending", "SUM(t.failures) as failures",
+		"SUM(t.skipped) as skipped").
+		FromSelect(subquery, "c").
+		Join("tests t ON c.component = t.component AND c.testrun = t.testrun").
+		GroupBy("c.component", "c.testrun").
+		OrderBy("c.component")
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return nil, err
+	}
 
-	rows, err := cs.db.QueryContext(ctx, query)
+	rows, err := cs.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
