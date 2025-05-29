@@ -347,6 +347,23 @@ paths:
       summary: Log out a user
       tags:
       - user
+  /api/v1/auth/me:
+    get:
+      description: Returns the user id, email and roles of the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.ErrorResponse'
+      summary: Get information about the current user
+      tags:
+      - user
   /api/v1/auth/refresh:
     post:
       description: Use a refresh token to get a new access token

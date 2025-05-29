@@ -105,10 +105,10 @@ func setupAPIRoutes(router *gin.Engine) {
 		v1.GET("/coverage/products/:id/tests", usercontroller.AuthUser(model.TESTER), controller.GetProductTestsCoverage)
 
 		// Authentication endpoints
-                v1.POST("/auth/login", usercontroller.Login)
-                v1.POST("/auth/refresh", usercontroller.RefreshToken)
-                v1.POST("/auth/logout", usercontroller.Logout)
-                v1.GET("/auth/me", usercontroller.AuthUser(""), usercontroller.GetMe)
+		v1.POST("/auth/login", usercontroller.Login)
+		v1.POST("/auth/refresh", usercontroller.RefreshToken)
+		v1.POST("/auth/logout", usercontroller.Logout)
+		v1.GET("/auth/me", usercontroller.AuthUser(""), usercontroller.GetMe)
 
 		// User management endpoints
 		v1.GET("/users", usercontroller.AuthUser(model.ADMIN), usercontroller.GetUser)

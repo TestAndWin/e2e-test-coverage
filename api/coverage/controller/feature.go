@@ -105,7 +105,7 @@ func UpdateFeature(c *gin.Context) {
 		return
 	}
 	f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-	_, err := repo.UpdateFeature(f)
+	_, err = repo.UpdateFeature(f)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
