@@ -28,7 +28,11 @@ import (
 // @Router       /api/v1/coverage/{id}/areas [GET]
 func GetAreaCoverage(c *gin.Context) {
 	pId := c.Param("id")
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	areas, err := repo.GetAllProductAreas(pId)
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Unable to get all product areas", err))
@@ -55,7 +59,10 @@ func GetAreaCoverage(c *gin.Context) {
 }
 
 func processAreaCoverage(areas []model.Area, tests map[int64]model.Test) ([]model.Area, error) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		return nil, err
+	}
 	areasCoverage := []model.Area{}
 	for _, a := range areas {
 		// Iterate through all areas and check if there is coverage data for that area
@@ -90,7 +97,11 @@ func processAreaCoverage(areas []model.Area, tests map[int64]model.Test) ([]mode
 // @Failure      400  {string}  ErrorResponse
 // @Router       /api/v1/coverage/areas/{id}/features [get]
 func GetFeatureCoverage(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	features, err := repo.GetAllAreaFeatures(c.Param("id"))
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Error getting area features", err))
@@ -128,7 +139,11 @@ func GetFeatureCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/features/:id/tests [get]
 func GetTestsCoverage(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	t, err := repo.GetAllFeatureTests(c.Param("id"))
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Error getting feature tests", err))
@@ -147,7 +162,11 @@ func GetTestsCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/products/:id/tests [get]
 func GetProductTestsCoverage(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	t, err := repo.GetAllProductTests(c.Param("id"))
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Error getting product tests", err))
@@ -165,7 +184,11 @@ func GetProductTestsCoverage(c *gin.Context) {
 // @Failure      400  {string}  ErrorResponse
 // @Router       /coverage/components [get]
 func GetComponents(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	t, err := repo.GetComponents()
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Error getting components", err))

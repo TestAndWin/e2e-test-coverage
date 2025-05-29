@@ -29,12 +29,16 @@ import (
 // @Success      500 {string}  ErrorResponse
 // @Router       /api/v1/tests/{id} [DELETE]
 func DeleteTests(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	suite := c.Query("suite")
 	component := c.Query("component")
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
-	
-	_, err := repo.DeleteTest(component, suite, file)
+
+	_, err = repo.DeleteTest(component, suite, file)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
@@ -54,11 +58,15 @@ func DeleteTests(c *gin.Context) {
 // @Success      500 {string} ErrorResponse
 // @Router       /api/v1/tests [GET]
 func GetAllTestForSuiteFile(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	suite := c.Query("suite")
 	component := c.Query("component")
 	file := strings.Replace(c.Query("file-name"), "\\\\", "\\", -1)
-	
+
 	tests, err := repo.GetAllTestForSuiteFile(component, suite, file)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))

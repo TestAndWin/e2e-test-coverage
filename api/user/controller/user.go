@@ -11,6 +11,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/TestAndWin/e2e-coverage/errors"
 	"github.com/TestAndWin/e2e-coverage/response"
@@ -29,7 +30,11 @@ const USER_ID = "userId"
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/users [GET]
 func GetUser(c *gin.Context) {
-	userStore := getUserRepository()
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	users, err := userStore.GetUser()
 	if err != nil {
 		errors.HandleError(c, err)
@@ -55,7 +60,11 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	userStore := getUserRepository()
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	id, err := userStore.CreateUser(user)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -82,15 +91,19 @@ func UpdateUser(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Invalid user data", err))
 		return
 	}
-	
+
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID", err))
 		return
 	}
-	
+
 	user.Id = id
-	userStore := getUserRepository()
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	err = userStore.UpdateUser(user)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -138,8 +151,12 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	userStore := getUserRepository()
-	err := userStore.ChangePassword(userId, pwd.Password, pwd.NewPassword)
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	err = userStore.ChangePassword(userId, pwd.Password, pwd.NewPassword)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
@@ -162,8 +179,12 @@ func DeleteUser(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID", err))
 		return
 	}
-	
-	userStore := getUserRepository()
+
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	err = userStore.DeleteUser(id)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -182,11 +203,61 @@ func DeleteUser(c *gin.Context) {
 // @Router       /api/v1/users/generate-api-key [POST]
 func GenerateApiKey(c *gin.Context) {
 	userId := c.GetInt64(USER_ID)
-	userStore := getUserRepository()
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	apiKey, err := userStore.GenerateApiKey(userId)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
 	response.OK(c, gin.H{"key": apiKey})
+}
+
+// GetMe godoc
+// @Summary      Get information about the current user
+// @Description  Returns the user id, email and roles of the authenticated user
+// @Tags         user
+// @Produce      json
+// @Success      200  {object}  model.User
+// @Failure      401  {object}  errors.ErrorResponse
+// @Router       /api/v1/auth/me [GET]
+func GetMe(c *gin.Context) {
+	id, exists := c.Get(USER_ID)
+	if !exists {
+		errors.HandleError(c, errors.NewUnauthorizedError("Authentication required"))
+		return
+	}
+
+	var userId int64
+	switch v := id.(type) {
+	case int64:
+		userId = v
+	case float64:
+		userId = int64(v)
+	case int:
+		userId = int64(v)
+	default:
+		errors.HandleError(c, errors.NewBadRequestError("Invalid user ID type", nil))
+		return
+	}
+
+	userStore, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	user, err := userStore.GetUserById(userId)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+
+	response.OK(c, gin.H{
+		"userId": user.Id,
+		"email":  user.Email,
+		"roles":  strings.Join(user.Roles, ","),
+	})
 }

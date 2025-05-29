@@ -36,7 +36,12 @@ func AddArea(c *gin.Context) {
 		return
 	}
 
-	id, err := getRepository().InsertArea(a)
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to retrieve repository: %w", err)))
+		return
+	}
+	id, err := repo.InsertArea(a)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to insert area: %w", err)))
 		return
@@ -59,7 +64,12 @@ func AddArea(c *gin.Context) {
 func GetProductAreas(c *gin.Context) {
 	productID := c.Param("id")
 
-	a, err := getRepository().GetAllProductAreas(productID)
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	a, err := repo.GetAllProductAreas(productID)
 	if err != nil {
 		errors.HandleError(c, errors.NewAppError(
 			err,
@@ -106,7 +116,12 @@ func UpdateArea(c *gin.Context) {
 	}
 	a.Id = id
 
-	affected, err := getRepository().UpdateArea(a)
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to retrieve repository: %w", err)))
+		return
+	}
+	affected, err := repo.UpdateArea(a)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(fmt.Errorf("failed to update area %d: %w", id, err)))
 		return
@@ -141,7 +156,11 @@ func DeleteArea(c *gin.Context) {
 
 	// Get string version of id for repository calls
 	idStr := c.Param("id")
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 
 	// First, delete all exploratory tests for this area
 	_, err = repo.DeleteExplTestsByAreaId(idStr)
