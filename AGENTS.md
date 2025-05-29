@@ -1,7 +1,7 @@
 # Contributor Guide
 
 ## Dev Environment Tips
-- Use setup.sh to install the libraries.
+- ...
 
 ## Testing Instructions
 - Fix any test or type errors until the whole suite is green.
