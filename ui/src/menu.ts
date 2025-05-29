@@ -1,47 +1,17 @@
-// Helper function to get user roles with fallback
-function getUserRoles(): string | null {
-  // First try to get from sessionStorage (primary)
-  let roles = sessionStorage.getItem('roles');
-
-  // If not found in sessionStorage, try to retrieve from localStorage backup
-  if (!roles) {
-    const backupRoles = localStorage.getItem('roles_backup');
-    if (backupRoles) {
-      // Restore from backup to sessionStorage
-      sessionStorage.setItem('roles', backupRoles);
-      roles = backupRoles;
-    }
-  }
-
-  return roles;
-}
+import { userState } from './stores/user';
 
 export function isAdmin(): boolean {
-  const s = getUserRoles();
-  if (s) {
-    return s.indexOf('Admin') > -1;
-  }
-  return false;
+  return userState.roles.includes('Admin');
 }
 
 export function isLoggedIn(): boolean {
-  const roles = getUserRoles();
-  const isLoggedIn = roles != undefined && roles != null;
-  return isLoggedIn;
+  return userState.roles.length > 0;
 }
 
 export function isMaintainer(): boolean {
-  const s = getUserRoles();
-  if (s) {
-    return s.indexOf('Maintainer') > -1;
-  }
-  return false;
+  return userState.roles.includes('Maintainer');
 }
 
 export function isTester(): boolean {
-  const s = getUserRoles();
-  if (s) {
-    return s.indexOf('Tester') > -1;
-  }
-  return false;
+  return userState.roles.includes('Tester');
 }

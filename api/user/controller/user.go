@@ -9,8 +9,9 @@ LICENSE file in the root directory of this source tree.
 package controller
 
 import (
-	"net/http"
-	"strconv"
+        "net/http"
+        "strconv"
+        "strings"
 
 	"github.com/TestAndWin/e2e-coverage/errors"
 	"github.com/TestAndWin/e2e-coverage/response"
@@ -213,4 +214,46 @@ func GenerateApiKey(c *gin.Context) {
 		return
 	}
 	response.OK(c, gin.H{"key": apiKey})
+}
+
+// GetMe godoc
+// @Summary      Get information about the current user
+// @Description  Returns the user id, email and roles of the authenticated user
+// @Tags         user
+// @Produce      json
+// @Success      200  {object}  model.User
+// @Failure      401  {object}  errors.ErrorResponse
+// @Router       /api/v1/auth/me [GET]
+func GetMe(c *gin.Context) {
+        id, exists := c.Get(USER_ID)
+        if !exists {
+                errors.HandleError(c, errors.NewUnauthorizedError("Authentication required"))
+                return
+        }
+
+        var userId int64
+        switch v := id.(type) {
+        case int64:
+                userId = v
+        case float64:
+                userId = int64(v)
+        case int:
+                userId = int64(v)
+        default:
+                errors.HandleError(c, errors.NewBadRequestError("Invalid user ID type", nil))
+                return
+        }
+
+        userStore := getUserRepository()
+        user, err := userStore.GetUserById(userId)
+        if err != nil {
+                errors.HandleError(c, errors.NewInternalError(err))
+                return
+        }
+
+        response.OK(c, gin.H{
+                "userId": user.Id,
+                "email":  user.Email,
+                "roles":  strings.Join(user.Roles, ","),
+        })
 }
