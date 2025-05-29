@@ -33,8 +33,12 @@ func AddFeature(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
-	
-	repo := getRepository()
+
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	id, err := repo.InsertFeature(f)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -55,14 +59,18 @@ func AddFeature(c *gin.Context) {
 // @Router       /api/v1/areas/{id}/features [get]
 func GetAreaFeatures(c *gin.Context) {
 	areaID := c.Param("id")
-	
-	repo := getRepository()
+
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	features, err := repo.GetAllAreaFeatures(areaID)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	
+
 	// Use ResponseWithDataAndCount to ensure consistent format
 	// even for empty arrays
 	if len(features) == 0 {
@@ -91,7 +99,11 @@ func UpdateFeature(c *gin.Context) {
 		return
 	}
 
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	f.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
 	_, err := repo.UpdateFeature(f)
 	if err != nil {
@@ -112,15 +124,19 @@ func UpdateFeature(c *gin.Context) {
 // @Router       /api/v1/features/{id} [DELETE]
 func DeleteFeature(c *gin.Context) {
 	featureId := c.Param("id")
-	repo := getRepository()
-	
-	// First delete all tests associated with this feature
-	_, err := repo.DeleteTestsByFeatureId(featureId)
+	repo, err := getRepository()
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
 	}
-	
+
+	// First delete all tests associated with this feature
+	_, err = repo.DeleteTestsByFeatureId(featureId)
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+
 	// Then delete the feature itself
 	_, err = repo.DeleteFeature(featureId)
 	if err != nil {

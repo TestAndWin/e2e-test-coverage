@@ -11,12 +11,12 @@ package controller
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/TestAndWin/e2e-coverage/coverage/model"
 	"github.com/TestAndWin/e2e-coverage/coverage/reporter"
 	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/logger"
 	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/gin-gonic/gin"
 )
@@ -58,7 +58,7 @@ func processTestResults(testResults []reporter.TestResult, pid, testReportUrl, c
 	for _, tr := range testResults {
 		resultStatus, err := processTestResult(tr, pid, testReportUrl, component)
 		if err != nil {
-			log.Printf("Error processing test result: %v", err)
+			logger.Errorf("Error processing test result: %v", err)
 			status = append(status, err.Error())
 		} else {
 			status = append(status, resultStatus)
@@ -68,8 +68,11 @@ func processTestResults(testResults []reporter.TestResult, pid, testReportUrl, c
 }
 
 func processTestResult(tr reporter.TestResult, pid, testReportUrl, component string) (string, error) {
-	repo := getRepository()
-	
+	repo, err := getRepository()
+	if err != nil {
+		return "", err
+	}
+
 	uploaded, err := repo.HasTestBeenUploaded(tr.Uuid)
 	if err != nil {
 		return "", fmt.Errorf("error checking if test was uploaded: %w", err)
@@ -85,23 +88,23 @@ func processTestResult(tr reporter.TestResult, pid, testReportUrl, component str
 
 	// Auto-create area and feature if they don't exist (when both are specified)
 	if err == sql.ErrNoRows && tr.Area != "" && tr.Feature != "" {
-		log.Printf("Area '%s' and Feature '%s' not found together, checking if they exist separately", tr.Area, tr.Feature)
-		
+		logger.Debugf("Area '%s' and Feature '%s' not found together, checking if they exist separately", tr.Area, tr.Feature)
+
 		// Convert product ID from string to int64
 		productID, err := strconv.ParseInt(pid, 10, 64)
 		if err != nil {
 			return "", fmt.Errorf("invalid product ID: %w", err)
 		}
-		
+
 		// First check if area exists by name and product ID
 		areaId, err := repo.GetAreaIdByNameAndProductId(tr.Area, pid)
 		if err != nil && err != sql.ErrNoRows {
 			return "", fmt.Errorf("error checking if area exists: %w", err)
 		}
-		
+
 		// If area doesn't exist, create it
 		if err == sql.ErrNoRows {
-			log.Printf("Area '%s' not found, creating it", tr.Area)
+			logger.Debugf("Area '%s' not found, creating it", tr.Area)
 			area := model.Area{
 				ProductId: productID,
 				Name:      tr.Area,
@@ -110,37 +113,37 @@ func processTestResult(tr reporter.TestResult, pid, testReportUrl, component str
 			if err != nil {
 				return "", fmt.Errorf("error creating area: %w", err)
 			}
-			log.Printf("Successfully created area '%s' with ID %d", tr.Area, areaId)
+			logger.Debugf("Successfully created area '%s' with ID %d", tr.Area, areaId)
 		} else {
-			log.Printf("Found existing area '%s' with ID %d", tr.Area, areaId)
+			logger.Debugf("Found existing area '%s' with ID %d", tr.Area, areaId)
 		}
-		
-		// Now that we have areaId (either existing or newly created), 
+
+		// Now that we have areaId (either existing or newly created),
 		// check if feature exists in this area
 		featureId, err := repo.GetFeatureIdByNameAndAreaId(tr.Feature, areaId)
 		if err != nil && err != sql.ErrNoRows {
 			return "", fmt.Errorf("error checking if feature exists: %w", err)
 		}
-		
+
 		// If feature doesn't exist in this area, create it
 		if err == sql.ErrNoRows {
-			log.Printf("Feature '%s' not found in area %d, creating it", tr.Feature, areaId)
+			logger.Debugf("Feature '%s' not found in area %d, creating it", tr.Feature, areaId)
 			feature := model.Feature{
 				AreaId:        areaId,
 				Name:          tr.Feature,
-				Documentation: "",  // Default empty documentation
-				Url:           "",  // Default empty URL
+				Documentation: "",       // Default empty documentation
+				Url:           "",       // Default empty URL
 				BusinessValue: "medium", // Default medium business value
 			}
 			featureId, err = repo.InsertFeature(feature)
 			if err != nil {
 				return "", fmt.Errorf("error creating feature: %w", err)
 			}
-			log.Printf("Successfully created feature '%s' with ID %d", tr.Feature, featureId)
+			logger.Debugf("Successfully created feature '%s' with ID %d", tr.Feature, featureId)
 		} else {
-			log.Printf("Found existing feature '%s' with ID %d", tr.Feature, featureId)
+			logger.Debugf("Found existing feature '%s' with ID %d", tr.Feature, featureId)
 		}
-		
+
 		// Update aid and fid with the newly found or created IDs
 		aid = areaId
 		fid = featureId

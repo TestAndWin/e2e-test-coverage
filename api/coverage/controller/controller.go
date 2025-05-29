@@ -14,11 +14,11 @@ import (
 )
 
 // getRepository returns the coverage repository from the dependency container
-func getRepository() *repository.CoverageStore {
+func getRepository() (*repository.CoverageStore, error) {
 	container := dependency.GetContainer()
 	repo, err := container.GetCoverageStore()
 	if err != nil {
-		panic(err) // This should never happen as the container handles initialization errors
+		return nil, err
 	}
-	return repo
+	return repo, nil
 }

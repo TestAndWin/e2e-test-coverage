@@ -34,9 +34,13 @@ func AddExplTest(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
-	
+
 	et.Tester = c.GetInt64(controller.USER_ID)
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	id, err := repo.InsertExplTest(et)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -57,8 +61,12 @@ func AddExplTest(c *gin.Context) {
 // @Failure      500  {string} ErrorResponse
 // @Router       /api/v1/expl-tests/{id} [DELETE]
 func DeleteExplTest(c *gin.Context) {
-	repo := getRepository()
-	_, err := repo.DeleteExplTest(c.Param("id"))
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	_, err = repo.DeleteExplTest(c.Param("id"))
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
@@ -76,7 +84,11 @@ func DeleteExplTest(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/expl-tests/area/{areaid} [POST]
 func GetExplTestsForArea(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	et, err := repo.GetExplTests(c.Param("areaid"))
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))

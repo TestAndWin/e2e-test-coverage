@@ -34,8 +34,12 @@ func AddProduct(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
-	
-	repo := getRepository()
+
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	id, err := repo.InsertProduct(p)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -54,7 +58,11 @@ func AddProduct(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products [get]
 func GetProducts(c *gin.Context) {
-	repo := getRepository()
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
 	p, err := repo.GetAllProducts()
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
@@ -80,10 +88,14 @@ func UpdateProduct(c *gin.Context) {
 		errors.HandleError(c, errors.NewBadRequestError("Error binding JSON", err))
 		return
 	}
-	
+
 	p.Id, _ = strconv.ParseInt(c.Param("id"), 0, 64)
-	repo := getRepository()
-	_, err := repo.UpdateProduct(p)
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	_, err = repo.UpdateProduct(p)
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
@@ -101,8 +113,12 @@ func UpdateProduct(c *gin.Context) {
 // @Failure      500  {string}  ErrorResponse
 // @Router       /api/v1/products/{id} [DELETE]
 func DeleteProduct(c *gin.Context) {
-	repo := getRepository()
-	_, err := repo.DeleteProduct(c.Param("id"))
+	repo, err := getRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	_, err = repo.DeleteProduct(c.Param("id"))
 	if err != nil {
 		errors.HandleError(c, errors.NewInternalError(err))
 		return
