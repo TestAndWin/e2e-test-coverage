@@ -10,13 +10,13 @@ package controller
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/TestAndWin/e2e-coverage/auth"
 	"github.com/TestAndWin/e2e-coverage/dependency"
 	"github.com/TestAndWin/e2e-coverage/errors"
+	"github.com/TestAndWin/e2e-coverage/logger"
 	"github.com/TestAndWin/e2e-coverage/response"
 	"github.com/TestAndWin/e2e-coverage/user/model"
 	"github.com/gin-gonic/gin"
@@ -28,7 +28,8 @@ func getTokenManager() *auth.TokenManager {
 	container := dependency.GetContainer()
 	manager, err := container.GetTokenManager()
 	if err != nil {
-		log.Fatalf("[FATAL] Failed to get token manager: %v", err)
+		logger.Errorf("Failed to get token manager: %v", err)
+		return nil
 	}
 	return manager
 }
@@ -59,7 +60,12 @@ func Login(c *gin.Context) {
 	}
 
 	// Check Login and get user with roles
-	user, err := getUserRepository().Login(credentials.Email, credentials.Password)
+	repo, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	user, err := repo.Login(credentials.Email, credentials.Password)
 	if err != nil {
 		errors.HandleError(c, errors.NewAppError(
 			err,
@@ -72,7 +78,7 @@ func Login(c *gin.Context) {
 
 	// Create the access and refresh tokens
 	tm := getTokenManager()
-	
+
 	// Create access token
 	accessToken, err := tm.CreateAccessToken(user)
 	if err != nil {
@@ -130,10 +136,10 @@ func Login(c *gin.Context) {
 	http.SetCookie(c.Writer, refreshCookie)
 
 	// For debugging
-	log.Printf("User login successful: %s, roles: %v", user.Email, user.Roles)
-	
+	logger.Debugf("User login successful: %s, roles: %v", user.Email, user.Roles)
+
 	// Return success response with user info
-	response.ResponseWithDataAndMessage(c, http.StatusOK, 
+	response.ResponseWithDataAndMessage(c, http.StatusOK,
 		gin.H{
 			"userId": user.Id,
 			"email":  user.Email,
@@ -161,7 +167,7 @@ func RefreshToken(c *gin.Context) {
 	}
 
 	tm := getTokenManager()
-	
+
 	// Validate refresh token and get user ID
 	userID, err := tm.ValidateRefreshToken(refreshToken)
 	if err != nil {
@@ -170,7 +176,12 @@ func RefreshToken(c *gin.Context) {
 	}
 
 	// Get user from database to ensure it still exists and has correct roles
-	user, err := getUserRepository().GetUserById(userID)
+	repo, err := getUserRepository()
+	if err != nil {
+		errors.HandleError(c, errors.NewInternalError(err))
+		return
+	}
+	user, err := repo.GetUserById(userID)
 	if err != nil {
 		errors.HandleError(c, errors.NewAppError(
 			err,
@@ -233,7 +244,7 @@ func Logout(c *gin.Context) {
 	c.SetCookie(auth.CookiePayload, "", -1, "/", "", true, false)
 	c.SetCookie(auth.CookieSignature, "", -1, "/", "", true, true)
 	c.SetCookie("refresh_token", "", -1, "/api/v1/auth/refresh", "", true, true)
-	
+
 	response.ResponseWithMessage(c, http.StatusOK, "Logged out successfully")
 }
 
@@ -242,7 +253,7 @@ func Logout(c *gin.Context) {
 func AuthUser(level string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tm := getTokenManager()
-		
+
 		// Get token parts from cookies
 		headerPayload, err := c.Cookie(auth.CookiePayload)
 		if err != nil {
@@ -250,17 +261,17 @@ func AuthUser(level string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		signature, err := c.Cookie(auth.CookieSignature)
 		if err != nil {
 			errors.HandleError(c, errors.NewUnauthorizedError("Authentication required"))
 			c.Abort()
 			return
 		}
-		
+
 		// Combine token parts
 		tokenString := headerPayload + "." + signature
-		
+
 		// Validate token
 		claims, err := tm.ValidateToken(tokenString)
 		if err != nil {
@@ -268,7 +279,7 @@ func AuthUser(level string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Check role if required
 		if level != "" && !hasRole(claims.Role, level) {
 			errors.HandleError(c, errors.NewAppError(
@@ -280,11 +291,11 @@ func AuthUser(level string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Set user info in context for later use
 		c.Set(auth.ContextUserID, claims.ID)
 		c.Set(auth.ContextUserEmail, claims.Email)
-		
+
 		// Continue with request
 		c.Next()
 	}
@@ -307,31 +318,31 @@ func GetToken(c *gin.Context) (*jwt.Token, error) {
 	if err != nil {
 		return nil, errors.NewUnauthorizedError("Authentication required")
 	}
-	
+
 	signature, err := c.Cookie(auth.CookieSignature)
 	if err != nil {
 		return nil, errors.NewUnauthorizedError("Authentication required")
 	}
-	
+
 	// Combine token parts
 	tokenString := headerPayload + "." + signature
-	
+
 	// Parse the token
 	token, err := jwt.ParseWithClaims(tokenString, &model.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		
+
 		// Get the token's secret key from the token manager
 		tm := getTokenManager()
 		secretKey := tm.GetSecretKey()
 		return secretKey, nil
 	})
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return token, nil
 }
 
@@ -344,8 +355,14 @@ func AuthApi() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
-		userId, err := getUserRepository().GetUserIdForApiKey(apiKey)
+
+		repo, err := getUserRepository()
+		if err != nil {
+			errors.HandleError(c, errors.NewInternalError(err))
+			c.Abort()
+			return
+		}
+		userId, err := repo.GetUserIdForApiKey(apiKey)
 		if userId < 1 || err != nil {
 			errors.HandleError(c, errors.NewAppError(
 				err,
@@ -356,10 +373,10 @@ func AuthApi() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
+
 		// Set user ID in context
 		c.Set(auth.ContextUserID, userId)
-		log.Printf("Request with API-Key for user %d", userId)
+		logger.Debugf("Request with API-Key for user %d", userId)
 		c.Next()
 	}
 }

@@ -12,11 +12,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	"github.com/TestAndWin/e2e-coverage/config"
+	"github.com/TestAndWin/e2e-coverage/logger"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -28,28 +28,28 @@ func dsnMySQL(config config.Config, dbName string) string {
 func OpenDbConnection(dbName string) (*sql.DB, error) {
 	config, err := config.LoadConfig()
 	if err != nil {
-		log.Print("Cannot load config ", err)
+		logger.Errorf("Cannot load config %v", err)
 		os.Exit(0)
 	}
 
-	log.Println("Try to connect to MySQL database")
+	logger.Infof("Try to connect to MySQL database")
 	db, err := sql.Open("mysql", dsnMySQL(config, ""))
 	if err != nil {
-		log.Printf("Error %s when opening DB\n", err)
+		logger.Errorf("Error %s when opening DB", err)
 		return db, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err = db.ExecContext(ctx, "CREATE DATABASE IF NOT EXISTS "+dbName)
 	if err != nil {
-		log.Printf("Error %s when creating DB\n", err)
+		logger.Errorf("Error %s when creating DB", err)
 		return db, err
 	}
 
 	db.Close()
 	db, err = sql.Open("mysql", dsnMySQL(config, dbName))
 	if err != nil {
-		log.Printf("Error %s when opening DB", err)
+		logger.Errorf("Error %s when opening DB", err)
 		return db, err
 	}
 
@@ -61,9 +61,9 @@ func OpenDbConnection(dbName string) (*sql.DB, error) {
 	defer cancel()
 	err = db.PingContext(ctx)
 	if err != nil {
-		log.Printf("Errors %s pinging DB", err)
+		logger.Errorf("Errors %s pinging DB", err)
 		return db, err
 	}
-	log.Printf("Connected to DB %s successfully\n", dbName)
+	logger.Infof("Connected to DB %s successfully", dbName)
 	return db, err
 }

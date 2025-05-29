@@ -9,9 +9,9 @@ LICENSE file in the root directory of this source tree.
 package config
 
 import (
-	"log"
 	"os"
 
+	"github.com/TestAndWin/e2e-coverage/logger"
 	"github.com/spf13/viper"
 )
 
@@ -27,7 +27,7 @@ type Config struct {
 func LoadConfig() (config Config, err error) {
 	u, b := os.LookupEnv("DB_USER")
 	if b {
-		log.Println("Read config from environment variables")
+		logger.Debugf("Read config from environment variables")
 		var c Config
 		c.DBUser = u
 		c.DBPassword = os.Getenv("DB_PASSWORD")
@@ -35,12 +35,12 @@ func LoadConfig() (config Config, err error) {
 		c.JWTKey = os.Getenv("JWT_KEY")
 		return c, nil
 	} else {
-		log.Println("Read config from config.env")
+		logger.Debugf("Read config from config.env")
 		viper.SetConfigFile("config.env")
 		viper.AutomaticEnv()
 		err = viper.ReadInConfig()
 		if err != nil {
-			log.Fatalf("Error while reading config file %s", err)
+			logger.Errorf("Error while reading config file %v", err)
 			return
 		}
 		err = viper.Unmarshal(&config)
