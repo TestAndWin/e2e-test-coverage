@@ -4,9 +4,9 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { clearUser } from '@/stores/user';
 onMounted(() => {
-  sessionStorage.clear();
-  localStorage.removeItem('roles_backup'); // Clear the backup roles from localStorage
+  clearUser();
   deleteAllCookies();
 
   // Reload page to update the menu
