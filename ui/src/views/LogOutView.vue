@@ -5,12 +5,21 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { clearUser } from '@/stores/user';
-onMounted(() => {
+import http from '@/common-http';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+onMounted(async () => {
+  try {
+    await http.post('/api/v1/auth/logout');
+  } catch (e) {
+    // Fehler ignorieren, da Cookies sowieso gelöscht werden
+  }
   clearUser();
   deleteAllCookies();
 
-  // Reload page to update the menu
-  location.assign('/');
+  router.push('/');
 });
 
 const deleteAllCookies = () => {

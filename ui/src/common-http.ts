@@ -18,6 +18,7 @@ http.interceptors.request.use(
   }
 );
 
+let isRedirecting = false;
 // Add response interceptor for handling errors
 http.interceptors.response.use(
   function (response) {
@@ -26,7 +27,9 @@ http.interceptors.response.use(
   async (error) => {
     if (error.response && error.response.status === 401) {
       const path = window.location.pathname;
-      if (!path.startsWith('/login')) {
+      const requestUrl = error.config?.url || '';
+      if (!isRedirecting && !path.startsWith('/login') && !requestUrl.startsWith('/api/v1/auth/me')) {
+        isRedirecting = true;
         window.location.href = '/login';
       }
     }
