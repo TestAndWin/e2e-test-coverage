@@ -31,19 +31,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import http from '@/common-http';
-
-// Helper function to safely store user roles in multiple places for redundancy
-function storeUserRoles(roles: string) {
-  try {
-    // Store in sessionStorage (primary storage)
-    sessionStorage.setItem('roles', roles);
-
-    // Store in localStorage as backup (will persist between sessions)
-    localStorage.setItem('roles_backup', roles);
-  } catch (error) {
-    // Handle error silently or use error.value if needed
-  }
-}
+import { setUser } from '@/stores/user';
 
 const loading = ref(false);
 const error = ref('');
@@ -80,13 +68,10 @@ const login = async () => {
     }
 
     if (rolesValue) {
-      // Store roles in both sessionStorage and localStorage
-      storeUserRoles(rolesValue);
-
-      // Also store userId if available
-      if (response.data && response.data.data && response.data.data.userId) {
-        localStorage.setItem('userId', response.data.data.userId);
-      }
+      // Store roles in memory via the user store
+      const uid = response.data?.data?.userId || 0;
+      const mail = response.data?.data?.email || '';
+      setUser(uid, mail, rolesValue);
 
       // Redirect to home page to refresh the menu
       location.assign('/');
