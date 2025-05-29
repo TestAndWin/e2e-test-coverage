@@ -25,7 +25,10 @@ http.interceptors.response.use(
   },
   async (error) => {
     if (error.response && error.response.status === 401) {
-      window.location.href = '/login';
+      const path = window.location.pathname;
+      if (!path.startsWith('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
