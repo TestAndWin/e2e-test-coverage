@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/TestAndWin/e2e-coverage/docs"
 	"github.com/TestAndWin/e2e-coverage/dependency"
+	_ "github.com/TestAndWin/e2e-coverage/docs"
 	"github.com/TestAndWin/e2e-coverage/router"
 )
 
@@ -26,7 +26,7 @@ import (
 // @schemes http
 func main() {
 	fmt.Println("**** e2e test coverage ****")
-	
+
 	// Initialize dependency container
 	container := dependency.GetContainer()
 	defer func() {
