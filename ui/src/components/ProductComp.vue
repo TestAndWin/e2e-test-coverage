@@ -451,7 +451,7 @@ const showUpdateFeatureModal = (
   featureUrl.value = url;
 
   // Find which area this feature belongs to
-  for (let areaId in features.value) {
+  for (const areaId in features.value) {
     if (!features.value[areaId]) continue;
 
     const featureIndex = features.value[areaId].findIndex((f: any) => f.id === featureId);

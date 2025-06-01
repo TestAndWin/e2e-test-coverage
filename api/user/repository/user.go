@@ -59,7 +59,7 @@ func NewUserStore() (*UserStore, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open user DB connection: %w", err)
 	}
-	
+
 	log.Println("Connected successfully to user database")
 	return &UserStore{db: database}, nil
 }
@@ -143,7 +143,7 @@ func (s *UserStore) ChangePassword(id int64, oldPassword string, newPassword str
 	if err != nil {
 		return fmt.Errorf("user not found: %w", err)
 	}
-	
+
 	// Validate old password
 	_, err = s.Login(email, oldPassword)
 	if err != nil {
@@ -259,12 +259,12 @@ func generateAPIKey() string {
 func (s *UserStore) GetUserById(id int64) (model.User, error) {
 	var user model.User
 	var role string
-	
+
 	err := s.db.QueryRow("SELECT id, email, role FROM users WHERE id = ?", id).Scan(&user.Id, &user.Email, &role)
 	if err != nil {
 		return user, fmt.Errorf("failed to get user by id: %w", err)
 	}
-	
+
 	user.Roles = strings.Split(role, ",")
 	return user, nil
 }
@@ -273,12 +273,12 @@ func (s *UserStore) GetUserById(id int64) (model.User, error) {
 func (s *UserStore) GetUserByEmail(email string) (model.User, error) {
 	var user model.User
 	var role string
-	
+
 	err := s.db.QueryRow("SELECT id, email, role FROM users WHERE email = ?", email).Scan(&user.Id, &user.Email, &role)
 	if err != nil {
 		return user, fmt.Errorf("failed to get user by email: %w", err)
 	}
-	
+
 	user.Roles = strings.Split(role, ",")
 	return user, nil
 }
