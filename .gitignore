@@ -10,3 +10,6 @@ WORKLOG.md
 node_modules
 backup
 test-data
+k8s/secret.yaml
+config.env
+docker_env_vars
