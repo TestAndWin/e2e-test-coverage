@@ -21,8 +21,7 @@ spec:
                 name: e2e-test-coverage
                 port:
                   name: http
-    # Local development with minikube/kind
-    - host: e2ecoverage.local
+    - host: www.testandwin.de
       http:
         paths:
           - path: /
@@ -36,4 +35,5 @@ spec:
   tls:
     - hosts:
         - testandwin.de
+        - www.testandwin.de
       secretName: e2e-test-coverage-tls
