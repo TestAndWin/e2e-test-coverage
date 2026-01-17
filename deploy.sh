@@ -20,6 +20,8 @@ docker save ${IMAGE_NAME}:${TAG} > ${TAR_FILE}
 
 # 3. Import into MicroK8s
 echo "📥 Importing image into MicroK8s (this might take a moment)..."
+# Remove old image to ensure update
+microk8s ctr images rm ${IMAGE_NAME}:${TAG} || true
 microk8s ctr image import ${TAR_FILE}
 
 # Clean up tar file
