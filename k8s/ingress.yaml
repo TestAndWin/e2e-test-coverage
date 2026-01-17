@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-    - host: www.testandwin.net
+    - host: testandwin.de
       http:
         paths:
           - path: /
@@ -34,5 +34,5 @@ spec:
   # TLS configuration
   tls:
     - hosts:
-        - www.testandwin.net
+        - testandwin.de
       secretName: e2e-test-coverage-tls
