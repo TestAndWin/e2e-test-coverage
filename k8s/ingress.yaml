@@ -32,7 +32,7 @@ spec:
                 port:
                   name: http
   # TLS configuration
-  # tls:
-  #   - hosts:
-  #       - e2ecoverage.de
-  #     secretName: e2e-test-coverage-tls
+  tls:
+    - hosts:
+        - www.testandwin.net
+      secretName: e2e-test-coverage-tls
