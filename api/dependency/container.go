@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -29,15 +29,15 @@ type Container struct {
 	userDB     *sql.DB
 
 	// Repositories
-	coverageStore  *repository.CoverageStore
-	userStore      *userRepo.UserStore
-	
+	coverageStore *repository.CoverageStore
+	userStore     *userRepo.UserStore
+
 	// Auth
-	tokenManager   *auth.TokenManager
-	
+	tokenManager *auth.TokenManager
+
 	// Config
-	appConfig     *config.Config
-	
+	appConfig *config.Config
+
 	// Mutex for thread safety
 	mu sync.Mutex
 }
@@ -64,14 +64,14 @@ func GetContainer() *Container {
 func (c *Container) initialize() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
 	c.appConfig = &cfg
-	
+
 	return nil
 }
 
@@ -79,7 +79,7 @@ func (c *Container) initialize() error {
 func (c *Container) GetCoverageDB() (*sql.DB, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.coverageDB == nil {
 		var err error
 		c.coverageDB, err = db.OpenDbConnection("e2ecoverage")
@@ -87,7 +87,7 @@ func (c *Container) GetCoverageDB() (*sql.DB, error) {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to open coverage DB connection: %w", err))
 		}
 	}
-	
+
 	return c.coverageDB, nil
 }
 
@@ -95,7 +95,7 @@ func (c *Container) GetCoverageDB() (*sql.DB, error) {
 func (c *Container) GetUserDB() (*sql.DB, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.userDB == nil {
 		var err error
 		c.userDB, err = db.OpenDbConnection("user")
@@ -103,7 +103,7 @@ func (c *Container) GetUserDB() (*sql.DB, error) {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to open user DB connection: %w", err))
 		}
 	}
-	
+
 	return c.userDB, nil
 }
 
@@ -111,20 +111,20 @@ func (c *Container) GetUserDB() (*sql.DB, error) {
 func (c *Container) GetCoverageStore() (*repository.CoverageStore, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.coverageStore == nil {
 		var err error
 		c.coverageStore, err = repository.NewCoverageStore()
 		if err != nil {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to create coverage store: %w", err))
 		}
-		
+
 		// Initialize tables
 		if err := c.coverageStore.CreateAllTables(); err != nil {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to create tables: %w", err))
 		}
 	}
-	
+
 	return c.coverageStore, nil
 }
 
@@ -132,20 +132,20 @@ func (c *Container) GetCoverageStore() (*repository.CoverageStore, error) {
 func (c *Container) GetUserStore() (*userRepo.UserStore, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.userStore == nil {
 		var err error
 		c.userStore, err = userRepo.NewUserStore()
 		if err != nil {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to create user store: %w", err))
 		}
-		
+
 		// Initialize tables if needed
 		if err := c.userStore.CreateUserTable(); err != nil {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to create user table: %w", err))
 		}
 	}
-	
+
 	return c.userStore, nil
 }
 
@@ -153,7 +153,7 @@ func (c *Container) GetUserStore() (*userRepo.UserStore, error) {
 func (c *Container) GetTokenManager() (*auth.TokenManager, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.tokenManager == nil {
 		var err error
 		c.tokenManager, err = auth.NewTokenManager()
@@ -161,7 +161,7 @@ func (c *Container) GetTokenManager() (*auth.TokenManager, error) {
 			return nil, errors.NewInternalError(fmt.Errorf("failed to create token manager: %w", err))
 		}
 	}
-	
+
 	return c.tokenManager, nil
 }
 
@@ -174,12 +174,12 @@ func (c *Container) GetConfig() *config.Config {
 func (c *Container) CloseConnections() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	
+
 	if c.coverageDB != nil {
 		c.coverageDB.Close()
 		c.coverageDB = nil
 	}
-	
+
 	if c.userDB != nil {
 		c.userDB.Close()
 		c.userDB = nil

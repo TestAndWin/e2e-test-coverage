@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the

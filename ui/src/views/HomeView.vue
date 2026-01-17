@@ -54,7 +54,7 @@
           </p>
         </div>
         <p></p>
-        <p>&copy; TestAndWin 2025</p>
+        <p>&copy; TestAndWin 2026</p>
       </div>
     </div>
   </div>

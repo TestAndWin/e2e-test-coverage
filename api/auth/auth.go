@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -23,15 +23,15 @@ import (
 
 // Constants for cookie and context keys
 const (
-	CookiePayload   = "header.payload"
-	CookieSignature = "signature"
-	ContextUserID   = "userId"
+	CookiePayload    = "header.payload"
+	CookieSignature  = "signature"
+	ContextUserID    = "userId"
 	ContextUserEmail = "userEmail"
-	
+
 	// Token expiry times
 	AccessTokenExpiry  = 24 * time.Hour
 	RefreshTokenExpiry = 7 * 24 * time.Hour
-	
+
 	// Minimum token length for validation
 	MinTokenLength = 10
 )
@@ -48,14 +48,14 @@ func NewTokenManager() (*TokenManager, error) {
 	if err != nil {
 		return nil, errors.NewInternalError(fmt.Errorf("failed to load config: %w", err))
 	}
-	
+
 	// Generate a separate refresh token secret with a different value
 	refreshSecret := make([]byte, 32)
 	_, err = rand.Read(refreshSecret)
 	if err != nil {
 		return nil, errors.NewInternalError(fmt.Errorf("failed to generate refresh token secret: %w", err))
 	}
-	
+
 	return &TokenManager{
 		secretKey:     []byte(config.JWTKey),
 		refreshSecret: refreshSecret,
@@ -76,15 +76,15 @@ func (tm *TokenManager) CreateAccessToken(user model.User) (string, error) {
 			Subject:   fmt.Sprintf("%d", user.Id),
 		},
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	
+
 	// Sign and get the complete encoded token as a string
 	tokenString, err := token.SignedString(tm.secretKey)
 	if err != nil {
 		return "", errors.NewInternalError(fmt.Errorf("failed to sign access token: %w", err))
 	}
-	
+
 	return tokenString, nil
 }
 
@@ -98,14 +98,14 @@ func (tm *TokenManager) CreateRefreshToken(userID int64) (string, error) {
 		Subject:   fmt.Sprintf("%d", userID),
 		ID:        generateTokenID(), // Add a unique jti (JWT ID) for token identification
 	}
-	
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	
+
 	tokenString, err := token.SignedString(tm.refreshSecret)
 	if err != nil {
 		return "", errors.NewInternalError(fmt.Errorf("failed to sign refresh token: %w", err))
 	}
-	
+
 	return tokenString, nil
 }
 
@@ -120,7 +120,7 @@ func (tm *TokenManager) SplitToken(token string) (headerPayload, signature strin
 			401,
 		)
 	}
-	
+
 	return parts[0] + "." + parts[1], parts[2], nil
 }
 
@@ -135,9 +135,9 @@ func (tm *TokenManager) ValidateToken(tokenString string) (*model.Claims, error)
 			401,
 		)
 	}
-	
+
 	claims := &model.Claims{}
-	
+
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -145,7 +145,7 @@ func (tm *TokenManager) ValidateToken(tokenString string) (*model.Claims, error)
 		}
 		return tm.secretKey, nil
 	})
-	
+
 	if err != nil {
 		validationErr, ok := err.(*jwt.ValidationError)
 		if ok && validationErr.Errors&jwt.ValidationErrorExpired != 0 {
@@ -163,7 +163,7 @@ func (tm *TokenManager) ValidateToken(tokenString string) (*model.Claims, error)
 			401,
 		)
 	}
-	
+
 	if !token.Valid {
 		return nil, errors.NewAppError(
 			fmt.Errorf("invalid token claims"),
@@ -172,7 +172,7 @@ func (tm *TokenManager) ValidateToken(tokenString string) (*model.Claims, error)
 			401,
 		)
 	}
-	
+
 	return claims, nil
 }
 
@@ -184,7 +184,7 @@ func (tm *TokenManager) ValidateRefreshToken(tokenString string) (int64, error) 
 		}
 		return tm.refreshSecret, nil
 	})
-	
+
 	if err != nil {
 		validationErr, ok := err.(*jwt.ValidationError)
 		if ok && validationErr.Errors&jwt.ValidationErrorExpired != 0 {
@@ -202,7 +202,7 @@ func (tm *TokenManager) ValidateRefreshToken(tokenString string) (int64, error) 
 			401,
 		)
 	}
-	
+
 	if !token.Valid {
 		return 0, errors.NewAppError(
 			fmt.Errorf("invalid refresh token"),
@@ -211,7 +211,7 @@ func (tm *TokenManager) ValidateRefreshToken(tokenString string) (int64, error) 
 			401,
 		)
 	}
-	
+
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
 		return 0, errors.NewAppError(
@@ -221,7 +221,7 @@ func (tm *TokenManager) ValidateRefreshToken(tokenString string) (int64, error) 
 			401,
 		)
 	}
-	
+
 	// Extract user ID from the subject claim
 	var userID int64
 	_, err = fmt.Sscanf(claims.Subject, "%d", &userID)
@@ -233,7 +233,7 @@ func (tm *TokenManager) ValidateRefreshToken(tokenString string) (int64, error) 
 			401,
 		)
 	}
-	
+
 	return userID, nil
 }
 

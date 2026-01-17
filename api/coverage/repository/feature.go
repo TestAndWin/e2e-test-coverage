@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -68,7 +68,7 @@ func (cs CoverageStore) DeleteFeaturesByAreaId(areaId string) (int64, error) {
 // Get all features for the specified area id
 func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) {
 	log.Printf("GetAllAreaFeatures: Looking for features with area_id = %s", aid)
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -81,7 +81,7 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 	defer rows.Close()
 	var features = []model.Feature{}
 	rowCount := 0
-	
+
 	for rows.Next() {
 		rowCount++
 		f := model.Feature{}
@@ -92,14 +92,14 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 		log.Printf("Found feature: id=%d, area_id=%d, name=%s", f.Id, f.AreaId, f.Name)
 		features = append(features, f)
 	}
-	
+
 	log.Printf("GetAllAreaFeatures: Found %d features for area_id %s", rowCount, aid)
-	
+
 	if err := rows.Err(); err != nil {
 		log.Printf("Error after iterating rows: %v", err)
 		return nil, err
 	}
-	
+
 	// Additional debug for empty result
 	if len(features) == 0 {
 		// Check if area exists
@@ -110,7 +110,7 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 		} else {
 			log.Printf("Area with id %s exists: %v", aid, areaExists)
 		}
-		
+
 		// Count features in the database
 		var totalFeatures int
 		err = cs.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM features").Scan(&totalFeatures)
@@ -120,7 +120,7 @@ func (cs CoverageStore) GetAllAreaFeatures(aid string) ([]model.Feature, error) 
 			log.Printf("Total features in database: %d", totalFeatures)
 		}
 	}
-	
+
 	return features, nil
 }
 
@@ -131,10 +131,10 @@ func (cs CoverageStore) GetFeatureIdByNameAndAreaId(featureName string, areaId i
 	defer cancel()
 
 	var featureId int64
-	err := cs.db.QueryRowContext(ctx, 
-		"SELECT id FROM features WHERE name = ? AND area_id = ?", 
+	err := cs.db.QueryRowContext(ctx,
+		"SELECT id FROM features WHERE name = ? AND area_id = ?",
 		featureName, areaId).Scan(&featureId)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return 0, err
@@ -142,6 +142,6 @@ func (cs CoverageStore) GetFeatureIdByNameAndAreaId(featureName string, areaId i
 		log.Printf("Error getting feature ID: %v", err)
 		return 0, err
 	}
-	
+
 	return featureId, nil
 }

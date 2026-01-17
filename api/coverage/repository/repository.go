@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -73,7 +73,7 @@ func (store *CoverageStore) CreateAllTables() error {
 			return fmt.Errorf("failed to create %s table: %w", table.name, err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -81,28 +81,28 @@ func (store *CoverageStore) CreateAllTables() error {
 func (cs CoverageStore) executeSql(statement string, params ...any) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	stmt, err := cs.db.PrepareContext(ctx, statement)
 	if err != nil {
 		return 0, fmt.Errorf("error preparing SQL statement: %w", err)
 	}
 	defer stmt.Close()
-	
+
 	res, err := stmt.ExecContext(ctx, params...)
 	if err != nil {
 		return 0, fmt.Errorf("error executing statement: %w", err)
 	}
-	
+
 	rows, err := res.RowsAffected()
 	if err != nil {
 		return 0, fmt.Errorf("error finding rows affected: %w", err)
 	}
-	
+
 	lastID, err := res.LastInsertId()
 	if err != nil {
 		return 0, fmt.Errorf("error getting last insert ID: %w", err)
 	}
-	
+
 	log.Printf("%d row(s) affected, last ID: %d", rows, lastID)
 	return lastID, nil
 }

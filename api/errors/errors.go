@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2025, webmaster@testandwin.net, Michael Schlottmann
+Copyright (c) 2022-2026, webmaster@testandwin.net, Michael Schlottmann
 All rights reserved.
 
 This source code is licensed under the BSD-style license found in the
@@ -53,10 +53,10 @@ type ErrorResponse struct {
 
 // Common error types
 var (
-	ErrNotFound   = NewAppError(errors.New("resource not found"), "Not Found", "NOT_FOUND", http.StatusNotFound)
-	ErrBadRequest = NewAppError(errors.New("invalid request"), "Bad Request", "BAD_REQUEST", http.StatusBadRequest)
-	ErrInternal   = NewAppError(errors.New("internal server error"), "Internal Server Error", "INTERNAL_ERROR", http.StatusInternalServerError)
-	ErrForbidden  = NewAppError(errors.New("forbidden"), "Forbidden", "FORBIDDEN", http.StatusForbidden)
+	ErrNotFound     = NewAppError(errors.New("resource not found"), "Not Found", "NOT_FOUND", http.StatusNotFound)
+	ErrBadRequest   = NewAppError(errors.New("invalid request"), "Bad Request", "BAD_REQUEST", http.StatusBadRequest)
+	ErrInternal     = NewAppError(errors.New("internal server error"), "Internal Server Error", "INTERNAL_ERROR", http.StatusInternalServerError)
+	ErrForbidden    = NewAppError(errors.New("forbidden"), "Forbidden", "FORBIDDEN", http.StatusForbidden)
 	ErrUnauthorized = NewAppError(errors.New("unauthorized"), "Unauthorized", "UNAUTHORIZED", http.StatusUnauthorized)
 )
 
