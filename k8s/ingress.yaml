@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: e2e-test-coverage
+  namespace: e2e-test-coverage
+  labels:
+    app.kubernetes.io/name: e2e-test-coverage
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: public
+  rules:
+    - host: e2ecoverage.de
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: e2e-test-coverage
+                port:
+                  name: http
+    # Local development with minikube/kind
+    - host: e2ecoverage.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: e2e-test-coverage
+                port:
+                  name: http
+  # TLS configuration
+  # tls:
+  #   - hosts:
+  #       - e2ecoverage.de
+  #     secretName: e2e-test-coverage-tls

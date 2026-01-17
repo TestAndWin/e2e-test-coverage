@@ -1,17 +1,30 @@
+# Stage 1: Build the UI
+FROM node:18-alpine AS build-ui
+WORKDIR /app/ui
+COPY ui/package*.json ./
+RUN npm install
+COPY ui/ .
+RUN npm run build
+
+# Stage 2: Build the API
+FROM golang:1.23-alpine AS build-api
+WORKDIR /app/api
+COPY api/go.mod api/go.sum ./
+RUN go mod download
+COPY api/ .
+# Copy built UI assets from the previous stage to the expected location for embedding
+COPY --from=build-ui /app/ui/dist ui/dist
+# Build the binary
+RUN go build -o /app/bin/e2ecoverage-linux cmd/coverage/main.go
+
+# Stage 3: Final Image
 FROM alpine:latest
+WORKDIR /app
+COPY --from=build-api /app/bin/e2ecoverage-linux /app/e2ecoverage-linux
+# Create a non-root user (matching securityContext in deployment)
+RUN addgroup -g 1001 -S appgroup && \
+  adduser -u 1001 -S appuser -G appgroup
+USER 1001
 
-ENV GOPATH /go
-
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-
-ENV GIN_MODE=release
-
-RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
-
-COPY bin/e2ecoverage-linux /go/bin/
-
-EXPOSE 443
-
-VOLUME ["/var/www/.cache"]
-
-CMD ["/go/bin/e2ecoverage-linux"]
+EXPOSE 8080
+CMD ["/app/e2ecoverage-linux"]
