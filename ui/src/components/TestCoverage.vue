@@ -394,11 +394,10 @@ const showTestRuns = async (c: string, s: string, f: string) => {
         chartData.value.labels[i] = run['test-run'] || `Run ${i + 1}`;
 
         // Set data points with safe access
-        // chartData.value.datasets[0].data[i] = run['total'] || 0;
-        chartData.value.datasets[0].data[i] = run['passes'] || 0;
-        chartData.value.datasets[1].data[i] = run['failures'] || 0;
-        chartData.value.datasets[2].data[i] = run['pending'] || 0;
-        chartData.value.datasets[3].data[i] = run['skipped'] || 0;
+        if (chartData.value.datasets[0]) chartData.value.datasets[0].data[i] = run['passes'] || 0;
+        if (chartData.value.datasets[1]) chartData.value.datasets[1].data[i] = run['failures'] || 0;
+        if (chartData.value.datasets[2]) chartData.value.datasets[2].data[i] = run['pending'] || 0;
+        if (chartData.value.datasets[3]) chartData.value.datasets[3].data[i] = run['skipped'] || 0;
       }
     }
   } catch (err) {

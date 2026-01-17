@@ -177,7 +177,7 @@ const saveExplTest = async () => {
       error.value = err + ' | ' + err.response.data.error;
     })
     .finally(() => {
-      etDate.value = new Date().toISOString().split('T')[0];
+      etDate.value = new Date().toISOString().split('T')[0] ?? '';
       etSummary.value = '';
       etRating.value = 0;
     });
@@ -186,7 +186,7 @@ const saveExplTest = async () => {
 
 const showLogExplTest = (areaId: number) => {
   etAreaId.value = areaId;
-  etDate.value = new Date().toISOString().split('T')[0];
+  etDate.value = new Date().toISOString().split('T')[0] ?? '';
   new Modal('#logExplTest').show();
 };
 
