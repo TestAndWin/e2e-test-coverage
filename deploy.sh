@@ -35,6 +35,10 @@ fi
 
 # 5. Apply Manifests
 echo "🚀 Applying Kubernetes manifests..."
+# Apply Namespace first to ensure it exists
+if [ -f "${K8S_DIR}/namespace.yaml" ]; then
+    microk8s kubectl apply -f ${K8S_DIR}/namespace.yaml
+fi
 microk8s kubectl apply -f ${K8S_DIR}/
 
 echo "✅ Deployment completed!"
