@@ -21,7 +21,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: e2e-test-coverage
-          image: e2e-test-coverage:latest
+          image: docker.io/library/e2e-test-coverage:latest
           imagePullPolicy: Never
           ports:
             - name: http
