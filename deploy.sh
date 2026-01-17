@@ -2,9 +2,9 @@
 set -e
 
 # Configuration
-IMAGE_NAME="e2e-test-coverage"
+IMAGE_NAME="docker.io/library/e2e-test-coverage"
 TAG="latest"
-TAR_FILE="${IMAGE_NAME}.tar"
+TAR_FILE="e2e-test-coverage.tar"
 K8S_DIR="k8s"
 
 echo "🚀 Starting deployment for ${IMAGE_NAME} to MicroK8s..."
@@ -20,7 +20,7 @@ docker save ${IMAGE_NAME}:${TAG} > ${TAR_FILE}
 
 # 3. Import into MicroK8s
 echo "📥 Importing image into MicroK8s (this might take a moment)..."
-microk8s ctr -n k8s.io image import ${TAR_FILE}
+microk8s ctr image import ${TAR_FILE}
 
 # Clean up tar file
 echo "🧹 Cleaning up..."
