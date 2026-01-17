@@ -6,6 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: e2e-test-coverage
   annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: public
