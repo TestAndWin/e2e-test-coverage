@@ -2,7 +2,7 @@
 set -e
 
 # Configuration
-IMAGE_NAME="e2ecoverage"
+IMAGE_NAME="e2e-test-coverage"
 TAG="latest"
 TAR_FILE="${IMAGE_NAME}.tar"
 K8S_DIR="k8s"
