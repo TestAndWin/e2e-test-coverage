@@ -41,5 +41,9 @@ if [ -f "${K8S_DIR}/namespace.yaml" ]; then
 fi
 microk8s kubectl apply -f ${K8S_DIR}/
 
+# 6. Force Restart
+# Necessary because the image tag 'latest' hasn't changed, so K8s wouldn't restart automatically.
+echo "🔄 Restarting pods to pick up new image..."
+microk8s kubectl rollout restart deployment e2e-test-coverage -n e2e-test-coverage
 echo "✅ Deployment completed!"
 echo "   Access the app at http://e2ecoverage.local (ensure it's in your /etc/hosts)"
