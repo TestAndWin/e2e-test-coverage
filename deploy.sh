@@ -11,7 +11,7 @@ echo "🚀 Starting deployment for ${IMAGE_NAME} to MicroK8s..."
 
 # 1. Build Docker Image
 echo "🛠️  Building Docker image..."
-docker build -t ${IMAGE_NAME}:${TAG} .
+docker build --no-cache -t ${IMAGE_NAME}:${TAG} .
 
 # 2. Export Image
 # MicroK8s needs the image imported into its own registry/containerd

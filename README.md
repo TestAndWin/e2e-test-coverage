@@ -18,22 +18,6 @@ It's important to note that this representation is solely a quantitative view an
 
 In addition to displaying test coverage information, **e2e test coverage** also enables the collection of feedback from exploratory testing.
 
-# Installation
-* Download the Docker image and upload it via ```docker load -i e2ecoverage_<version>.tar.gz```
-
-* **e2e test coverage** needs a MySQL database. The configuration can be set via Docker environment variables. The databases *e2ecoverage* and *user* are created when it is started for the first time.
-
-* To start it, please enter ```sudo docker run --env-file docker_env_vars --add-host host.docker.internal:host-gateway -d -p 0.0.0.0:443:443 --mount type=bind,source="$(pwd)"/cert_cache,target=/var/www/.cache e2ecoverage```
-
-  Example ```docker_env_vars```:
-  ```
-  DB_USER=root
-  DB_PASSWORD=your db password
-  DB_HOST=host.docker.internal:3306
-  JWT_KEY=please enter a random value
-  HOST=your_domain
-  ```
-  
 # Guide 
 
 ## **e2e test coverage** user interface
@@ -61,7 +45,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 # Development
 Please bear with me, this is my first Golang & Vue 3 project. I used
 
-* Golang 1.20
+* Golang 1.24
 * Vue 3
 * Bootstrap 5
 
