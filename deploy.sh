@@ -20,7 +20,7 @@ docker save ${IMAGE_NAME}:${TAG} > ${TAR_FILE}
 
 # 3. Import into MicroK8s
 echo "📥 Importing image into MicroK8s (this might take a moment)..."
-microk8s ctr image import ${TAR_FILE}
+microk8s ctr -n k8s.io image import ${TAR_FILE}
 
 # Clean up tar file
 echo "🧹 Cleaning up..."

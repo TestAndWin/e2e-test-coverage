@@ -22,7 +22,7 @@ spec:
       containers:
         - name: e2e-test-coverage
           image: e2e-test-coverage:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Never
           ports:
             - name: http
               containerPort: 8080
