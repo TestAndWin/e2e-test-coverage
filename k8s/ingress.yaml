@@ -10,7 +10,7 @@ metadata:
 spec:
   ingressClassName: public
   rules:
-    - host: e2ecoverage.de
+    - host: www.testandwin.net
       http:
         paths:
           - path: /
