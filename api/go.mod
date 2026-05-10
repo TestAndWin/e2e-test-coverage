@@ -1,6 +1,6 @@
 module github.com/TestAndWin/e2e-coverage
 
-go 1.25.0
+go 1.26.3
 
 require (
 	github.com/Masterminds/squirrel v1.5.4

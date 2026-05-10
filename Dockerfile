@@ -1,5 +1,5 @@
 # Stage 1: Build the UI
-FROM node:22-alpine AS build-ui
+FROM node:24-alpine AS build-ui
 WORKDIR /app/ui
 COPY ui/package*.json ./
 RUN npm install
@@ -7,7 +7,7 @@ COPY ui/ .
 RUN npm run build
 
 # Stage 2: Build the API
-FROM golang:1.24-alpine AS build-api
+FROM golang:1.26-alpine AS build-api
 WORKDIR /app/api
 COPY api/go.mod api/go.sum ./
 RUN go mod download
