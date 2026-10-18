@@ -9,9 +9,19 @@ build-ui:	## Build the Vue 3 application for production
 build-swagger:	## Generate the swagger doc
 	cd api; swag init -g cmd/coverage/main.go --output docs
 
-update-libs:	## Update Golang and Vue 3 libs
+update-libs:	## Update Golang and Vue 3 libs (npm with 7 day cooldown, see ui/.ncurc.json)
 	cd api; go get -u ./...; go mod tidy
-	cd ui; ncu -u; npm install
+	cd ui; ncu -u --cooldown 7; npm install
+	$(MAKE) vulncheck
+
+vulncheck:	## Check the Golang and npm dependencies for known vulnerabilities
+	@rc=0; $(MAKE) vulncheck-go || rc=1; $(MAKE) vulncheck-npm || rc=1; exit $$rc
+
+vulncheck-go:	## Check the Golang dependencies for known vulnerabilities
+	cd api; go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+vulncheck-npm:	## Check the npm dependencies for known vulnerabilities
+	cd ui; npm audit
 
 build: build-ui	build-swagger ## Build the Golang binary for Linux and create the Docker image
 	cd api; go generate ./ui
