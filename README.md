@@ -45,7 +45,7 @@ In addition to displaying test coverage information, **e2e test coverage** also 
 # Development
 Please bear with me, this is my first Golang & Vue 3 project. I used
 
-* Golang 1.24
+* Golang 1.27
 * Vue 3
 * Bootstrap 5
 

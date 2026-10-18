@@ -7,7 +7,7 @@ COPY ui/ .
 RUN npm run build
 
 # Stage 2: Build the API
-FROM golang:1.26-alpine AS build-api
+FROM golang:1.27-alpine AS build-api
 WORKDIR /app/api
 COPY api/go.mod api/go.sum ./
 RUN go mod download
