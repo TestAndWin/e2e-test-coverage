@@ -164,8 +164,7 @@
         <div class="modal-body">
           <form @submit.prevent>
             <div class="mb-3">
-              <label>Name</label
-              ><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
+              <label>Name</label><input type="text" class="form-control" id="newFeatureName" v-model="newFeatureName" />
               <label>Please be aware that the name is used to "match" the test results.</label><br /><br />
               <label>Business Value</label><br />
               <select v-model="featureBusinessValue">
