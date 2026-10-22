@@ -14,30 +14,30 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "axios": "^1.19.0",
+    "axios": "^1.20.0",
     "bootstrap": "^5.3.8",
-    "bootstrap-icons": "^1.13.1",
+    "bootstrap-icons": "^1.13.2",
     "bootstrap-icons-vue": "^1.11.3",
     "chart.js": "^4.5.1",
-    "vue": "^3.5.40",
+    "vue": "^3.5.44",
     "vue-chartjs": "^5.3.4",
-    "vue-router": "^5.2.0"
+    "vue-router": "^5.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tsconfig/node20": "^20.1.9",
+    "@tsconfig/node20": "^20.1.10",
     "@types/bootstrap": "^5.2.11",
-    "@types/node": "^26.1.2",
-    "@vitejs/plugin-vue": "^6.0.8",
+    "@types/node": "^26.6.5",
+    "@vitejs/plugin-vue": "^6.0.10",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/tsconfig": "^0.9.1",
-    "eslint": "^10.8.0",
-    "eslint-plugin-vue": "^10.10.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-vue": "^10.11.1",
     "npm-run-all2": "^9.0.3",
-    "prettier": "^3.9.6",
-    "typescript": "~6.0.3",
-    "vite": "^8.2.0",
-    "vue-tsc": "^3.3.9"
+    "prettier": "^3.9.10",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.4",
+    "vue-tsc": "^3.3.13"
   }
 }
