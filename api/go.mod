@@ -2,6 +2,8 @@ module github.com/TestAndWin/e2e-coverage
 
 go 1.27.2
 
+toolchain go1.27.4
+
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/gin-gonic/autotls v1.3.2
