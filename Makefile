@@ -1,6 +1,11 @@
 BINARY_NAME=e2ecoverage
 # Keep in sync with github.com/swaggo/swag in api/go.mod
 SWAG_VERSION=v1.16.6
+# Pinned instead of @latest; only bump to releases older than COOLDOWN_DAYS
+GOVULNCHECK_VERSION=v1.9.0
+# Supply chain cooldown: only use library versions published at least this many days ago.
+# npm side is also enforced by ui/.npmrc (min-release-age) and ui/.ncurc.json (cooldown).
+COOLDOWN_DAYS=7
 # api/ui/ui.go embeds dist/* relative to itself
 EMBED_DIR=api/ui/dist
 
@@ -13,16 +18,23 @@ build-ui:	## Build the Vue 3 application for production
 build-swagger:	## Generate the swagger doc
 	cd api; go run github.com/swaggo/swag/cmd/swag@$(SWAG_VERSION) init -g cmd/coverage/main.go --output docs
 
-update-libs:	## Update Golang and Vue 3 libs (npm with 7 day cooldown, see ui/.ncurc.json)
-	cd api; go get -u ./...; go mod tidy
-	cd ui; ncu -u --cooldown 7; npm install
+update-libs:	## Update Golang and Vue 3 libs, only to versions older than COOLDOWN_DAYS
+	cd api; go run ../scripts/gocooldown.go -days $(COOLDOWN_DAYS)
+	cd ui; ncu -u --cooldown $(COOLDOWN_DAYS); npm install
+	$(MAKE) cooldown-check
 	$(MAKE) vulncheck
+
+cooldown-check:	## Check that all locked Go and npm dependencies are older than COOLDOWN_DAYS
+	@rc=0; \
+	(cd api; go run ../scripts/gocooldown.go -check -days $(COOLDOWN_DAYS)) || rc=1; \
+	(cd ui; node ../scripts/npmcooldown.mjs $(COOLDOWN_DAYS)) || rc=1; \
+	exit $$rc
 
 vulncheck:	## Check the Golang and npm dependencies for known vulnerabilities
 	@rc=0; $(MAKE) vulncheck-go || rc=1; $(MAKE) vulncheck-npm || rc=1; exit $$rc
 
 vulncheck-go:	## Check the Golang dependencies for known vulnerabilities
-	cd api; go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	cd api; go run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) ./...
 
 vulncheck-npm:	## Check the npm dependencies for known vulnerabilities
 	cd ui; npm audit
